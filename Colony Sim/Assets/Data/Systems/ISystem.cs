@@ -2,17 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ColonySim
+namespace ColonySim.Systems
 {
+    /// <summary>
+    /// main.Thread() Process
+    /// </summary>
     public interface ISystem
     {
-        public bool Init();
+        public void Init();
+        public void OnInitialized();
         public void Tick();
+
+        public bool Initialized { get; }
     }
 
-    public class System : ISystem
+    public abstract class System : MonoBehaviour, ISystem
     {
-        public virtual bool Init() { return true; }
+        public bool Initialized { get; protected set; }
+        public virtual void Init() { Initialized = true; ApplicationController.Get().Initialized(this); }
+        public virtual void OnInitialized() { }
         public virtual void Tick() { }
     }
 

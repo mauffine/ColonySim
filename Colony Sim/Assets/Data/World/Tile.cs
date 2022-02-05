@@ -1,21 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ColonySim
+namespace ColonySim.World
 {
-    public interface ITile
+    public interface ITileData
     {
         (int X, int Y) Coordinates { get; }
     }
-
-    public class Tile
+    /// <summary>
+    /// Game Tile
+    /// </summary>
+    public class TileData : ITileData
     {
-        public Tile((int X, int Y) Coordinates)
+        public TileData((int X, int Y) Coordinates)
             : this(Coordinates.X, Coordinates.Y) { }
 
-        public Tile(int X, int Y)
+        public TileData(int X, int Y)
         {
-            coordinates = (X, Y);
+            coordinates = (X, Y);           
         }
         public (int X, int Y) Coordinates { get { return coordinates; } }
 
