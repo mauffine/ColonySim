@@ -23,12 +23,12 @@ namespace ColonySim.Entities
     {
         public void Enter(ITileContainer Container)
         {
-            Debug.Log("Wall Entity Entered!");
+
         }
 
         public void Exit(ITileContainer Container)
         {
-            //throw new System.NotImplementedException();
+
         }
     }
 }

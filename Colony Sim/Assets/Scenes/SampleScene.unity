@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b53f8420b34b75458f9b91be4010af8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 3
+  _loggingLevel: 5
   _stamp: 0
   controlled: {fileID: 519420031}
   FOVCamera: {fileID: 469121153}
@@ -5065,7 +5065,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 222fb1062e808344593e8da8c4104d40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 3
+  _loggingLevel: 5
   _stamp: 0
 --- !u!4 &365389521
 Transform:
@@ -5301,7 +5301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e923ca2f511ce4cb10219a13522232, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 3
+  _loggingLevel: 5
   _stamp: 0
   ConcreteTileSprite: {fileID: 21300000, guid: b5d37ea3fa992e346981cb5d6eec890e, type: 3}
 --- !u!4 &600916230
@@ -5568,7 +5568,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3675713adb7cf494daf388f9ab3ee5ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 3
+  _loggingLevel: 5
   _stamp: 0
 --- !u!4 &1401068156
 Transform:
@@ -5627,7 +5627,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07ddea8787aaf9d4286e6d5fc6014d5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 3
+  _loggingLevel: 5
   _stamp: 0
   InputAsset: {fileID: -944628639613478452, guid: b8b7cbf5a8312c948b48233506359a7c, type: 3}
 --- !u!1 &1598362919
@@ -5892,7 +5892,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9bdc8360aa3f5241a8a7eca22df6952, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 3
+  _loggingLevel: 5
   _stamp: 0
 --- !u!4 &1804357769
 Transform:
