@@ -1,4 +1,4 @@
-// GENERATED AUTOMATICALLY FROM 'Assets/Systems/Input/InputControlMap.inputactions'
+// GENERATED AUTOMATICALLY FROM 'Assets/Data/Systems/InputControlMap.inputactions'
 
 using System;
 using System.Collections;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
 
-namespace ColonySim.Systems
+namespace ColonySim
 {
     public class @InputControlMap : IInputActionCollection, IDisposable
     {
@@ -26,77 +26,13 @@ namespace ColonySim.Systems
                     ""id"": ""e88172f3-a259-4e12-afff-a0e6704db448"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": ""Press(pressPoint=0.1,behavior=2)""
+                    ""interactions"": """"
                 },
                 {
                     ""name"": ""Remove Tile"",
                     ""type"": ""Button"",
                     ""id"": ""65a92f88-7198-44ff-bad2-6f86623f65bf"",
                     ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": ""Press(behavior=2)""
-                },
-                {
-                    ""name"": ""Undo"",
-                    ""type"": ""Button"",
-                    ""id"": ""2f3fa273-4ab5-4bf4-b959-7c61916b7e3d"",
-                    ""expectedControlType"": ""Key"",
-                    ""processors"": """",
-                    ""interactions"": """"
-                },
-                {
-                    ""name"": ""Redo"",
-                    ""type"": ""Button"",
-                    ""id"": ""3d4808e9-d94a-49ae-9ba8-33c0b382fd3e"",
-                    ""expectedControlType"": ""Key"",
-                    ""processors"": """",
-                    ""interactions"": """"
-                },
-                {
-                    ""name"": ""Autoplace"",
-                    ""type"": ""Button"",
-                    ""id"": ""db84a68e-d46c-46ca-add1-0b26a4a32272"",
-                    ""expectedControlType"": ""Key"",
-                    ""processors"": """",
-                    ""interactions"": """"
-                },
-                {
-                    ""name"": ""Rotate Left"",
-                    ""type"": ""Button"",
-                    ""id"": ""c39ebe12-5bef-4282-b5e5-2551bd8b91f9"",
-                    ""expectedControlType"": ""Key"",
-                    ""processors"": """",
-                    ""interactions"": """"
-                },
-                {
-                    ""name"": ""RotateRight"",
-                    ""type"": ""Button"",
-                    ""id"": ""bc4dc336-7e08-4861-97b0-0c98c291af8b"",
-                    ""expectedControlType"": ""Key"",
-                    ""processors"": """",
-                    ""interactions"": """"
-                },
-                {
-                    ""name"": ""Cycle"",
-                    ""type"": ""Value"",
-                    ""id"": ""54c9e88c-f3f5-4d1a-bdab-f34234c0620a"",
-                    ""expectedControlType"": ""Axis"",
-                    ""processors"": """",
-                    ""interactions"": """"
-                },
-                {
-                    ""name"": ""MousePointer"",
-                    ""type"": ""Value"",
-                    ""id"": ""3a80e523-63fb-482b-bfb1-b13d477f025c"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """"
-                },
-                {
-                    ""name"": ""Ctrl"",
-                    ""type"": ""Value"",
-                    ""id"": ""3cdbc944-8002-4fec-a82f-bdef89625975"",
-                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """"
                 }
@@ -123,116 +59,6 @@ namespace ColonySim.Systems
                     ""action"": ""Remove Tile"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""039455bb-d6e7-415f-ab29-58e74e6661ad"",
-                    ""path"": ""<Keyboard>/z"",
-                    ""interactions"": ""Press"",
-                    ""processors"": """",
-                    ""groups"": ""PC"",
-                    ""action"": ""Undo"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""083d5134-e518-47b7-ba90-b66095d4aa73"",
-                    ""path"": ""<Keyboard>/y"",
-                    ""interactions"": ""Press"",
-                    ""processors"": """",
-                    ""groups"": ""PC"",
-                    ""action"": ""Redo"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""65ec6b17-759a-49f5-807f-30669473ac60"",
-                    ""path"": ""<Keyboard>/f"",
-                    ""interactions"": ""Press"",
-                    ""processors"": """",
-                    ""groups"": ""PC"",
-                    ""action"": ""Autoplace"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""f2c291ef-735b-4ad7-96bb-a85ecbe1c35c"",
-                    ""path"": ""<Keyboard>/q"",
-                    ""interactions"": ""Press"",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""Rotate Left"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""6d9fe62e-4f9d-4a59-b005-24c209f31b57"",
-                    ""path"": ""<Keyboard>/e"",
-                    ""interactions"": ""Press"",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""RotateRight"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""Keys"",
-                    ""id"": ""f9c1c662-7e61-4b5b-a51e-deb875a9c45b"",
-                    ""path"": ""1DAxis(whichSideWins=1)"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Cycle"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""negative"",
-                    ""id"": ""84377bbf-d574-4df3-8f76-598e80382f09"",
-                    ""path"": ""<Keyboard>/comma"",
-                    ""interactions"": ""Press(pressPoint=0.1)"",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""Cycle"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""positive"",
-                    ""id"": ""6cffb115-9cef-405f-91f1-7737a37d4636"",
-                    ""path"": ""<Keyboard>/period"",
-                    ""interactions"": ""Press"",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""Cycle"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""fa0d7efe-f706-47e2-8ee5-fc4a2241676a"",
-                    ""path"": ""<Mouse>/position"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""MousePointer"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""2fb756c9-b3be-4b38-b252-2807684532fd"",
-                    ""path"": ""<Keyboard>/leftCtrl"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";PC"",
-                    ""action"": ""Ctrl"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -242,7 +68,7 @@ namespace ColonySim.Systems
             ""actions"": [
                 {
                     ""name"": ""Zoom"",
-                    ""type"": ""PassThrough"",
+                    ""type"": ""Value"",
                     ""id"": ""cc8f9b90-1213-40e3-861d-bf4986d9700c"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
@@ -250,7 +76,7 @@ namespace ColonySim.Systems
                 },
                 {
                     ""name"": ""Movement"",
-                    ""type"": ""PassThrough"",
+                    ""type"": ""Value"",
                     ""id"": ""4c4eed1c-ca44-4158-9f58-6a9e04dc5fdc"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
@@ -273,7 +99,7 @@ namespace ColonySim.Systems
                     ""name"": ""Move"",
                     ""id"": ""c5bcdfb3-7703-4044-b7ea-be80fed75370"",
                     ""path"": ""2DVector"",
-                    ""interactions"": ""Hold(duration=0.01)"",
+                    ""interactions"": ""Hold"",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Movement"",
@@ -325,6 +151,33 @@ namespace ColonySim.Systems
                     ""isPartOfComposite"": true
                 }
             ]
+        },
+        {
+            ""name"": ""Mouse"",
+            ""id"": ""bfa2a425-74aa-4eb2-b5f8-3875c28669a6"",
+            ""actions"": [
+                {
+                    ""name"": ""MousePointer"",
+                    ""type"": ""Value"",
+                    ""id"": ""6fb1e2cb-08ba-4ffc-8845-803749292175"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""d8b8d7f8-c676-42c9-983b-e22d5449a39d"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";PC"",
+                    ""action"": ""MousePointer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -350,18 +203,13 @@ namespace ColonySim.Systems
             m_Construction = asset.FindActionMap("Construction", throwIfNotFound: true);
             m_Construction_PlaceTile = m_Construction.FindAction("Place Tile", throwIfNotFound: true);
             m_Construction_RemoveTile = m_Construction.FindAction("Remove Tile", throwIfNotFound: true);
-            m_Construction_Undo = m_Construction.FindAction("Undo", throwIfNotFound: true);
-            m_Construction_Redo = m_Construction.FindAction("Redo", throwIfNotFound: true);
-            m_Construction_Autoplace = m_Construction.FindAction("Autoplace", throwIfNotFound: true);
-            m_Construction_RotateLeft = m_Construction.FindAction("Rotate Left", throwIfNotFound: true);
-            m_Construction_RotateRight = m_Construction.FindAction("RotateRight", throwIfNotFound: true);
-            m_Construction_Cycle = m_Construction.FindAction("Cycle", throwIfNotFound: true);
-            m_Construction_MousePointer = m_Construction.FindAction("MousePointer", throwIfNotFound: true);
-            m_Construction_Ctrl = m_Construction.FindAction("Ctrl", throwIfNotFound: true);
             // Camera
             m_Camera = asset.FindActionMap("Camera", throwIfNotFound: true);
             m_Camera_Zoom = m_Camera.FindAction("Zoom", throwIfNotFound: true);
             m_Camera_Movement = m_Camera.FindAction("Movement", throwIfNotFound: true);
+            // Mouse
+            m_Mouse = asset.FindActionMap("Mouse", throwIfNotFound: true);
+            m_Mouse_MousePointer = m_Mouse.FindAction("MousePointer", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -413,28 +261,12 @@ namespace ColonySim.Systems
         private IConstructionActions m_ConstructionActionsCallbackInterface;
         private readonly InputAction m_Construction_PlaceTile;
         private readonly InputAction m_Construction_RemoveTile;
-        private readonly InputAction m_Construction_Undo;
-        private readonly InputAction m_Construction_Redo;
-        private readonly InputAction m_Construction_Autoplace;
-        private readonly InputAction m_Construction_RotateLeft;
-        private readonly InputAction m_Construction_RotateRight;
-        private readonly InputAction m_Construction_Cycle;
-        private readonly InputAction m_Construction_MousePointer;
-        private readonly InputAction m_Construction_Ctrl;
         public struct ConstructionActions
         {
             private @InputControlMap m_Wrapper;
             public ConstructionActions(@InputControlMap wrapper) { m_Wrapper = wrapper; }
             public InputAction @PlaceTile => m_Wrapper.m_Construction_PlaceTile;
             public InputAction @RemoveTile => m_Wrapper.m_Construction_RemoveTile;
-            public InputAction @Undo => m_Wrapper.m_Construction_Undo;
-            public InputAction @Redo => m_Wrapper.m_Construction_Redo;
-            public InputAction @Autoplace => m_Wrapper.m_Construction_Autoplace;
-            public InputAction @RotateLeft => m_Wrapper.m_Construction_RotateLeft;
-            public InputAction @RotateRight => m_Wrapper.m_Construction_RotateRight;
-            public InputAction @Cycle => m_Wrapper.m_Construction_Cycle;
-            public InputAction @MousePointer => m_Wrapper.m_Construction_MousePointer;
-            public InputAction @Ctrl => m_Wrapper.m_Construction_Ctrl;
             public InputActionMap Get() { return m_Wrapper.m_Construction; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -450,30 +282,6 @@ namespace ColonySim.Systems
                     @RemoveTile.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRemoveTile;
                     @RemoveTile.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRemoveTile;
                     @RemoveTile.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRemoveTile;
-                    @Undo.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnUndo;
-                    @Undo.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnUndo;
-                    @Undo.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnUndo;
-                    @Redo.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRedo;
-                    @Redo.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRedo;
-                    @Redo.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRedo;
-                    @Autoplace.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnAutoplace;
-                    @Autoplace.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnAutoplace;
-                    @Autoplace.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnAutoplace;
-                    @RotateLeft.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRotateLeft;
-                    @RotateLeft.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRotateLeft;
-                    @RotateLeft.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRotateLeft;
-                    @RotateRight.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRotateRight;
-                    @RotateRight.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRotateRight;
-                    @RotateRight.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRotateRight;
-                    @Cycle.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnCycle;
-                    @Cycle.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnCycle;
-                    @Cycle.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnCycle;
-                    @MousePointer.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnMousePointer;
-                    @MousePointer.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnMousePointer;
-                    @MousePointer.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnMousePointer;
-                    @Ctrl.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnCtrl;
-                    @Ctrl.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnCtrl;
-                    @Ctrl.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnCtrl;
                 }
                 m_Wrapper.m_ConstructionActionsCallbackInterface = instance;
                 if (instance != null)
@@ -484,30 +292,6 @@ namespace ColonySim.Systems
                     @RemoveTile.started += instance.OnRemoveTile;
                     @RemoveTile.performed += instance.OnRemoveTile;
                     @RemoveTile.canceled += instance.OnRemoveTile;
-                    @Undo.started += instance.OnUndo;
-                    @Undo.performed += instance.OnUndo;
-                    @Undo.canceled += instance.OnUndo;
-                    @Redo.started += instance.OnRedo;
-                    @Redo.performed += instance.OnRedo;
-                    @Redo.canceled += instance.OnRedo;
-                    @Autoplace.started += instance.OnAutoplace;
-                    @Autoplace.performed += instance.OnAutoplace;
-                    @Autoplace.canceled += instance.OnAutoplace;
-                    @RotateLeft.started += instance.OnRotateLeft;
-                    @RotateLeft.performed += instance.OnRotateLeft;
-                    @RotateLeft.canceled += instance.OnRotateLeft;
-                    @RotateRight.started += instance.OnRotateRight;
-                    @RotateRight.performed += instance.OnRotateRight;
-                    @RotateRight.canceled += instance.OnRotateRight;
-                    @Cycle.started += instance.OnCycle;
-                    @Cycle.performed += instance.OnCycle;
-                    @Cycle.canceled += instance.OnCycle;
-                    @MousePointer.started += instance.OnMousePointer;
-                    @MousePointer.performed += instance.OnMousePointer;
-                    @MousePointer.canceled += instance.OnMousePointer;
-                    @Ctrl.started += instance.OnCtrl;
-                    @Ctrl.performed += instance.OnCtrl;
-                    @Ctrl.canceled += instance.OnCtrl;
                 }
             }
         }
@@ -553,6 +337,39 @@ namespace ColonySim.Systems
             }
         }
         public CameraActions @Camera => new CameraActions(this);
+
+        // Mouse
+        private readonly InputActionMap m_Mouse;
+        private IMouseActions m_MouseActionsCallbackInterface;
+        private readonly InputAction m_Mouse_MousePointer;
+        public struct MouseActions
+        {
+            private @InputControlMap m_Wrapper;
+            public MouseActions(@InputControlMap wrapper) { m_Wrapper = wrapper; }
+            public InputAction @MousePointer => m_Wrapper.m_Mouse_MousePointer;
+            public InputActionMap Get() { return m_Wrapper.m_Mouse; }
+            public void Enable() { Get().Enable(); }
+            public void Disable() { Get().Disable(); }
+            public bool enabled => Get().enabled;
+            public static implicit operator InputActionMap(MouseActions set) { return set.Get(); }
+            public void SetCallbacks(IMouseActions instance)
+            {
+                if (m_Wrapper.m_MouseActionsCallbackInterface != null)
+                {
+                    @MousePointer.started -= m_Wrapper.m_MouseActionsCallbackInterface.OnMousePointer;
+                    @MousePointer.performed -= m_Wrapper.m_MouseActionsCallbackInterface.OnMousePointer;
+                    @MousePointer.canceled -= m_Wrapper.m_MouseActionsCallbackInterface.OnMousePointer;
+                }
+                m_Wrapper.m_MouseActionsCallbackInterface = instance;
+                if (instance != null)
+                {
+                    @MousePointer.started += instance.OnMousePointer;
+                    @MousePointer.performed += instance.OnMousePointer;
+                    @MousePointer.canceled += instance.OnMousePointer;
+                }
+            }
+        }
+        public MouseActions @Mouse => new MouseActions(this);
         private int m_PCSchemeIndex = -1;
         public InputControlScheme PCScheme
         {
@@ -566,19 +383,15 @@ namespace ColonySim.Systems
         {
             void OnPlaceTile(InputAction.CallbackContext context);
             void OnRemoveTile(InputAction.CallbackContext context);
-            void OnUndo(InputAction.CallbackContext context);
-            void OnRedo(InputAction.CallbackContext context);
-            void OnAutoplace(InputAction.CallbackContext context);
-            void OnRotateLeft(InputAction.CallbackContext context);
-            void OnRotateRight(InputAction.CallbackContext context);
-            void OnCycle(InputAction.CallbackContext context);
-            void OnMousePointer(InputAction.CallbackContext context);
-            void OnCtrl(InputAction.CallbackContext context);
         }
         public interface ICameraActions
         {
             void OnZoom(InputAction.CallbackContext context);
             void OnMovement(InputAction.CallbackContext context);
+        }
+        public interface IMouseActions
+        {
+            void OnMousePointer(InputAction.CallbackContext context);
         }
     }
 }

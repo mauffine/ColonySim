@@ -2,16 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static ColonySim.Systems.InputControlMap;
+using static ColonySim.InputControlMap;
+using ColonySim.LoggingUtility;
+using ILogger = ColonySim.LoggingUtility.ILogger;
 
 namespace ColonySim.Systems
 {
-    public class CameraSystem : System, ICameraActions
+    public class CameraSystem : System, ICameraActions, ILogger
     {
-        #region Main Camera Control
-        public Camera controlled;
+        #region Static
         private static CameraSystem instance;
         public static CameraSystem Get => instance;
+        public List<string> Logs { get; set; } = new List<string>();
+        public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
+        [SerializeField]
+        private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public bool Stamp { get => _stamp; set => _stamp = value; }
+        [SerializeField]
+        private bool _stamp = false;
+        #endregion
+
+        #region Main Camera Control
+        public Camera controlled;
         public static float MinimumCameraBound = 3;
         public static float MaximumCameraBound = 20;
 
@@ -24,6 +36,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
+            this.Verbose("<color=blue>[Camera System Init]</color>");
             var distance = Vector3.Distance(FOVCamera.transform.position, Background.transform.position);
             initHeightAtDist = FrustumHeightAtDistance(distance);
             desiredZ = FOVCamera.transform.position.z;
@@ -37,7 +50,7 @@ namespace ColonySim.Systems
             sys.CameraActions.Movement.performed += OnMovement;
             sys.CameraActions.Movement.canceled += OnMovementCancel;
             sys.CameraActions.Enable();
-            Debug.Log("Camera Init!");
+            base.OnInitialized();
         }
 
         public void OnZoom(InputAction.CallbackContext Context)
@@ -70,13 +83,13 @@ namespace ColonySim.Systems
         }
         IEnumerator OnMovementContinue()
         {
+            Vector2 velocity = Vector2.zero;
             while (movingCamera)
             {
+                Vector2 targetPosition = (Vector2)Camera.main.transform.position + InputSystem.Get.CameraActions.Movement.ReadValue<Vector2>();
+                Vector2 movement = Vector2.SmoothDamp(Camera.main.transform.position, targetPosition, ref velocity, Instance_CameraMoveMultiplier());
+                Camera.main.transform.position = new Vector3(movement.x, movement.y, Camera.main.transform.position.z);
                 yield return null;
-
-                Vector2 movement = InputSystem.Get.CameraActions.Movement.ReadValue<Vector2>();
-                movement *= Instance_CameraMoveMultiplier();
-                Camera.main.transform.Translate(new Vector3(movement.x, movement.y, 0));
             }
         }
 
@@ -97,7 +110,7 @@ namespace ColonySim.Systems
 
         private float Instance_CameraMoveMultiplier()
         {
-            return Camera.main.orthographicSize * 0.007f;
+            return Camera.main.orthographicSize * 0.1f;
         }
         #endregion
 

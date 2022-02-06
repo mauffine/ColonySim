@@ -11,77 +11,13 @@
                     "id": "e88172f3-a259-4e12-afff-a0e6704db448",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Press(pressPoint=0.1,behavior=2)"
+                    "interactions": ""
                 },
                 {
                     "name": "Remove Tile",
                     "type": "Button",
                     "id": "65a92f88-7198-44ff-bad2-6f86623f65bf",
                     "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "Press(behavior=2)"
-                },
-                {
-                    "name": "Undo",
-                    "type": "Button",
-                    "id": "2f3fa273-4ab5-4bf4-b959-7c61916b7e3d",
-                    "expectedControlType": "Key",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "Redo",
-                    "type": "Button",
-                    "id": "3d4808e9-d94a-49ae-9ba8-33c0b382fd3e",
-                    "expectedControlType": "Key",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "Autoplace",
-                    "type": "Button",
-                    "id": "db84a68e-d46c-46ca-add1-0b26a4a32272",
-                    "expectedControlType": "Key",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "Rotate Left",
-                    "type": "Button",
-                    "id": "c39ebe12-5bef-4282-b5e5-2551bd8b91f9",
-                    "expectedControlType": "Key",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "RotateRight",
-                    "type": "Button",
-                    "id": "bc4dc336-7e08-4861-97b0-0c98c291af8b",
-                    "expectedControlType": "Key",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "Cycle",
-                    "type": "Value",
-                    "id": "54c9e88c-f3f5-4d1a-bdab-f34234c0620a",
-                    "expectedControlType": "Axis",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "MousePointer",
-                    "type": "Value",
-                    "id": "3a80e523-63fb-482b-bfb1-b13d477f025c",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "Ctrl",
-                    "type": "Value",
-                    "id": "3cdbc944-8002-4fec-a82f-bdef89625975",
-                    "expectedControlType": "",
                     "processors": "",
                     "interactions": ""
                 }
@@ -106,116 +42,6 @@
                     "processors": "",
                     "groups": "PC",
                     "action": "Remove Tile",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "039455bb-d6e7-415f-ab29-58e74e6661ad",
-                    "path": "<Keyboard>/z",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": "PC",
-                    "action": "Undo",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "083d5134-e518-47b7-ba90-b66095d4aa73",
-                    "path": "<Keyboard>/y",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": "PC",
-                    "action": "Redo",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "65ec6b17-759a-49f5-807f-30669473ac60",
-                    "path": "<Keyboard>/f",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": "PC",
-                    "action": "Autoplace",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "f2c291ef-735b-4ad7-96bb-a85ecbe1c35c",
-                    "path": "<Keyboard>/q",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "Rotate Left",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "6d9fe62e-4f9d-4a59-b005-24c209f31b57",
-                    "path": "<Keyboard>/e",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "RotateRight",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "Keys",
-                    "id": "f9c1c662-7e61-4b5b-a51e-deb875a9c45b",
-                    "path": "1DAxis(whichSideWins=1)",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Cycle",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "negative",
-                    "id": "84377bbf-d574-4df3-8f76-598e80382f09",
-                    "path": "<Keyboard>/comma",
-                    "interactions": "Press(pressPoint=0.1)",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "Cycle",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "6cffb115-9cef-405f-91f1-7737a37d4636",
-                    "path": "<Keyboard>/period",
-                    "interactions": "Press",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "Cycle",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "fa0d7efe-f706-47e2-8ee5-fc4a2241676a",
-                    "path": "<Mouse>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "MousePointer",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "2fb756c9-b3be-4b38-b252-2807684532fd",
-                    "path": "<Keyboard>/leftCtrl",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";PC",
-                    "action": "Ctrl",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -308,6 +134,33 @@
                     "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": true
+                }
+            ]
+        },
+        {
+            "name": "Mouse",
+            "id": "bfa2a425-74aa-4eb2-b5f8-3875c28669a6",
+            "actions": [
+                {
+                    "name": "MousePointer",
+                    "type": "Value",
+                    "id": "6fb1e2cb-08ba-4ffc-8845-803749292175",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d8b8d7f8-c676-42c9-983b-e22d5449a39d",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "MousePointer",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

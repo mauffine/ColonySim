@@ -2,17 +2,27 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ColonySim.LoggingUtility;
+using ILogger = ColonySim.LoggingUtility.ILogger;
 
 namespace ColonySim.Systems
 {
     /// <summary>
     /// Main Thread
     /// </summary>
-    public class ApplicationController : MonoBehaviour
+    public class ApplicationController : MonoBehaviour, ILogger
     {
         #region Static
         private static ApplicationController instance;
         public static ApplicationController Get() => instance;
+
+        public List<string> Logs { get; set; } = new List<string>();
+        public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
+        [SerializeField]
+        private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public bool Stamp { get => _stamp; set => _stamp = value; }
+        [SerializeField]
+        private bool _stamp = false;
 
         #endregion
 
@@ -29,9 +39,11 @@ namespace ColonySim.Systems
             instance = this;
             if (Systems != null)
             {
+                this.Verbose("<color=blue>[Initialising Application Systems..]</color>");
                 InitializedSystems = new System[Systems.Length];
                 foreach (var sys in Systems)
                 {
+                    this.Debug("<color=blue>[System Init..]</color>");
                     sys.Init();
                 }
             }           
@@ -51,11 +63,11 @@ namespace ColonySim.Systems
 
         public void Initialized(System sys)
         {
-            Debug.Log("Init!!");
             InitializedSystems[InitializedCount] = sys;
             InitializedCount++;
             if (InitializedCount >= InitializedSystems.Length)
             {
+                this.Debug("<color=blue>[System Initialized..]</color>");
                 FinishInit();
             }
         }
@@ -67,6 +79,7 @@ namespace ColonySim.Systems
             {
                 sys.OnInitialized();
             }
+            this.Notice("<color=blue>[Applicated Initialised]</color>");
         }
     }
 }

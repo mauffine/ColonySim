@@ -17,14 +17,14 @@ namespace ColonySim.Systems
         public WorldRenderer()
         {
             instance = this;
-            WorldSystem = WorldSystem.Get();
+            WorldSystem = WorldSystem.Get;
         }
 
         public void RenderChunk(IWorldChunk Chunk)
         {
-            for (int x = 0; x < Chunk.Tiles.Length; x++)
+            for (int x = 0; x < Chunk.TileData.Length; x++)
             {
-                TileData[] y_array = Chunk.Tiles[x];
+                TileData[] y_array = Chunk.TileData[x];
                 for (int y = 0; y < y_array.Length; y++)
                 {
                     RenderTile(Chunk, y_array[y]);
