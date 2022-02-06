@@ -26,6 +26,8 @@ namespace ColonySim.Systems
 
         #endregion
 
+        public static string DataPath;
+
         [SerializeField]
         private System[] Systems;
 
@@ -37,6 +39,7 @@ namespace ColonySim.Systems
         void Awake()
         {
             instance = this;
+            DataPath = Application.dataPath + "/Data/";
             if (Systems != null)
             {
                 this.Verbose("<color=blue>[Initialising Application Systems..]</color>");
