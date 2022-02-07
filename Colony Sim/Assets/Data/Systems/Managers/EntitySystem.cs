@@ -32,7 +32,7 @@ namespace ColonySim.Systems
         public void CreateWallEntity(ITileData Data)
         {
             ITileContainer Container = Data.Container;
-            WallEntity entity = new WallEntity();
+            ConcreteWall entity = new ConcreteWall();
             Container.AddEntity(entity);
         }
     }

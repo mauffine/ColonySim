@@ -21,6 +21,7 @@ namespace ColonySim.Systems
         private bool _stamp = false;
         #endregion
 
+        public Transform TileMapTransform;
         public Sprite ConcreteTileSprite;
 
         public const int CHUNK_SIZE = 5;
@@ -34,6 +35,7 @@ namespace ColonySim.Systems
             instance = this;
             World = new GameWorld(3, 3);
             Renderer = new WorldRenderer();
+            Renderer.TileMapTransform = this.TileMapTransform;
             Simulation = new WorldSimulation();
 
             foreach (var Chunk in World.GetChunks())
@@ -55,12 +57,6 @@ namespace ColonySim.Systems
             int X = Mathf.FloorToInt(worldPos.x);
             int Y = Mathf.FloorToInt(worldPos.y);
             return new WorldPoint(X, Y);
-        }
-
-        //World Space to Tile Space
-        public ITileData GetTileData(Vector3 worldPos)
-        {
-            return World.GetTileData(VectorToWorldPoint(worldPos));
         }
 
         public ITileData GetTileData(WorldPoint worldPos)

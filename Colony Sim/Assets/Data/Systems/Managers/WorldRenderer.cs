@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ColonySim.World;
+using ColonySim.Entities;
 
 namespace ColonySim.Systems
 {
@@ -11,6 +12,8 @@ namespace ColonySim.Systems
         private static WorldRenderer instance;
         public static WorldRenderer Get() => instance;
         #endregion
+
+        public Transform TileMapTransform;
 
         public const int CHUNK_SIZE = 5;
         private WorldSystem WorldSystem;
@@ -35,10 +38,25 @@ namespace ColonySim.Systems
         private void RenderTile(IWorldChunk Chunk, TileData tile)
         {
             GameObject _go = new GameObject();
-            (int, int) coords = Chunk.WorldCoordinate(tile);
-            _go.name = string.Format("Tile [{0}-{1}]", coords.Item1, coords.Item2);
+            _go.transform.SetParent(TileMapTransform);
+            WorldPoint Coordinates = tile.Coordinates;
+            ITileContainer _container = tile.Container;
+
+            string _name = "Unkown Tile";
+            Module_TileNameDetermination NameDetermination = _container.FindModule<Module_TileNameDetermination>();
+            if (NameDetermination != null)
+            {
+                _name = NameDetermination.Name;
+            }
+
+            EntityTrigger_DetermineName nameEvent = new EntityTrigger_DetermineName();
+            _container.Trigger(nameEvent);
+            
+            _go.name = $"{_name} [{Coordinates}]";
+
             SpriteRenderer renderer = _go.AddComponent<SpriteRenderer>();
-            _go.transform.position = new Vector3(coords.Item1, coords.Item2);
+            _go.transform.position = new Vector3(Coordinates.X, Coordinates.Y);
+
             renderer.sprite = WorldSystem.ConcreteTileSprite;
 
         }

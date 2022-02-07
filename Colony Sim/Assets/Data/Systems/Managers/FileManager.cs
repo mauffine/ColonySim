@@ -6,6 +6,7 @@ using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
 using System.IO;
 using System;
+using ColonySim.Entities;
 
 namespace ColonySim.Systems
 {

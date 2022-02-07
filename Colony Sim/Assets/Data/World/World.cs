@@ -65,8 +65,8 @@ namespace ColonySim.World
         { this.Chunk = (1, 1); this.X = X; this.Y = Y; }
 
         public static implicit operator WorldPoint(LocalPoint Coordinate) => 
-            new WorldPoint(Coordinate.X * Coordinate.Chunk.X * WorldSystem.CHUNK_SIZE,
-            Coordinate.Y * Coordinate.Chunk.Y * WorldSystem.CHUNK_SIZE);
+            new WorldPoint(Coordinate.X + Coordinate.Chunk.X * WorldSystem.CHUNK_SIZE,
+            Coordinate.Y + Coordinate.Chunk.Y * WorldSystem.CHUNK_SIZE);
 
         public static explicit operator LocalPoint(WorldPoint Coordinate) =>
             new LocalPoint(Coordinate.X % WorldSystem.CHUNK_SIZE,
@@ -82,8 +82,7 @@ namespace ColonySim.World
             return new LocalPoint((_X, _Y), X, Y);
         }
 
-
-        public override String ToString()
+        public override string ToString()
         {
             return string.Format("({0}-{1})({2}-{3})", Chunk.X, Chunk.Y, X, Y);
         }

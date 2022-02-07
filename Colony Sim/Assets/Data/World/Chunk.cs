@@ -8,7 +8,6 @@ namespace ColonySim.World
         (int X, int Y) Coordinates { get; }
         TileData[][] TileData { get; }
 
-        (int X, int Y) WorldCoordinate(ITileData Tile);
         TileData GetTileData(LocalPoint Coordinates);
     }
     /// <summary>
@@ -35,17 +34,10 @@ namespace ColonySim.World
                 TileData[x] = new TileData[CHUNK_SIZE];
                 for (int y = 0; y < CHUNK_SIZE; y++)
                 {
-                    ITileData Data = TileData[x][y] = new TileData(x, y);
-                    (int, int) Coords = WorldCoordinate(Data);
+                    ITileData Data = TileData[x][y] = new TileData(Coordinates, x, y);
+                    Data.Container.AddEntity(new ConcreteFloor());
                 }
             }
-        }
-
-        public (int X, int Y) WorldCoordinate(ITileData Tile)
-        {
-            int X = Coordinates.X * TileData.Length + Tile.Coordinates.X;
-            int Y = Coordinates.Y * TileData.Length + Tile.Coordinates.Y;
-            return (X, Y);
         }
 
         public void WorldTick(float delta)
