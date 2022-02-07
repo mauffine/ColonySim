@@ -3,22 +3,21 @@ using System.Collections.Generic;
 
 namespace ColonySim.World
 {
-    public interface IWorldChunk
+    public interface IWorldChunk : IWorldTick
     {
         (int X, int Y) Coordinates { get; }
-        TileData[][] Tiles { get; }
+        TileData[][] TileData { get; }
 
-        (int X, int Y) WorldCoordinate(ITileData Tile);
+        TileData GetTileData(LocalPoint Coordinates);
     }
     /// <summary>
     /// Collection of Tiles
     /// </summary>
     public class WorldChunk : IWorldChunk
     {
-        public TileData[][] Tiles { get; private set; }
+        public TileData[][] TileData { get; private set; }
 
         public (int X, int Y) Coordinates { get { return coordinates; } }
-
         private readonly (int X, int Y) coordinates;
 
         public WorldChunk((int X, int Y) Coordinates, int CHUNK_SIZE)
@@ -29,26 +28,30 @@ namespace ColonySim.World
 
         private void GenerateChunk(int CHUNK_SIZE)
         {
-            Tiles = new TileData[CHUNK_SIZE][];
+            TileData = new TileData[CHUNK_SIZE][];
             for (int x = 0; x < CHUNK_SIZE; x++)
             {
-                Tiles[x] = new TileData[CHUNK_SIZE];
+                TileData[x] = new TileData[CHUNK_SIZE];
                 for (int y = 0; y < CHUNK_SIZE; y++)
                 {
-                    ITileData Data = Tiles[x][y] = new TileData(x, y);
-                    (int, int) Coords = WorldCoordinate(Data);
-                    UnityEngine.Debug.LogFormat("Tile Created [{0}-{1}]", Coords.Item1, Coords.Item2);
+                    ITileData Data = TileData[x][y] = new TileData(Coordinates, x, y);
+                    Data.Container.AddEntity(new ConcreteFloor());
                 }
             }
         }
 
-        public (int X, int Y) WorldCoordinate(ITileData Tile)
+        public void WorldTick(float delta)
         {
-            int X = Coordinates.X * Tiles.Length + Tile.Coordinates.X;
-            int Y = Coordinates.Y * Tiles.Length + Tile.Coordinates.Y;
-            return (X, Y);
+            
         }
 
-
+        public TileData GetTileData(LocalPoint Point)
+        {
+            if (Point.X < TileData.Length && Point.Y < TileData.Length)
+            {
+                return TileData[Point.X][Point.Y];
+            }
+            return null;          
+        }
     }
 }
