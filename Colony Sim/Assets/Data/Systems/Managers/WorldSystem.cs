@@ -27,8 +27,8 @@ namespace ColonySim.Systems
         public const int CHUNK_SIZE = 5;
         public GameWorld World;
 
-        private WorldRenderer Renderer;
-        private WorldSimulation Simulation;
+        public static WorldRenderer Renderer;
+        public static WorldSimulation Simulation;
         public override void Init()
         {
             this.Verbose("<color=blue>[World System Init]</color>");
@@ -62,6 +62,11 @@ namespace ColonySim.Systems
         public ITileData GetTileData(WorldPoint worldPos)
         {
             return World.GetTileData(worldPos);
+        }
+
+        public IWorldChunk GetChunk(WorldPoint worldPos)
+        {
+            return World.GetChunk(worldPos);
         }
     }
 }

@@ -27,12 +27,6 @@ namespace ColonySim.Entities
         { data = ContainerData; }
     }
 
-    public class EntityTrigger_DetermineName : IEntityTrigger
-    {
-        public ITriggerCondition[] Conditions { get; }
-        public string ReturnName;
-    }
-
     public interface ITriggerCondition
     {
     }

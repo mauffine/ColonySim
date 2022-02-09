@@ -16,18 +16,38 @@ namespace ColonySim.Entities
         ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new();
     }
 
+    public interface IEntityTaskSystem
+    {
+        void AssignTask(EntityTask Task);
+    }
+
+    public struct EntityID
+    {
+        public int ID;
+
+        public EntityID(int ID)
+        {
+            this.ID = ID;
+        }
+
+        public static implicit operator int(EntityID EntityID) { return EntityID.ID; }
+        public static explicit operator EntityID(int ID) { return new EntityID(ID); }
+    }
+
     /// <summary>
     /// Game Object
     /// </summary>
-    public interface IEntity : IEntityTriggerSystem, IEntityModuleSearch
+    public interface IEntity : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
         string Name { get; }
+        EntityID ID { get; set; }
         IEntityTrait[] Traits { get; }
     }
 
     public abstract class EntityBase : IEntity
     {
         public abstract string Name { get; }
+        public EntityID ID { get; set; }
         public abstract IEntityTrait[] Traits { get; }
 
         public void Trigger(IEntityTrigger Event)
@@ -48,6 +68,17 @@ namespace ColonySim.Entities
                 }
             }
             return default;
+        }
+
+        public void AssignTask(EntityTask Task)
+        {
+            if (Traits != null)
+            {
+                foreach (var trait in Traits)
+                {
+                    trait.AssignTask(Task);
+                }
+            }
         }
     }
 }

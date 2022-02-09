@@ -70,6 +70,7 @@ namespace ColonySim.Systems
             if (Data != null)
             {
                 EntitySystem.Get.CreateWallEntity(Data);
+                WorldRenderer.Get.RenderTile(CurrentPosition);
                 this.Verbose("Placed Entity");
             }
             else

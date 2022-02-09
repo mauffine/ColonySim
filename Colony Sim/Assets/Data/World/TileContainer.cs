@@ -4,10 +4,13 @@ using ColonySim.Entities;
 
 namespace ColonySim.World
 {
-    public interface ITileContainer : IEntityTriggerSystem, IEntityModuleSearch
+    public interface ITileContainer : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
+        IEnumerable<IEntity> AllEntities();
         void AddEntity(IEntity Entity);
         void RemoveEntity(IEntity Entity);
+        EntityID GetEntityID(IEntity Entity);
+        IEntity GetEntity(EntityID EntityID);
     }
     /// <summary>
     /// Game Tile
@@ -16,10 +19,19 @@ namespace ColonySim.World
     {
         List<IEntity> Entities;
 
+        public IEnumerable<IEntity> AllEntities()
+        {
+            foreach (var entity in Entities)
+            {
+                yield return entity;
+            }
+        }
+
         public void AddEntity(IEntity Entity)
         {
             if (Entities == null) { Entities = new List<IEntity>() { Entity }; }
             else { Entities.Add(Entity); }
+            Entity.ID = new EntityID(Entities.Count);
             EntityTrigger_OnTileEnter _event = new EntityTrigger_OnTileEnter(this);
             Entity.Trigger(_event);
         }
@@ -48,6 +60,38 @@ namespace ColonySim.World
                 }
             }
             return default;
+        }
+
+        public EntityID GetEntityID(IEntity Entity)
+        {
+            foreach (var entity in AllEntities())
+            {
+                if (entity == Entity)
+                {
+                    return entity.ID;
+                }
+            }
+            return default;
+        }
+
+        public IEntity GetEntity(EntityID ID)
+        {
+            foreach (var entity in AllEntities())
+            {
+                if (entity.ID == ID)
+                {
+                    return entity;
+                }
+            }
+            return null;
+        }
+
+        public void AssignTask(EntityTask Task)
+        {
+            foreach (var entity in AllEntities())
+            {
+                entity.AssignTask(Task);
+            }
         }
     }
 }

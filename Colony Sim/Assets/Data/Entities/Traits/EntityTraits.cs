@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ColonySim.Entities
 {
-    public interface IEntityTrait : IEntityTriggerSystem, IEntityModuleSearch
+    public interface IEntityTrait : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
         IEntityModule[] TraitModules { get; }
     }
@@ -16,7 +16,10 @@ namespace ColonySim.Entities
         {
             foreach (var module in TraitModules)
             {
-                module.Trigger(Event);
+                if (module is IEntityTriggerSystem _trigger)
+                {
+                    _trigger.Trigger(Event);
+                }               
             }
         }
 
@@ -31,18 +34,40 @@ namespace ColonySim.Entities
             }
             return default;
         }
+
+        public virtual void AssignTask(EntityTask Task)
+        {
+            if (this is IEntityTaskWorker Worker)
+            {
+                Task.Execute(Worker);
+            }
+            foreach (var module in TraitModules)
+            {
+                if (module is IEntityTaskWorker ModuleWorker)
+                {
+                    Task.Execute(ModuleWorker);
+                }
+            }
+        }
     }
 
-    public class Trait_TileNameDetermination : EntityBaseTrait
+    public class Trait_IsTile : EntityBaseTrait, ITaskWorker_GetTileName
     {
         public override IEntityModule[] TraitModules { get; }
+        protected string Name;
 
-        public Trait_TileNameDetermination(string Name)
+        public Trait_IsTile(string Name, string TextureName)
         {
+            this.Name = Name;   
             TraitModules = new IEntityModule[]
             {
-                new Module_TileNameDetermination().SetName(Name)
+                new Module_EntitySprite().SetTexture(TextureName)
             };
+        }
+
+        public string GetTileName()
+        {
+            return Name;
         }
     }
 

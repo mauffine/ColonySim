@@ -26,14 +26,14 @@ namespace ColonySim.World
     public class ConcreteWall : EntityBase
     {
         public override string Name => "Concrete Wall";
-        public string TextureID => "ConcreteWall";
+        public string TextureID => "entity.concretewall";
         public override IEntityTrait[] Traits { get; }
 
         public ConcreteWall()
         {
             Traits = new IEntityTrait[]
             {
-                new Trait_TileNameDetermination(this.Name),
+                new Trait_IsTile(this.Name, TextureID),
                 new Trait_MessageOnTileEntry()
             };
         }
@@ -42,7 +42,7 @@ namespace ColonySim.World
     public class ConcreteFloor : EntityBase
     {
         public override string Name => "Concrete Floor";
-        public string TextureID => "ConcreteFloor";
+        public string TextureID => "entity.concretefloor";
 
         public override IEntityTrait[] Traits { get; }
 
@@ -50,7 +50,7 @@ namespace ColonySim.World
         {
             Traits = new IEntityTrait[]
             {
-                new Trait_TileNameDetermination(this.Name)
+                new Trait_IsTile(this.Name, TextureID)
             };
         }
     }

@@ -94,14 +94,6 @@ namespace ColonySim.World
     /// </summary>
     public class GameWorld
     {
-        #region Static
-        private static GameWorld instance;
-        public static GameWorld Get()
-        {
-            return instance;
-        }
-        #endregion
-
         private IWorldChunk[][] WorldChunks;
         public IEnumerable<IWorldChunk> GetChunks()
         {
@@ -134,6 +126,12 @@ namespace ColonySim.World
             worldBounds = (X, Y);
         }
 
+        public IWorldChunk this[WorldPoint Coordinate]
+        { get { return GetChunk(Coordinate); } }
+
+        public ITileData this[LocalPoint Coordinate]
+        { get { return GetTileData(Coordinate); } }
+
         private IWorldChunk GenerateNewChunk(int X, int Y)
         {
             IWorldChunk Chunk = new WorldChunk((X,Y), WorldSystem.CHUNK_SIZE);
@@ -163,10 +161,6 @@ namespace ColonySim.World
             IWorldChunk _Chunk = GetChunk(Coordinates);
             if (_Chunk != null){
                 return _Chunk.GetTileData(Coordinates);
-            }
-            else
-            {
-                Debug.Log("No Chunk Located");
             }
             return null;            
         }
