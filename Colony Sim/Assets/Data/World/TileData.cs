@@ -63,7 +63,7 @@ namespace ColonySim.World.Tiles {
                 (
                    this,
                    "entity.wall-straight",
-                   TextureAdjacentSelectionRule.TransformRule.Fixed,
+                   TextureAdjacentSelectionRule.TransformRule.Rotated,
                    new int[]
                    {
                         -1, 1, -1,
