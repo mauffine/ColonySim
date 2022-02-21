@@ -555,39 +555,15 @@ namespace ColonySim.Rendering
                     this.Texture = ResourceManager.LoadEntityTexture(TextureSettings.TextureID);
                     this.Material.mainTexture = Texture;
 
-                    if (TextureSettings.Angle != 0 && TextureSettings.Angle != 360)
-                    {
-                        Debug.Log($"Rotating tile {Coordinates} to {TextureSettings.Angle}");
-                        Vector3 target = Vector3.zero;
-                        switch (Mathf.Abs(TextureSettings.Angle))
-                        {
-                            case 90:
-                                target = Vector3.right;
-                                break;
-                            case 180:
-                                target = Vector3.right + Vector3.up;
-                                break;
-                            case 270:
-                                target = Vector3.up;
-                                break;
-                            case -90:
-                                target = Vector3.right;
-                                break;
-                            case -180:
-                                target = Vector3.right + Vector3.up;
-                                break;
-                            case -270:
-                                target = Vector3.right;
-                                break;
-                        }
-                        Object.transform.eulerAngles = Vector3.forward * TextureSettings.Angle;
-                        Object.transform.position = Object.transform.position + target;
-
-                    }
+                    
                     
                     if (meshData == null)
                     {
                         meshData = new MeshData(1, MeshFlags.UV);
+                    }
+                    else
+                    {
+                        meshData.Clear();
                     }
                     int vIndex = meshData.vertices.Count;
 
@@ -596,11 +572,40 @@ namespace ColonySim.Rendering
                     meshData.vertices.Add(new Vector3(1, 1));
                     meshData.vertices.Add(new Vector3(1, 0));
 
-                    meshData.UVs.Add(new Vector2(0, 0));
-                    meshData.UVs.Add(new Vector2(0, 1));
-                    meshData.UVs.Add(new Vector2(1, 1));
-                    meshData.UVs.Add(new Vector2(1, 0));
-
+                    if (TextureSettings.Angle != 0 && TextureSettings.Angle != 360)
+                    {
+                        Debug.Log($"Rotating tile {Coordinates} to {TextureSettings.Angle}");
+                        Vector3 target = Vector3.zero;
+                        switch (TextureSettings.Angle)
+                        {
+                            case 90:
+                                meshData.UVs.Add(new Vector2(0, 1));
+                                meshData.UVs.Add(new Vector2(1, 1));
+                                meshData.UVs.Add(new Vector2(1, 0));
+                                meshData.UVs.Add(new Vector2(0, 0));
+                                break;
+                            case 180:
+                                meshData.UVs.Add(new Vector2(1, 1));
+                                meshData.UVs.Add(new Vector2(1, 0));
+                                meshData.UVs.Add(new Vector2(0, 0));
+                                meshData.UVs.Add(new Vector2(0, 1));
+                                break;
+                            case 270:
+                                meshData.UVs.Add(new Vector2(1, 0));
+                                meshData.UVs.Add(new Vector2(0, 0));
+                                meshData.UVs.Add(new Vector2(0, 1));
+                                meshData.UVs.Add(new Vector2(1, 1));
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        meshData.UVs.Add(new Vector2(0, 0));
+                        meshData.UVs.Add(new Vector2(0, 1));
+                        meshData.UVs.Add(new Vector2(1, 1));
+                        meshData.UVs.Add(new Vector2(1, 0));
+                    }
+                    
                     meshData.AddTriangle(vIndex, 0, 1, 2);
                     meshData.AddTriangle(vIndex, 0, 2, 3);
 
