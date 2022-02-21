@@ -20,14 +20,4 @@ namespace ColonySim.Entities
             }
         }
     }
-
-    public class Module_EntitySprite : IEntityModule
-    {
-        public string TextureName;
-        public Module_EntitySprite SetTexture(string Texture)
-        {
-            this.TextureName = Texture;
-            return this;
-        }
-    }
 }

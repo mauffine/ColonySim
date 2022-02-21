@@ -62,13 +62,48 @@ namespace ColonySim.Entities
                 CompleteTask(TileNameWorker);
             }
         }
+    }
 
-        public Task_GetTileName SetName(string Name)
+    public interface ITaskWorker_GetEntitySprite : IEntityTaskWorker
+    {
+        string GetTextureName { get; }
+    }
+
+    public class Task_GetEntitySprite : EntityTask
+    {
+        public string TextureName;
+
+        public Task_GetEntitySprite(IEntityTaskManager Manager) : base(Manager){ }
+
+        public override void Execute(IEntityTaskWorker Worker)
         {
-            this.Name = Name;
-            return this;
+            if (Worker is ITaskWorker_GetEntitySprite EntitySpriteWorker)
+            {
+                TextureName = EntitySpriteWorker.GetTextureName;
+                CompleteTask(EntitySpriteWorker);
+            }
         }
     }
 
+    public interface ITaskWorker_GetEntityMaterial : IEntityTaskWorker
+    {
+        string GetMaterialName { get; }
+    }
 
+    public class Task_GetEntityMaterial : EntityTask
+    {
+        public string TextureName;
+
+        public Task_GetEntityMaterial(IEntityTaskManager Manager) : base(Manager) { }
+
+        public override void Execute(IEntityTaskWorker Worker)
+        {
+            if (Worker is ITaskWorker_GetEntityMaterial EntitySpriteWorker)
+            {
+                TextureName = EntitySpriteWorker.GetMaterialName;
+                CompleteTask(EntitySpriteWorker);
+            }
+        }
+
+    }
 }

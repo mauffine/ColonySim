@@ -4,6 +4,7 @@ using UnityEngine;
 using ColonySim.World;
 using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
+using ColonySim.Rendering;
 
 namespace ColonySim.Systems
 {
@@ -19,7 +20,13 @@ namespace ColonySim.Systems
         public bool Stamp { get => _stamp; set => _stamp = value; }
         [SerializeField]
         private bool _stamp = false;
+
+        public LoggingLevel _rendererLogging = LoggingLevel.Warning;
+        public LoggingLevel _worldLogging = LoggingLevel.Warning;
+
         #endregion
+        public static WorldRenderer Renderer;
+        public static WorldSimulation Simulation;
 
         public Transform TileMapTransform;
         public Sprite ConcreteTileSprite;
@@ -27,20 +34,24 @@ namespace ColonySim.Systems
         public const int CHUNK_SIZE = 5;
         public GameWorld World;
 
-        public static WorldRenderer Renderer;
-        public static WorldSimulation Simulation;
+        [SerializeField]
+        private bool DrawGizmoTIles;
+        [SerializeField]
+        private bool DrawGizmoChunks;
+
+
         public override void Init()
         {
             this.Verbose("<color=blue>[World System Init]</color>");
             instance = this;
-            World = new GameWorld(3, 3);
+            World = new GameWorld(1, 1);
             Renderer = new WorldRenderer();
             Renderer.TileMapTransform = this.TileMapTransform;
             Simulation = new WorldSimulation();
 
             foreach (var Chunk in World.GetChunks())
             {
-                Renderer.RenderChunk(Chunk);
+                Renderer.RenderNewChunk(Chunk);
                 Simulation.Simulate(Chunk);
             }
             base.Init();
@@ -50,6 +61,7 @@ namespace ColonySim.Systems
         {
             base.Tick();
             Simulation.Tick();
+            Renderer.Tick();
         }
 
         public WorldPoint VectorToWorldPoint(Vector3 worldPos)
@@ -61,12 +73,43 @@ namespace ColonySim.Systems
 
         public ITileData GetTileData(WorldPoint worldPos)
         {
-            return World.GetTileData(worldPos);
+            ITileData Data = World.GetTileData(worldPos);
+            return Data;
         }
 
         public IWorldChunk GetChunk(WorldPoint worldPos)
         {
             return World.GetChunk(worldPos);
+        }
+
+        public void OnDrawGizmos()
+        {
+            if (Initialized)
+            {
+                if (DrawGizmoTIles)
+                {
+                    foreach (var tile in World)
+                    {
+                        WorldPoint Coordinates = tile.Coordinates;
+                        Gizmos.DrawWireCube(
+                            new Vector3(Coordinates.X+.5f, Coordinates.Y+.5f),
+                            Vector3.one);
+                    }
+                }
+                if (DrawGizmoChunks)
+                {
+                    foreach (var chunk in World.GetChunks())
+                    {
+                        Gizmos.color = new Color(0, 0, 1, .1f);
+                        Gizmos.DrawCube(
+                            new Vector3(chunk.ChunkRect.max.x - (chunk.ChunkRect.width) / 2f,
+                                        chunk.ChunkRect.max.y - (chunk.ChunkRect.height) / 2f,
+                                        1f),
+                            new Vector3(chunk.ChunkRect.width - .5f, chunk.ChunkRect.height - .5f, 1f)
+                            );
+                    }
+                }
+            }        
         }
     }
 }

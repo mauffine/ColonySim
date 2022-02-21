@@ -1,4 +1,6 @@
+using ColonySim.Systems;
 using ColonySim.World;
+using ColonySim.World.Tiles;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,6 +34,11 @@ namespace ColonySim.Entities
 
         public static implicit operator int(EntityID EntityID) { return EntityID.ID; }
         public static explicit operator EntityID(int ID) { return new EntityID(ID); }
+
+        public override string ToString()
+        {
+            return ID.ToString();
+        }
     }
 
     /// <summary>
@@ -39,16 +46,18 @@ namespace ColonySim.Entities
     /// </summary>
     public interface IEntity : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
-        string Name { get; }
+        string DefName { get; }
         EntityID ID { get; set; }
         IEntityTrait[] Traits { get; }
+        IEntityGraphics EntityGraphicsDef { get; }
     }
 
     public abstract class EntityBase : IEntity
     {
-        public abstract string Name { get; }
+        public abstract string DefName { get; }
         public EntityID ID { get; set; }
         public abstract IEntityTrait[] Traits { get; }
+        public IEntityGraphics EntityGraphicsDef { get; protected set; }
 
         public void Trigger(IEntityTrigger Event)
         {

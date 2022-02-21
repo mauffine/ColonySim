@@ -6,32 +6,40 @@ namespace ColonySim.Entities
 {
     public interface IEntityTrait : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
+        string TRAIT_DEF_NAME { get; }
         IEntityModule[] TraitModules { get; }
     }
 
     public abstract class EntityBaseTrait : IEntityTrait
     {
+        public abstract string TRAIT_DEF_NAME { get; }
         public abstract IEntityModule[] TraitModules { get; }
         public void Trigger(IEntityTrigger Event)
         {
-            foreach (var module in TraitModules)
+            if (TraitModules != null)
             {
-                if (module is IEntityTriggerSystem _trigger)
+                foreach (var module in TraitModules)
                 {
-                    _trigger.Trigger(Event);
-                }               
-            }
+                    if (module is IEntityTriggerSystem _trigger)
+                    {
+                        _trigger.Trigger(Event);
+                    }
+                }
+            }           
         }
 
         public ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()
         {
-            foreach (var module in TraitModules)
+            if (TraitModules != null)
             {
-                if (module is ModuleType _match)
+                foreach (var module in TraitModules)
                 {
-                    return _match;
+                    if (module is ModuleType _match)
+                    {
+                        return _match;
+                    }
                 }
-            }
+            }            
             return default;
         }
 
@@ -41,28 +49,29 @@ namespace ColonySim.Entities
             {
                 Task.Execute(Worker);
             }
-            foreach (var module in TraitModules)
+            if (TraitModules != null)
             {
-                if (module is IEntityTaskWorker ModuleWorker)
+                foreach (var module in TraitModules)
                 {
-                    Task.Execute(ModuleWorker);
+                    if (module is IEntityTaskWorker ModuleWorker)
+                    {
+                        Task.Execute(ModuleWorker);
+                    }
                 }
-            }
+            }           
         }
     }
 
     public class Trait_IsTile : EntityBaseTrait, ITaskWorker_GetTileName
     {
+        public override string TRAIT_DEF_NAME => "TILE";
         public override IEntityModule[] TraitModules { get; }
+
         protected string Name;
 
-        public Trait_IsTile(string Name, string TextureName)
+        public Trait_IsTile(string Name)
         {
-            this.Name = Name;   
-            TraitModules = new IEntityModule[]
-            {
-                new Module_EntitySprite().SetTexture(TextureName)
-            };
+            this.Name = Name;
         }
 
         public string GetTileName()
@@ -73,6 +82,7 @@ namespace ColonySim.Entities
 
     public class Trait_MessageOnTileEntry : EntityBaseTrait
     {
+        public override string TRAIT_DEF_NAME => "MESSAGE";
         public override IEntityModule[] TraitModules { get; }
 
         public Trait_MessageOnTileEntry()

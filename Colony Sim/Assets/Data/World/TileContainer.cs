@@ -6,11 +6,14 @@ namespace ColonySim.World
 {
     public interface ITileContainer : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
-        IEnumerable<IEntity> AllEntities();
+        IEnumerable<IEntity> TileEntities();
         void AddEntity(IEntity Entity);
         void RemoveEntity(IEntity Entity);
         EntityID GetEntityID(IEntity Entity);
         IEntity GetEntity(EntityID EntityID);
+        IEntity GetEntity(string EntityDefName);
+
+        bool HasEntity(EntityID EntityID);
     }
     /// <summary>
     /// Game Tile
@@ -18,8 +21,9 @@ namespace ColonySim.World
     public class TileContainer : ITileContainer
     {
         List<IEntity> Entities;
+        private int _entityIDCounter;
 
-        public IEnumerable<IEntity> AllEntities()
+        public IEnumerable<IEntity> TileEntities()
         {
             foreach (var entity in Entities)
             {
@@ -27,11 +31,16 @@ namespace ColonySim.World
             }
         }
 
+        public override int GetHashCode()
+        {
+            return Entities.GetHashCode() ^ Entities.Count;
+        }
+
         public void AddEntity(IEntity Entity)
         {
             if (Entities == null) { Entities = new List<IEntity>() { Entity }; }
             else { Entities.Add(Entity); }
-            Entity.ID = new EntityID(Entities.Count);
+            Entity.ID = new EntityID(_entityIDCounter++);
             EntityTrigger_OnTileEnter _event = new EntityTrigger_OnTileEnter(this);
             Entity.Trigger(_event);
         }
@@ -64,7 +73,7 @@ namespace ColonySim.World
 
         public EntityID GetEntityID(IEntity Entity)
         {
-            foreach (var entity in AllEntities())
+            foreach (var entity in TileEntities())
             {
                 if (entity == Entity)
                 {
@@ -76,7 +85,7 @@ namespace ColonySim.World
 
         public IEntity GetEntity(EntityID ID)
         {
-            foreach (var entity in AllEntities())
+            foreach (var entity in TileEntities())
             {
                 if (entity.ID == ID)
                 {
@@ -86,9 +95,23 @@ namespace ColonySim.World
             return null;
         }
 
+        public IEntity GetEntity(string EntityDefName)
+        {
+            foreach (var entity in Entities)
+            {
+                if (entity.DefName == EntityDefName)
+                {
+                    return entity;
+                }
+            }
+            return null;
+        }
+
+        public bool HasEntity(EntityID ID) => GetEntity(ID) != null;
+
         public void AssignTask(EntityTask Task)
         {
-            foreach (var entity in AllEntities())
+            foreach (var entity in TileEntities())
             {
                 entity.AssignTask(Task);
             }

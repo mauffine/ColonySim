@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ColonySim.World;
+using ColonySim.World.Tiles;
 using ColonySim.Entities;
 using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
+using ColonySim.Rendering;
 
 namespace ColonySim.Systems
 {
@@ -34,6 +36,7 @@ namespace ColonySim.Systems
             ITileContainer Container = Data.Container;
             ConcreteWall entity = new ConcreteWall();
             Container.AddEntity(entity);
+            WorldRenderer.SetTileDirty(Data);
         }
     }
 }

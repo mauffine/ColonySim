@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ColonySim.Systems;
 using UnityEngine;
+using ColonySim.Helpers;
 
 namespace ColonySim.World
 {
@@ -25,8 +26,8 @@ namespace ColonySim.World
         public WorldPoint(Vector2Int Coordinates)
             : this(Coordinates.x, Coordinates.y) { }
         public WorldPoint(LocalPoint Coordinates)
-            : this(Coordinates.X*Coordinates.Chunk.X*WorldSystem.CHUNK_SIZE, 
-                  Coordinates.X*Coordinates.Chunk.Y*WorldSystem.CHUNK_SIZE) { }
+            : this(Coordinates.X*Coordinates.ChunkCoordinate.X*WorldSystem.CHUNK_SIZE, 
+                  Coordinates.X*Coordinates.ChunkCoordinate.Y*WorldSystem.CHUNK_SIZE) { }
 
         public WorldPoint(int X, int Y)
             { this.X = X; this.Y = Y; }
@@ -37,7 +38,7 @@ namespace ColonySim.World
 
         public override String ToString()
         {
-            return string.Format("({0}-{1})", X, Y);
+            return string.Format("({0},{1})", X, Y);
         }
     }
 
@@ -48,7 +49,8 @@ namespace ColonySim.World
     {
         public int X { get; }
         public int Y { get; }
-        public (int X, int Y) Chunk { get; }
+        public ChunkLocation ChunkCoordinate { get; }
+
         public LocalPoint((int X, int Y) Chunk, (int X, int Y) Coordinates)
             : this(Chunk,  Coordinates.X, Coordinates.Y) { }
         public LocalPoint(Vector2Int Coordinates, (int X, int Y) Chunk)
@@ -57,26 +59,35 @@ namespace ColonySim.World
             : this(Chunk, Coordinates.X % WorldSystem.CHUNK_SIZE, Coordinates.Y % WorldSystem.CHUNK_SIZE) { }
 
         public LocalPoint((int X, int Y) Chunk, int X, int Y)
-            { this.Chunk = Chunk; this.X = X; this.Y = Y; }
+            { this.ChunkCoordinate = Chunk; this.X = X; this.Y = Y; }
         public LocalPoint((int X, int Y) Chunk, LocalPoint Coordinate)
-            { this.Chunk = Chunk; this.X = Coordinate.X; this.Y = Coordinate.Y; }
-        // LocalPoint, No Chunk Data
+            { this.ChunkCoordinate = Chunk; this.X = Coordinate.X; this.Y = Coordinate.Y; }
         public LocalPoint(int X, int Y)
-        { this.Chunk = (1, 1); this.X = X; this.Y = Y; }
+        { this.ChunkCoordinate = default; this.X = X; this.Y = Y; }
 
         public static implicit operator WorldPoint(LocalPoint Coordinate) => 
-            new WorldPoint(Coordinate.X + Coordinate.Chunk.X * WorldSystem.CHUNK_SIZE,
-            Coordinate.Y + Coordinate.Chunk.Y * WorldSystem.CHUNK_SIZE);
+            new WorldPoint(Coordinate.X + Coordinate.ChunkCoordinate.X * WorldSystem.CHUNK_SIZE,
+            Coordinate.Y + Coordinate.ChunkCoordinate.Y * WorldSystem.CHUNK_SIZE);
 
         public static explicit operator LocalPoint(WorldPoint Coordinate) =>
             new LocalPoint(Coordinate.X % WorldSystem.CHUNK_SIZE,
             Coordinate.Y % WorldSystem.CHUNK_SIZE);
 
+        /// <summary>
+        /// Return a Local Point copied relative to Chunk.
+        /// </summary>
+        /// <param name="Chunk"></param>
+        /// <returns></returns>
         public LocalPoint RelativeTo((int X, int Y) Chunk)
         {
             return new LocalPoint(Chunk, X, Y);
         }
 
+        /// <summary>
+        /// Return a Local Point copied relative to Chunk.
+        /// </summary>
+        /// <param name="Chunk"></param>
+        /// <returns></returns>
         public LocalPoint RelativeTo(int _X, int _Y)
         {
             return new LocalPoint((_X, _Y), X, Y);
@@ -84,7 +95,39 @@ namespace ColonySim.World
 
         public override string ToString()
         {
-            return string.Format("({0}-{1})({2}-{3})", Chunk.X, Chunk.Y, X, Y);
+            return string.Format("({0},{1})", X, Y);
+        }
+    }
+
+    /// <summary>
+    /// A Chunk's relative position to another.
+    /// </summary>
+    public struct ChunkLocation : ICoordinate
+    {
+        public int X { get; }
+        public int Y { get; }
+
+        public ChunkLocation(int X, int Y)
+        { this.X = X; this.Y = Y; }
+
+        public ChunkLocation((int X, int Y) Coordinates)
+        { this.X = Coordinates.X; this.Y = Coordinates.Y; }
+
+        public static implicit operator (int,int)(ChunkLocation Chunk) =>
+            (Chunk.X, Chunk.Y);
+
+        public static implicit operator ChunkLocation((int X, int Y) Coordinates) =>
+            new ChunkLocation(Coordinates);
+
+        public static implicit operator WorldPoint(ChunkLocation Chunk) =>
+            new WorldPoint(Chunk.X * WorldSystem.CHUNK_SIZE, Chunk.Y * WorldSystem.CHUNK_SIZE);
+
+        public static implicit operator ChunkLocation(WorldPoint v) =>
+            new ChunkLocation(v.X / WorldSystem.CHUNK_SIZE, v.Y / WorldSystem.CHUNK_SIZE);
+
+        public override string ToString()
+        {
+            return $"({X},{Y})";
         }
     }
 
@@ -94,47 +137,46 @@ namespace ColonySim.World
     /// </summary>
     public class GameWorld
     {
-        private IWorldChunk[][] WorldChunks;
+        private IWorldChunk[,] WorldChunks;
         public IEnumerable<IWorldChunk> GetChunks()
         {
-            for (int x = 0; x < WorldChunks.Length; x++)
+            for (int x = 0; x < WorldChunks.GetLength(0); x++)
             {
-                for (int y = 0; y < WorldChunks.Length; y++)
+                for (int y = 0; y < WorldChunks.GetLength(1); y++)
                 {
-                    yield return WorldChunks[x][y];
+                    yield return WorldChunks[x, y];
                 }
             }
         }
 
-        private readonly WorldSystem SYSTEM;
+        public RectI worldRect;
 
-        public (int X, int Y) WorldBounds { get { return worldBounds; } }
-        private readonly (int X, int Y) worldBounds;
-
-        public GameWorld(int X, int Y)
+        public GameWorld(int width, int height)
         {
-            SYSTEM = WorldSystem.Get;
-            WorldChunks = new IWorldChunk[X][];
-            for (int _x = 0; _x < X; _x++)
-            {
-                WorldChunks[_x] = new IWorldChunk[Y];
-                for (int _y = 0; _y < Y; _y++)
-                {
-                    WorldChunks[_x][_y] = GenerateNewChunk(_x, _y);
-                }
-            }
-            worldBounds = (X, Y);
+            WorldChunks = new IWorldChunk[width, height];
+            worldRect = new RectI(new Vector2Int(0, 0), width, height);
+            Debug.Log($"Generated world::Size{WorldChunks.Length} Rect::{worldRect}");
+
+            GenerateWorldChunks();           
         }
 
-        public IWorldChunk this[WorldPoint Coordinate]
-        { get { return GetChunk(Coordinate); } }
-
-        public ITileData this[LocalPoint Coordinate]
-        { get { return GetTileData(Coordinate); } }
+        private void GenerateWorldChunks()
+        {
+            for (int x = 0; x < WorldChunks.GetLength(0); x++)
+            {
+                for (int y = 0; y < WorldChunks.GetLength(1); y++)
+                {
+                    Debug.Log($"Creating Chunk At::{x}-{y}");
+                    WorldChunks[x, y] = GenerateNewChunk(x, y);
+                }
+            }
+        }
 
         private IWorldChunk GenerateNewChunk(int X, int Y)
         {
-            IWorldChunk Chunk = new WorldChunk((X,Y), WorldSystem.CHUNK_SIZE);
+            RectI rect = new RectI(new Vector2Int(X* WorldSystem.CHUNK_SIZE, Y* WorldSystem.CHUNK_SIZE), WorldSystem.CHUNK_SIZE, WorldSystem.CHUNK_SIZE);
+            //rect.Clip(worldRect);
+            IWorldChunk Chunk = new WorldChunk((X,Y), rect, WorldSystem.CHUNK_SIZE);
             return Chunk;
         }
 
@@ -142,12 +184,9 @@ namespace ColonySim.World
         {
             int X = Mathf.FloorToInt(Coordinates.X / WorldSystem.CHUNK_SIZE);
             int Y = Mathf.FloorToInt(Coordinates.Y / WorldSystem.CHUNK_SIZE);
-            if (X < WorldChunks.Length && X >= 0)
+            if (X < WorldChunks.GetLength(0) && Y < WorldChunks.GetLength(1))
             {
-                if (Y < WorldChunks[X].Length && Y >= 0)
-                {
-                    return WorldChunks[X][Y];
-                }
+                return WorldChunks[X, Y];
             }
             return null;            
         }
@@ -164,5 +203,22 @@ namespace ColonySim.World
             }
             return null;            
         }
+
+        public IEnumerator<ITileData> GetEnumerator()
+        {
+            foreach (var WorldChunk in GetChunks())
+            {
+                foreach (var tile in WorldChunk.TileData)
+                {
+                    yield return tile;
+                }
+            }
+        }
+
+        public IWorldChunk this[WorldPoint Coordinate]
+        { get { return GetChunk(Coordinate); } }
+
+        public ITileData this[LocalPoint Coordinate]
+        { get { return GetTileData(Coordinate); } }
     }
 }

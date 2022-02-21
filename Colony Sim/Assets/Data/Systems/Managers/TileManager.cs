@@ -6,9 +6,47 @@ using ILogger = ColonySim.LoggingUtility.ILogger;
 using ColonySim.World;
 using ColonySim.Systems;
 
-namespace ColonySim.World
+namespace ColonySim.World.Tiles
 {
-    public class TileManager : ColonySim.Systems.System
+    public class AdjacentTileData
+    {
+        public ITileData Origin;
+        //[0] [1] [2]
+        //[3] [O] [4]
+        //[5] [6] [7]
+        public ITileData[] AdjacentTiles;
+
+        public ITileData North => AdjacentTiles[1];
+        public ITileData South => AdjacentTiles[6];
+        public ITileData East => AdjacentTiles[4];
+        public ITileData West => AdjacentTiles[3];
+        public ITileData NEast => AdjacentTiles[2];
+        public ITileData NWest => AdjacentTiles[0];
+        public ITileData SEast => AdjacentTiles[7];
+        public ITileData SWest => AdjacentTiles[5];
+
+        public AdjacentTileData(ITileData Origin, ITileData[] AdjacencyData)
+        {
+            this.Origin = Origin; this.AdjacentTiles = AdjacencyData;
+        }
+
+        public IEnumerator<ITileData> GetEnumerator()
+        {
+            for (int i = 0; i < AdjacentTiles.Length; i++)
+            {
+                yield return AdjacentTiles[i];
+            }
+        }
+
+        public static readonly Vector2Int[] ToCoordinate = new Vector2Int[]
+        {
+            new Vector2Int(-1,1), new Vector2Int(0,1), new Vector2Int(1,1),
+            new Vector2Int(-1,0),                      new Vector2Int(1,0),
+            new Vector2Int(-1,-1),new Vector2Int(0,-1), new Vector2Int(-1,-1)
+        };
+    }
+
+    public class TileManager : ColonySim.Systems.System, ILogger
     {
         #region Static
         private static TileManager instance;
@@ -22,40 +60,30 @@ namespace ColonySim.World
         private bool _stamp = false;
         #endregion
 
-        public struct AdjacentTileData
+        public override void Init()
         {
-            public ITileData Origin;
-            //[0] [1] [2]
-            //[3] [O] [4]
-            //[5] [6] [7]
-            public ITileData[] AdjacencyData;
-
-            public ITileData North => AdjacencyData[1];
-            public ITileData South => AdjacencyData[6];
-            public ITileData East => AdjacencyData[4];
-            public ITileData West => AdjacencyData[3];
-            public ITileData NEast => AdjacencyData[2];
-            public ITileData NWest => AdjacencyData[0];
-            public ITileData SEast => AdjacencyData[7];
-            public ITileData SWest => AdjacencyData[5];
-
-            public AdjacentTileData(ITileData Origin, ITileData[] AdjacencyData)
-            {
-                this.Origin = Origin; this.AdjacencyData = AdjacencyData;
-            }
+            this.Verbose("<color=blue>[Tile Manager Init]</color>");
+            instance = this;
+            base.Init();
         }
 
         public AdjacentTileData GetAdjacentTiles(ITileData OriginData)
         {
-            WorldPoint Origin = (WorldPoint)OriginData.Coordinates;
+            WorldPoint Origin = OriginData.Coordinates;
             int _X = Origin.X;
             int _Y = Origin.Y;
-            ITileData[] AdjacencyData = new ITileData[9];
+            ITileData[] AdjacencyData = new ITileData[8];
             int i = 0;
-            for (int y = _Y+1; y > _Y-1; y--)
+            for (int y = _Y + 1; y > _Y - 2; y--)                
             {
-                for (int x = _X-1; x < _X+1; x++)
+                for (int x = _X - 1; x < _X + 2; x++)
                 {
+                    this.Debug($"Adjacency Data[{i}]:{x - _X} - {y - _Y}");
+                    //If this is the origin, skip
+                    if (y == _Y && x == _X)
+                    {
+                        continue;
+                    }
                     AdjacencyData[i] = GetTileData((x, y));
                     i++;
                 }
@@ -64,9 +92,16 @@ namespace ColonySim.World
             return AdjacenctTiles;
         }
 
-        public ITileData GetTileData((int X, int Y) Coordinates)
+        public ITileData GetTileRelative(WorldPoint Coordinate, int X, int Y)
         {
-            return WorldSystem.Get.GetTileData(new WorldPoint(Coordinates.X,Coordinates.Y));
+            WorldPoint AdjustedCoordinate = new WorldPoint(Coordinate.X + X, Coordinate.Y + Y);
+            return GetTileData(AdjustedCoordinate);
         }
+
+        public ITileData GetTileData((int X, int Y) Coordinates) => 
+            WorldSystem.Get.GetTileData(new WorldPoint(Coordinates));
+
+        public ITileData GetTileData(WorldPoint Coordinates) =>
+            WorldSystem.Get.GetTileData(Coordinates);
     }
 }
