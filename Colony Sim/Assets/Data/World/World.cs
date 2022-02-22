@@ -151,10 +151,15 @@ namespace ColonySim.World
 
         public RectI worldRect;
 
+        public float[] groundNoiseMap;
+        public Vector2Int Size;
+
         public GameWorld(int width, int height)
         {
             WorldChunks = new IWorldChunk[width, height];
             worldRect = new RectI(new Vector2Int(0, 0), width, height);
+            Size = new Vector2Int(width*WorldSystem.CHUNK_SIZE, height*WorldSystem.CHUNK_SIZE);
+            groundNoiseMap = NoiseMap.GenerateNoiseMap(new Vector2Int(width * WorldSystem.CHUNK_SIZE, height * WorldSystem.CHUNK_SIZE), 10, NoiseMap.GroundWave(987));
             Debug.Log($"Generated world::Size{WorldChunks.Length} Rect::{worldRect}");
 
             GenerateWorldChunks();           

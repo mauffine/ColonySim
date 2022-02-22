@@ -35,16 +35,18 @@ namespace ColonySim.Systems
         public GameWorld World;
 
         [SerializeField]
-        private bool DrawGizmoTIles;
+        private bool DrawGizmoTiles;
         [SerializeField]
         private bool DrawGizmoChunks;
+        [SerializeField]
+        private bool DrawGizmoNoiseMap;
 
 
         public override void Init()
         {
             this.Verbose("<color=blue>[World System Init]</color>");
             instance = this;
-            World = new GameWorld(1, 1);
+            World = new GameWorld(10, 10);
             Renderer = new WorldRenderer();
             Renderer.TileMapTransform = this.TileMapTransform;
             Simulation = new WorldSimulation();
@@ -86,7 +88,7 @@ namespace ColonySim.Systems
         {
             if (Initialized)
             {
-                if (DrawGizmoTIles)
+                if (DrawGizmoTiles)
                 {
                     foreach (var tile in World)
                     {
@@ -107,6 +109,18 @@ namespace ColonySim.Systems
                                         1f),
                             new Vector3(chunk.ChunkRect.width - .5f, chunk.ChunkRect.height - .5f, 1f)
                             );
+                    }
+                }
+                if (DrawGizmoNoiseMap)
+                {
+                    foreach (var tile in World)
+                    {
+                        WorldPoint Coordinates = tile.Coordinates;
+                        float h = World.groundNoiseMap[Coordinates.X + Coordinates.Y * World.Size.x];
+                        Gizmos.color = new Color(h, h, h, .9f);
+                        Gizmos.DrawCube(
+                            new Vector3(Coordinates.X + .5f, Coordinates.Y + .5f),
+                            Vector3.one);
                     }
                 }
             }        

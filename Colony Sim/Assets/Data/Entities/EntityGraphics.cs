@@ -22,7 +22,8 @@ namespace ColonySim.Entities
     {
         public string TextureID;
         public float Angle;
-        public bool[] ReadFromNeighbours; // MUST BE SORTED
+        public bool[] ReadFromNeighbours;
+        public bool MirrorX;
 
         public override string ToString()
         {
@@ -47,17 +48,24 @@ namespace ColonySim.Entities
         {
             if (TextureRules != null)
             {
-                foreach (var textureRule in TextureRules)
+                for (int i = 0; i < TextureRules.Length; i++)
                 {
+                    var textureRule = TextureRules[i];
+                    UnityEngine.Debug.Log($"CHECKING RULE::{i}");
                     if (textureRule.Match(TileData, out EntityTextureSettings Settings))
                     {
+                        UnityEngine.Debug.Log($"CHECKING RULE::{i}::PASS");
                         return Settings;
+                    }
+                    else
+                    {
+                        UnityEngine.Debug.Log($"CHECKING RULE::{i}::FAIL");
                     }
                 }
             }
             else
             {
-                UnityEngine.Debug.Log("NO RULES; DEFAULT");
+                UnityEngine.Debug.Log("DEFAULT TEXTURE");
             }
 
             return new EntityTextureSettings()
@@ -70,7 +78,6 @@ namespace ColonySim.Entities
 
         public void AddTextureRules(ITextureRule[] Rules)
         {
-            UnityEngine.Debug.Log("Adding Texture Rule...");
             TextureRules = Rules;
         }
     }
@@ -86,7 +93,7 @@ namespace ColonySim.Entities
     {
         public IEntity Entity;
         public string TextureID { get; protected set; }
-        public enum TransformRule { Fixed, Rotated, MirrorX, MirrorY }
+        public enum TransformRule { Fixed, Rotated, MirrorX, MirrorY, RMirrorX, RMirrorY }
         public TransformRule Transform;
         //[0] [1] [2] 
         //[3] [-] [4]
@@ -112,20 +119,20 @@ namespace ColonySim.Entities
 
         public bool Match(ITileData Data, out EntityTextureSettings Settings)
         {
-            UnityEngine.Debug.Log("Checking Tile Adjacency Rule..");
-            if(adjacentTileData == null) adjacentTileData = TileManager.Get.GetAdjacentTiles(Data);
+            string _transformLog = Transform == TransformRule.Fixed ? "FIXED" : "ROTATED";
+            UnityEngine.Debug.Log($"TILE RULE::{_transformLog}::{this.TextureID}");
+            if (adjacentTileData == null) adjacentTileData = TileManager.Get.GetAdjacentTiles(Data);
             Settings = new EntityTextureSettings()
             {
                 TextureID = this.TextureID,
                 Angle = 0,
-                ReadFromNeighbours = Enumerable.Repeat(true, 7).ToArray()
+                ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray()
             };
 
             bool allRulesPass = true;
             switch (Transform)
             {
                 case TransformRule.Fixed:
-                    UnityEngine.Debug.Log("Checking for Fixed Adjacency...");
                     for (int i = 0; i < 8; i++)
                     {
                         switch (NeighbourRules[i])
@@ -140,55 +147,120 @@ namespace ColonySim.Entities
                                 break;
                         }
                     }
-                    UnityEngine.Debug.Log($"Fixed Adjacency Pass::{allRulesPass}");
-                    return allRulesPass;                
+                    return allRulesPass;
                 case TransformRule.Rotated:
-                    UnityEngine.Debug.Log("Checking For Rotated Adjacency..");
-                    for (int angle = 0; angle <= 270; angle += 90)
+                    if (RotationMatch(Data, out float Angle))
                     {
-                        UnityEngine.Debug.Log($"Checking angle {angle}..");
-                        bool angleRulesPass = true;
-                        for (int i = 0; i < 8; i++)
-                        {                           
-                            int rotatedIndex = angle == 0 ? i : GetRotatedIndex(i, angle);
-
-                            switch (NeighbourRules[i])
-                            {
-                                case NeighbourRule.Exists:
-                                    angleRulesPass = angleRulesPass && MatchingNeighbour(adjacentTileData.AdjacentTiles[rotatedIndex]);
-                                    break;
-                                case NeighbourRule.Not:
-                                    angleRulesPass = angleRulesPass && !MatchingNeighbour(adjacentTileData.AdjacentTiles[rotatedIndex]);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            if (!angleRulesPass) break;
-                        }
-                        if (angleRulesPass)
+                        Settings = new EntityTextureSettings()
                         {
-                            UnityEngine.Debug.Log($"All Rules Pass at angle {angle}");
-                            Settings = new EntityTextureSettings()
-                            {
-                                TextureID = this.TextureID,
-                                Angle = angle
-                            };
-                            return true;
-                        }
+                            TextureID = this.TextureID,
+                            Angle = Angle,
+                            ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray()
+                        };
+                        return true;
                     }
-                    UnityEngine.Debug.Log("No Rotated Adjacency Rule Matches");
+                    return false;
+                case TransformRule.RMirrorX:
+                    if (RotatedMirrorMatch(Data, out float mirroredAngle))
+                    {
+                        Settings = new EntityTextureSettings()
+                        {
+                            TextureID = this.TextureID,
+                            Angle = mirroredAngle,
+                            ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray(),
+                            MirrorX = true
+                        };
+                        return true;
+                    }
                     return false;
                 default:
                     return false;
-            }          
+            }
         }
 
         private bool MatchingNeighbour(ITileData Neighbour)
         {
             if (Neighbour == null) return false;
             IEntity Match = Neighbour.Container.GetEntity(Entity.DefName);
-            UnityEngine.Debug.Log($"{Entity.DefName} Exists at {Neighbour.Coordinates}:{Match != null}");
+            string _matchLog = Match != null ? "EXISTS" : "NOT";
+            UnityEngine.Debug.Log($"{Entity.DefName}::{Neighbour.Coordinates}::{_matchLog}");
             return Match != null;
+        }
+
+        private bool RotationMatch(ITileData Neighbour, out float Angle)
+        {
+            for (int angle = 0; angle <= 270; angle += 90)
+            {
+                UnityEngine.Debug.Log($"@ANGLE::{angle}");
+                bool angleRulesPass = true;
+                for (int i = 0; i < 8; i++)
+                {
+                    int rotatedIndex = angle == 0 ? i : GetRotatedIndex(i, angle);
+
+                    switch (NeighbourRules[i])
+                    {
+                        case NeighbourRule.Exists:
+                            angleRulesPass = angleRulesPass && MatchingNeighbour(adjacentTileData.AdjacentTiles[rotatedIndex]);
+                            break;
+                        case NeighbourRule.Not:
+                            angleRulesPass = angleRulesPass && !MatchingNeighbour(adjacentTileData.AdjacentTiles[rotatedIndex]);
+                            break;
+                        default:
+                            break;
+                    }
+                    if (!angleRulesPass) break;
+                }
+                if (angleRulesPass)
+                {
+                    UnityEngine.Debug.Log($"@ANGLE::{angle}::PASS");
+                    Angle = angle;
+                    return true;
+                }
+                else
+                {
+                    UnityEngine.Debug.Log($"@ANGLE::{angle}::FAIL");
+                }
+            }
+            Angle = 0;
+            return false;
+        }
+
+        private bool RotatedMirrorMatch(ITileData Neighbour, out float Angle)
+        {
+            for (int angle = 0; angle <= 270; angle += 90)
+            {
+                UnityEngine.Debug.Log($"@ANGLE::{angle}");
+                bool angleRulesPass = true;
+                for (int i = 0; i < 8; i++)
+                {
+                    int rotatedIndex = angle == 0 ? i : GetRotatedMirroredIndex(i, angle);
+
+                    switch (NeighbourRules[i])
+                    {
+                        case NeighbourRule.Exists:
+                            angleRulesPass = angleRulesPass && MatchingNeighbour(adjacentTileData.AdjacentTiles[rotatedIndex]);
+                            break;
+                        case NeighbourRule.Not:
+                            angleRulesPass = angleRulesPass && !MatchingNeighbour(adjacentTileData.AdjacentTiles[rotatedIndex]);
+                            break;
+                        default:
+                            break;
+                    }
+                    if (!angleRulesPass) break;
+                }
+                if (angleRulesPass)
+                {
+                    UnityEngine.Debug.Log($"@ANGLE::{angle}::PASS");
+                    Angle = angle;
+                    return true;
+                }
+                else
+                {
+                    UnityEngine.Debug.Log($"@ANGLE::{angle}::FAIL");
+                }
+            }
+            Angle = 0;
+            return false;
         }
 
         private static readonly int[,] RotatedOrMirroredIndexes =
@@ -218,5 +290,10 @@ namespace ColonySim.Entities
             return original;
         }
 
+        private int GetRotatedMirroredIndex(int original, int rotation)
+        {
+            return RotatedOrMirroredIndexes[3, GetRotatedIndex(original, rotation)];
+
+        }
     }
 }

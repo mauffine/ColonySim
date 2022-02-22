@@ -66,9 +66,9 @@ namespace ColonySim.World.Tiles {
                    TextureAdjacentSelectionRule.TransformRule.Rotated,
                    new int[]
                    {
-                        -1, 1, -1,
+                         0, 1,  0,
                         -1,    -1,
-                        -1, 1, -1
+                         0, 1,  0
                    }
                  ),
 
@@ -118,9 +118,22 @@ namespace ColonySim.World.Tiles {
                    TextureAdjacentSelectionRule.TransformRule.Rotated,
                    new int[]
                    {
-                         -1,  1,  0,
-                          1,     -1,
-                         -1,  1,  0
+                         -1,  1, -1,
+                          1,      1,
+                         -1, -1, -1
+                   }
+                 ),
+
+                new TextureAdjacentSelectionRule
+                (
+                   this,
+                   "entity.wall-trijunction-full",
+                   TextureAdjacentSelectionRule.TransformRule.Rotated,
+                   new int[]
+                   {
+                          1,  1, -1,
+                          1,      1,
+                         -1, -1, -1
                    }
                  ),
 
@@ -128,12 +141,38 @@ namespace ColonySim.World.Tiles {
                 (
                    this,
                    "entity.wall-quadjunction",
-                   TextureAdjacentSelectionRule.TransformRule.Fixed,
+                   TextureAdjacentSelectionRule.TransformRule.Rotated,
                    new int[]
                    {
                          -1,  1,  -1,
                           1,       1,
                          -1,  1,  -1
+                   }
+                 ),
+
+                new TextureAdjacentSelectionRule
+                (
+                   this,
+                   "entity.wall-corner",
+                   TextureAdjacentSelectionRule.TransformRule.Rotated,
+                   new int[]
+                   {
+                          0,  -1,   0,
+                          1,       -1,
+                         -1,   1,   0
+                   }
+                 ),
+
+                new TextureAdjacentSelectionRule
+                (
+                   this,
+                   "entity.wall-full-corner",
+                   TextureAdjacentSelectionRule.TransformRule.Rotated,
+                   new int[]
+                   {
+                          0,  -1,   0,
+                          1,       -1,
+                          1,   1,   0
                    }
                  )
             });

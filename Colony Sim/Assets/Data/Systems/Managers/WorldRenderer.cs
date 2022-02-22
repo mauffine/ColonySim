@@ -166,7 +166,14 @@ namespace ColonySim.Rendering
         { return RenderedChunks[GetChunkData(TileData.Coordinates)].GetTile(TileData.Coordinates); }
 
         public RenderedTile GetRenderedTile(WorldPoint Coordinates)
-        { return RenderedChunks[GetChunkData(Coordinates)].GetTile(Coordinates); }
+        {
+            IWorldChunk ChunkData = GetChunkData(Coordinates);
+            if (ChunkData != null)
+            {
+                return RenderedChunks[ChunkData].GetTile(Coordinates);
+            }
+            return null;
+        }
 
         // Get Entity Data
 
@@ -223,7 +230,7 @@ namespace ColonySim.Rendering
         }
         public WorldPoint Coordinates { get => coordinates; }
         private ChunkLocation coordinates;
-        public bool Rendering { get; }
+        public bool Rendering { get; } = true;
 
         private Action<IRenderObject> renderUpdateEvent;
 
@@ -268,9 +275,7 @@ namespace ColonySim.Rendering
             {
                 foreach (var RenderedTile in GetRenderedTiles())
                 {
-                    WorldRenderer.Debug($"Building Mesh For Tile {RenderedTile.Object.name}");
-                    RenderedTile.RenderMeshes();
-                    
+                    RenderedTile.RenderMeshes();                    
                 }
             }            
         }
@@ -403,7 +408,6 @@ namespace ColonySim.Rendering
             {
                 foreach (var RenderedEntity in RenderedEntities)
                 {
-                    WorldRenderer.Debug($"Building Mesh For Entity {RenderedEntity.Value.Object.name}");
                     RenderedEntity.Value.RenderMeshes();
                 }
             }           
@@ -423,8 +427,6 @@ namespace ColonySim.Rendering
     public class RenderedEntity : IRenderObject, IEntityTaskManager
     {
         public GameObject Object;
-        public MeshRenderer Renderer;
-        public MeshFilter MeshFilter;
         public EntityID ID;
         public WorldPoint Coordinates { get => coordinates; }
         private readonly WorldPoint coordinates;
@@ -440,16 +442,15 @@ namespace ColonySim.Rendering
         private readonly RenderedTile Tile;
         private MeshData meshData;
         private bool[] readingFromNeighbours;
+        private List<MeshData> Meshes;
 
         public RenderedEntity(Transform Parent, RenderedTile Tile, IEntity Data)
         {
-            WorldRenderer.Debug($"Creating Render Object For Entity {Tile.Coordinates}({Data.ID})");
+            WorldRenderer.Debug($"Render Object Creation::{Data.DefName}{Tile.Coordinates}(#{Data.ID})");
             GameObject _go = new GameObject();
             _go.transform.SetParent(Parent);
             _go.name = $"{Data.DefName} #{Data.ID}";
             _go.transform.localPosition = Vector2.zero;
-            Renderer = _go.AddComponent<MeshRenderer>();
-            MeshFilter = _go.AddComponent<MeshFilter>();
 
             Object = _go;
 
@@ -470,15 +471,27 @@ namespace ColonySim.Rendering
 
         public void RenderDirty()
         {
-            WorldRenderer.Debug($"Rendering Dirty Entity {Tile.Coordinates}({ID})");
+            WorldRenderer.Debug($"Rendering Dirty {Object.name}{Tile.Coordinates}");
             renderUpdateEvent?.Invoke(this);
-            Renderer.enabled = Rendering;
             BuildMesh();
         }
 
         public void RenderMeshes()
         {
-            Renderer.enabled = Rendering;
+            if (Rendering)
+            {
+                if (meshData != null)
+                {
+                    Graphics.DrawMesh(
+                        meshData.mesh,
+                        Object.transform.position,
+                        Quaternion.identity,
+                        this.Material,
+                        0
+                     );
+                }
+                
+            }           
         }
 
         private void BuildMesh()
@@ -488,7 +501,7 @@ namespace ColonySim.Rendering
                 EntityTextureSettings TextureSettings = GraphicsDef.GetTexture(WorldRenderer.Get.GetTileData(Tile));
                 if (TextureSettings != null)
                 {
-                    WorldRenderer.Debug($"Building Entity Mesh {Coordinates} With Texture ({TextureSettings.TextureID})");
+                    WorldRenderer.Debug($"Building Entity Mesh {Object.name}{Tile.Coordinates}::Texture::({TextureSettings.TextureID})");
                     if (readingFromNeighbours != TextureSettings.ReadFromNeighbours)
                     {
                         if (TextureSettings.ReadFromNeighbours != null)
@@ -505,17 +518,19 @@ namespace ColonySim.Rendering
                                             new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
                                         if (Neighbour != null)
                                         {
+                                            WorldRenderer.Debug($"Adding Neighbour Render Update {Coordinates}::{neighbourPos}");
                                             Neighbour.OnRenderUpdate(x => SetDirty());
                                         }                                        
                                     }
                                     // If we need to unsubscribe 
-                                    else if (!TextureSettings.ReadFromNeighbours[i] && readingFromNeighbours[i])
+                                    else if (TextureSettings.ReadFromNeighbours[i] && !readingFromNeighbours[i])
                                     {
                                         Vector2Int neighbourPos = AdjacentTileData.ToCoordinate[i];
                                         RenderedTile Neighbour = WorldRenderer.Get.GetRenderedTile(
                                             new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
                                         if (Neighbour != null)
                                         {
+                                            WorldRenderer.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}");
                                             Neighbour.CancelOnRenderUpdate(x => SetDirty());
                                         }                                        
                                     }
@@ -526,37 +541,45 @@ namespace ColonySim.Rendering
                                 readingFromNeighbours = TextureSettings.ReadFromNeighbours;
                                 for (int i = 0; i < readingFromNeighbours.Length; i++)
                                 {
-                                    Vector2Int neighbourPos = AdjacentTileData.ToCoordinate[i];
-                                    RenderedTile Neighbour = WorldRenderer.Get.GetRenderedTile(
-                                        new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
-                                    if (Neighbour != null)
+                                    if (readingFromNeighbours[i])
                                     {
-                                        Neighbour.OnRenderUpdate(x => SetDirty());
-                                    }
-                                    
+                                        Vector2Int neighbourPos = AdjacentTileData.ToCoordinate[i];
+                                        RenderedTile Neighbour = WorldRenderer.Get.GetRenderedTile(
+                                            new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
+                                        if (Neighbour != null)
+                                        {
+                                            WorldRenderer.Debug($"Adding Neighbour Render Update {Coordinates}::{neighbourPos}");
+                                            Neighbour.OnRenderUpdate(x => SetDirty());
+                                        }
+                                    }        
                                 }
                             }
                         }
                         else
                         {
+                            WorldRenderer.Debug($"Clearing Neighbour Render Update {Coordinates}");
                             for (int i = 0; i < readingFromNeighbours.Length; i++)
                             {
-                                Vector2Int neighbourPos = AdjacentTileData.ToCoordinate[i];
-                                RenderedTile Neighbour = WorldRenderer.Get.GetRenderedTile(
-                                    new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
-                                if (Neighbour != null)
+                                if (readingFromNeighbours[i])
                                 {
-                                    Neighbour.CancelOnRenderUpdate(x => SetDirty());
-                                }                               
+                                    Vector2Int neighbourPos = AdjacentTileData.ToCoordinate[i];
+                                    RenderedTile Neighbour = WorldRenderer.Get.GetRenderedTile(
+                                        new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
+                                    if (Neighbour != null)
+                                    {
+                                        WorldRenderer.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}");
+                                        Neighbour.CancelOnRenderUpdate(x => SetDirty());
+                                    }
+                                }
+                                                          
                             }
+                            
                             readingFromNeighbours = null;
                         }                      
                     }
                     this.Texture = ResourceManager.LoadEntityTexture(TextureSettings.TextureID);
                     this.Material.mainTexture = Texture;
-
-                    
-                    
+       
                     if (meshData == null)
                     {
                         meshData = new MeshData(1, MeshFlags.UV);
@@ -567,52 +590,53 @@ namespace ColonySim.Rendering
                     }
                     int vIndex = meshData.vertices.Count;
 
+                    Quaternion rotation = Quaternion.Euler(0, 0, TextureSettings.Angle);
+                    Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
+
                     meshData.vertices.Add(new Vector3(0, 0));
                     meshData.vertices.Add(new Vector3(0, 1));
                     meshData.vertices.Add(new Vector3(1, 1));
                     meshData.vertices.Add(new Vector3(1, 0));
 
-                    if (TextureSettings.Angle != 0 && TextureSettings.Angle != 360)
-                    {
-                        Debug.Log($"Rotating tile {Coordinates} to {TextureSettings.Angle}");
-                        Vector3 target = Vector3.zero;
-                        switch (TextureSettings.Angle)
-                        {
-                            case 90:
-                                meshData.UVs.Add(new Vector2(0, 1));
-                                meshData.UVs.Add(new Vector2(1, 1));
-                                meshData.UVs.Add(new Vector2(1, 0));
-                                meshData.UVs.Add(new Vector2(0, 0));
-                                break;
-                            case 180:
-                                meshData.UVs.Add(new Vector2(1, 1));
-                                meshData.UVs.Add(new Vector2(1, 0));
-                                meshData.UVs.Add(new Vector2(0, 0));
-                                meshData.UVs.Add(new Vector2(0, 1));
-                                break;
-                            case 270:
-                                meshData.UVs.Add(new Vector2(1, 0));
-                                meshData.UVs.Add(new Vector2(0, 0));
-                                meshData.UVs.Add(new Vector2(0, 1));
-                                meshData.UVs.Add(new Vector2(1, 1));
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        meshData.UVs.Add(new Vector2(0, 0));
-                        meshData.UVs.Add(new Vector2(0, 1));
-                        meshData.UVs.Add(new Vector2(1, 1));
-                        meshData.UVs.Add(new Vector2(1, 0));
-                    }
                     
+
+                    //if (TextureSettings.Angle != 0 && TextureSettings.Angle != 360)
+                    //{
+                    //    Debug.Log($"Rotating tile {Coordinates} to {TextureSettings.Angle}");
+                    //    Vector3 target = Vector3.zero;
+                    //    switch (TextureSettings.Angle)
+                    //    {
+                    //        case 90:
+                    //            meshData.UVs.Add(new Vector2(0, 1));
+                    //            meshData.UVs.Add(new Vector2(1, 1));
+                    //            meshData.UVs.Add(new Vector2(1, 0));
+                    //            meshData.UVs.Add(new Vector2(0, 0));
+                    //            break;
+                    //        case 180:
+                    //            meshData.UVs.Add(new Vector2(1, 1));
+                    //            meshData.UVs.Add(new Vector2(1, 0));
+                    //            meshData.UVs.Add(new Vector2(0, 0));
+                    //            meshData.UVs.Add(new Vector2(0, 1));
+                    //            break;
+                    //        case 270:
+                    //            meshData.UVs.Add(new Vector2(1, 0));
+                    //            meshData.UVs.Add(new Vector2(0, 0));
+                    //            meshData.UVs.Add(new Vector2(0, 1));
+                    //            meshData.UVs.Add(new Vector2(1, 1));
+                    //            break;
+                    //    }
+                    //}
+
+
+                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(0, 0)));
+                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(0, 1)));
+                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(1, 1)));
+                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(1, 0)));
+
                     meshData.AddTriangle(vIndex, 0, 1, 2);
                     meshData.AddTriangle(vIndex, 0, 2, 3);
 
                     meshData.Build();
-
-                    MeshFilter.mesh = meshData.mesh;
-                    Renderer.material = Material;
                 }
             }
         }
