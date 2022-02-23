@@ -31,7 +31,7 @@ namespace ColonySim.Systems
         }
         public override void Init()
         {
-            this.Verbose("<color=blue>[Input System Init]</color>");
+            this.Notice("<color=blue>[Input System Init]</color>");
             inputActions = new InputControlMap();
             Initialized = true;
             base.Init();

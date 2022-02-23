@@ -45,7 +45,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[World System Init]</color>");
+            this.Notice("<color=blue>[World System Init]</color>");
             instance = this;
             World = new GameWorld(10, 10);
             Renderer = new WorldRenderer();

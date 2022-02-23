@@ -33,7 +33,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[Construction System Init]</color>");
+            this.Notice("<color=blue>[Construction System Init]</color>");
             instance = this;
             base.Init();
         }

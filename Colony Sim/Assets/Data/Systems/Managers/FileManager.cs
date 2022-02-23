@@ -35,7 +35,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[File Manager Init]</color>");
+            this.Notice("<color=blue>[File Manager Init]</color>");
             instance = this;
             Initialized = true;
             base.Init();

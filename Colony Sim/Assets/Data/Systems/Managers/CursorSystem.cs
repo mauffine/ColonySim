@@ -26,7 +26,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[Cursor System Init]</color>");
+            this.Notice("<color=blue>[Cursor System Init]</color>");
             instance = this;
             base.Init();
         }

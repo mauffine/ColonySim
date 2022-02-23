@@ -43,7 +43,7 @@ namespace ColonySim.Systems
             DataPath = Application.dataPath + "/Data/";
             if (Systems != null)
             {
-                this.Verbose("<color=blue>[Initialising Application Systems..]</color>");
+                this.Notice("<color=blue>[Initialising Application Systems..]</color>");
                 InitializedSystems = new System[Systems.Length];
                 foreach (var sys in Systems)
                 {

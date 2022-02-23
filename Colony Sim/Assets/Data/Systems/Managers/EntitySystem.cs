@@ -27,7 +27,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[Entity System Init]</color>");
+            this.Notice("<color=blue>[Entity System Init]</color>");
             instance = this;
             base.Init();
         }
