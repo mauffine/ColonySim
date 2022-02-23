@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ColonySim.Entities.Material;
 
 namespace ColonySim.Entities
 {
@@ -21,6 +22,11 @@ namespace ColonySim.Entities
     public interface IEntityTaskSystem
     {
         void AssignTask(EntityTask Task);
+    }
+
+    public interface IEntityHasMaterial
+    {
+        IEntityMaterialDef Material { get; }
     }
 
     public struct EntityID

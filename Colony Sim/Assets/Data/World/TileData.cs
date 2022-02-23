@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using ColonySim.Entities;
+using ColonySim.Entities.Material;
 using ColonySim.World.Tiles;
 
 namespace ColonySim.World
@@ -37,8 +38,10 @@ namespace ColonySim.World.Tiles {
             Traits = new IEntityTrait[]
             {
                 new Trait_IsTile(DefName),
+                new Trait_HasMaterial(new BasicWallMaterialDef()),
                 new Trait_MessageOnTileEntry()
             };
+
             EntityGraphicsDef = new EntityGraphics(
                 "entity.wall-single",
                 "basic",
