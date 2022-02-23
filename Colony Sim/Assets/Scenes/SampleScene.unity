@@ -5859,8 +5859,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c3c3f54449e5fa4a85c5afdb98a9030, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 5
-  _stamp: 1
+  _loggingLevel: 4
+  _stamp: 0
   Systems:
   - {fileID: 46400740}
   - {fileID: 402714541}
