@@ -55,6 +55,7 @@ namespace ColonySim.Rendering
         private LoggingLevel _loggingLevel = WorldSystem.Get._rendererLogging;
         public bool Stamp { get => _stamp; set => _stamp = value; }
         private bool _stamp = false;
+        public string LoggingPrefix => "<color=orange>[RENDERER]</color>";
         #endregion
 
         public Transform TileMapTransform;

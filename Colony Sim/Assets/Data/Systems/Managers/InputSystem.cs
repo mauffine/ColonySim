@@ -18,9 +18,11 @@ namespace ColonySim.Systems
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=purple>[INPUT]</color>";
         [SerializeField]
         private bool _stamp = false;
         #endregion
+
         [SerializeField] private InputActionAsset InputAsset;
         private InputControlMap inputActions;
         private void Awake()

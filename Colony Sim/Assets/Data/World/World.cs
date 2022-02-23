@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using ColonySim.Systems;
 using UnityEngine;
 using ColonySim.Helpers;
+using ILogger = ColonySim.LoggingUtility.ILoggerSlave;
+using ColonySim.LoggingUtility;
 
 namespace ColonySim.World
 {
@@ -135,8 +137,13 @@ namespace ColonySim.World
     /// <summary>
     /// Game World
     /// </summary>
-    public class GameWorld
+    public class GameWorld : ILoggerSlave
     {
+        public LoggingUtility.ILogger Master => WorldSystem.Get;
+        public string LoggingPrefix => "<color=green>[WORLD]</color>";
+
+
+
         private IWorldChunk[,] WorldChunks;
         public IEnumerable<IWorldChunk> GetChunks()
         {
@@ -160,7 +167,7 @@ namespace ColonySim.World
             worldRect = new RectI(new Vector2Int(0, 0), width, height);
             Size = new Vector2Int(width*WorldSystem.CHUNK_SIZE, height*WorldSystem.CHUNK_SIZE);
             groundNoiseMap = NoiseMap.GenerateNoiseMap(new Vector2Int(width * WorldSystem.CHUNK_SIZE, height * WorldSystem.CHUNK_SIZE), 10, NoiseMap.GroundWave(987));
-            Debug.Log($"Generated world::Size{WorldChunks.Length} Rect::{worldRect}");
+            this.Notice($"<color=blue>[Generating world of Size {WorldChunks.Length}]</color>");
 
             GenerateWorldChunks();           
         }
@@ -171,7 +178,7 @@ namespace ColonySim.World
             {
                 for (int y = 0; y < WorldChunks.GetLength(1); y++)
                 {
-                    Debug.Log($"Creating Chunk At::{x}-{y}");
+                    this.Verbose($"Creating Chunk At::{x}-{y}");
                     WorldChunks[x, y] = GenerateNewChunk(x, y);
                 }
             }

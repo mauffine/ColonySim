@@ -51,21 +51,21 @@ namespace ColonySim.Entities
                 for (int i = 0; i < TextureRules.Length; i++)
                 {
                     var textureRule = TextureRules[i];
-                    UnityEngine.Debug.Log($"CHECKING RULE::{i}");
+                    //UnityEngine.Debug.Log($"CHECKING RULE::{i}");
                     if (textureRule.Match(TileData, out EntityTextureSettings Settings))
                     {
-                        UnityEngine.Debug.Log($"CHECKING RULE::{i}::PASS");
+                        //UnityEngine.Debug.Log($"CHECKING RULE::{i}::PASS");
                         return Settings;
                     }
                     else
                     {
-                        UnityEngine.Debug.Log($"CHECKING RULE::{i}::FAIL");
+                        //UnityEngine.Debug.Log($"CHECKING RULE::{i}::FAIL");
                     }
                 }
             }
             else
             {
-                UnityEngine.Debug.Log("DEFAULT TEXTURE");
+                //UnityEngine.Debug.Log("DEFAULT TEXTURE");
             }
 
             return new EntityTextureSettings()
@@ -120,7 +120,7 @@ namespace ColonySim.Entities
         public bool Match(ITileData Data, out EntityTextureSettings Settings)
         {
             string _transformLog = Transform == TransformRule.Fixed ? "FIXED" : "ROTATED";
-            UnityEngine.Debug.Log($"TILE RULE::{_transformLog}::{this.TextureID}");
+            //UnityEngine.Debug.Log($"TILE RULE::{_transformLog}::{this.TextureID}");
             if (adjacentTileData == null) adjacentTileData = TileManager.Get.GetAdjacentTiles(Data);
             Settings = new EntityTextureSettings()
             {
@@ -183,7 +183,7 @@ namespace ColonySim.Entities
             if (Neighbour == null) return false;
             IEntity Match = Neighbour.Container.GetEntity(Entity.DefName);
             string _matchLog = Match != null ? "EXISTS" : "NOT";
-            UnityEngine.Debug.Log($"{Entity.DefName}::{Neighbour.Coordinates}::{_matchLog}");
+            //UnityEngine.Debug.Log($"{Entity.DefName}::{Neighbour.Coordinates}::{_matchLog}");
             return Match != null;
         }
 
@@ -191,7 +191,7 @@ namespace ColonySim.Entities
         {
             for (int angle = 0; angle <= 270; angle += 90)
             {
-                UnityEngine.Debug.Log($"@ANGLE::{angle}");
+                //UnityEngine.Debug.Log($"@ANGLE::{angle}");
                 bool angleRulesPass = true;
                 for (int i = 0; i < 8; i++)
                 {
@@ -212,13 +212,13 @@ namespace ColonySim.Entities
                 }
                 if (angleRulesPass)
                 {
-                    UnityEngine.Debug.Log($"@ANGLE::{angle}::PASS");
+                    //UnityEngine.Debug.Log($"@ANGLE::{angle}::PASS");
                     Angle = angle;
                     return true;
                 }
                 else
                 {
-                    UnityEngine.Debug.Log($"@ANGLE::{angle}::FAIL");
+                    //UnityEngine.Debug.Log($"@ANGLE::{angle}::FAIL");
                 }
             }
             Angle = 0;
@@ -229,7 +229,7 @@ namespace ColonySim.Entities
         {
             for (int angle = 0; angle <= 270; angle += 90)
             {
-                UnityEngine.Debug.Log($"@ANGLE::{angle}");
+                //UnityEngine.Debug.Log($"@ANGLE::{angle}");
                 bool angleRulesPass = true;
                 for (int i = 0; i < 8; i++)
                 {
@@ -250,13 +250,13 @@ namespace ColonySim.Entities
                 }
                 if (angleRulesPass)
                 {
-                    UnityEngine.Debug.Log($"@ANGLE::{angle}::PASS");
+                    //UnityEngine.Debug.Log($"@ANGLE::{angle}::PASS");
                     Angle = angle;
                     return true;
                 }
                 else
                 {
-                    UnityEngine.Debug.Log($"@ANGLE::{angle}::FAIL");
+                    //UnityEngine.Debug.Log($"@ANGLE::{angle}::FAIL");
                 }
             }
             Angle = 0;

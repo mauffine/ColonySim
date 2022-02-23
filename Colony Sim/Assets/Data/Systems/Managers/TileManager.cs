@@ -56,6 +56,7 @@ namespace ColonySim.World.Tiles
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=olive>[TILEMGR]</color>";
         [SerializeField]
         private bool _stamp = false;
         #endregion

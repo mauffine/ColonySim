@@ -18,6 +18,7 @@ namespace ColonySim.Systems
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=blue>[RESOURCEMGR]</color>";
         [SerializeField]
         private bool _stamp = false;
         #endregion
