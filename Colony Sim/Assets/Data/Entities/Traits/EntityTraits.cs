@@ -1,3 +1,4 @@
+using ColonySim.Entities.Material;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -59,6 +60,19 @@ namespace ColonySim.Entities
                     }
                 }
             }           
+        }
+    }
+
+    public class Trait_HasMaterial : EntityBaseTrait
+    {
+        public override string TRAIT_DEF_NAME => "HAS_MATERIAL";
+        public override IEntityModule[] TraitModules { get; }
+
+        public IEntityMaterialDef MaterialDef;
+
+        public Trait_HasMaterial(IEntityMaterialDef MaterialDef)
+        {
+            this.MaterialDef = MaterialDef; 
         }
     }
 
