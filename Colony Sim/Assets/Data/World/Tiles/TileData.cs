@@ -39,7 +39,6 @@ namespace ColonySim.World.Tiles {
             {
                 new Trait_IsTile(DefName),
                 new Trait_HasMaterial(new BasicWallMaterialDef()),
-                new Trait_MessageOnTileEntry()
             };
 
             EntityGraphicsDef = new EntityGraphics(
@@ -95,7 +94,7 @@ namespace ColonySim.World.Tiles {
                    TextureAdjacentSelectionRule.TransformRule.Rotated,
                    new int[]
                    {
-                        -1, -1, -1,
+                         0, -1,  0,
                          1,      1,
                          1,  1,  1
                    }
@@ -123,7 +122,7 @@ namespace ColonySim.World.Tiles {
                    {
                          -1,  1, -1,
                           1,      1,
-                         -1, -1, -1
+                          0, -1,  0
                    }
                  ),
 
@@ -150,6 +149,19 @@ namespace ColonySim.World.Tiles {
                          -1,  1,  -1,
                           1,       1,
                          -1,  1,  -1
+                   }
+                 ),
+
+                new TextureAdjacentSelectionRule
+                (
+                   this,
+                   "entity.wall-edgejunction",
+                   TextureAdjacentSelectionRule.TransformRule.Rotated,
+                   new int[]
+                   {
+                         -1,  1,  -1,
+                          1,       1,
+                          1,  1,   1
                    }
                  ),
 
@@ -199,6 +211,26 @@ namespace ColonySim.World.Tiles {
                 "simpleNoise",
                 RenderLayer.TILE);
             
+        }
+    }
+
+    public class DirtFloor : EntityBase
+    {
+        public override string DefName => "Dirt Floor";
+
+        public override IEntityTrait[] Traits { get; }
+
+        public DirtFloor()
+        {
+            Traits = new IEntityTrait[]
+            {
+                new Trait_IsTile(DefName)
+            };
+            EntityGraphicsDef = new EntityGraphics(
+                "entity.dirtfloor",
+                "simpleNoise",
+                RenderLayer.TILE);
+
         }
     }
 }

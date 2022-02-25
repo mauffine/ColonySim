@@ -16,9 +16,22 @@ namespace ColonySim.LoggingUtility
         AlwaysShow = 7
     }
 
+    public enum LoggingPriority
+    {
+        NeverShow = 0,
+        Important = 1,
+        High = 2,
+        Standard = 3,
+        Low = 4,
+        Specific = 5,
+        AlwaysShow = 6
+
+    }
+
     public interface ILogger
     {
         LoggingLevel LoggingLevel { get; set; }
+        LoggingPriority LoggingPriority { get; set; }
         List<string> Logs { get; set; }
         bool Stamp { get; }
         string LoggingPrefix { get; }
@@ -32,7 +45,7 @@ namespace ColonySim.LoggingUtility
 
     public static class LoggingUtility
     {
-        private static string CreateLog(this ILogger self, string text, LoggingLevel level)
+        private static string CreateLog(this ILogger self, string text, LoggingLevel level, LoggingPriority priority)
         {
             if (!String.IsNullOrEmpty(self.LoggingPrefix))
             {
@@ -47,26 +60,29 @@ namespace ColonySim.LoggingUtility
 
             if ((int)level <= (int)self.LoggingLevel)
             {
-                if ((int)level <= 2)
+                if ((int)priority <= (int)self.LoggingPriority)
                 {
-                    text = text.Insert(0, "!!!\n");
-                    text = text.Insert(text.Length, "\n!!!");
-                }
-                else if ((int)level == 3)
-                {
-                    UnityEngine.Debug.LogWarning(text);
-                }
-                else
-                {
-                    UnityEngine.Debug.Log(text);
-                }
+                    if ((int)level <= 2)
+                    {
+                        text = text.Insert(0, "!!!\n");
+                        text = text.Insert(text.Length, "\n!!!");
+                    }
+                    else if ((int)level == 3)
+                    {
+                        UnityEngine.Debug.LogWarning(text);
+                    }
+                    else
+                    {
+                        UnityEngine.Debug.Log(text);
+                    }
+                }               
             }
 #endif
             self.Logs.Add(text);
             return text;
         }
 
-        private static string CreateLog(this ILoggerSlave self, string text, LoggingLevel level)
+        private static string CreateLog(this ILoggerSlave self, string text, LoggingLevel level, LoggingPriority priority)
         {
             if (!String.IsNullOrEmpty(self.LoggingPrefix))
             {
@@ -82,85 +98,88 @@ namespace ColonySim.LoggingUtility
 
             if ((int)level <= (int)self.Master.LoggingLevel)
             {
-                if ((int)level <= 2)
+                if ((int)priority <= (int)self.Master.LoggingPriority)
                 {
-                    text = text.Insert(0, "!!!\n");
-                    text = text.Insert(text.Length, "\n!!!");
-                }
-                else if ((int)level == 3)
-                {
-                    UnityEngine.Debug.LogWarning(text);
-                }
-                else
-                {
-                    UnityEngine.Debug.Log(text);
-                }
+                    if ((int)level <= 2)
+                    {
+                        text = text.Insert(0, "!!!\n");
+                        text = text.Insert(text.Length, "\n!!!");
+                    }
+                    else if ((int)level == 3)
+                    {
+                        UnityEngine.Debug.LogWarning(text);
+                    }
+                    else
+                    {
+                        UnityEngine.Debug.Log(text);
+                    }
+                }              
             }
 #endif
             self.Master.Logs.Add(text);
             return text;
         }
 
-        public static void Verbose(this ILogger self, string text, LoggingLevel level = LoggingLevel.Verbose)
+        public static void Verbose(this ILogger self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, level);
+            CreateLog(self, text, LoggingLevel.Verbose, priority);
         }
 
-        public static void Debug(this ILogger self, string text)
+        public static void Debug(this ILogger self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Debug);
+            CreateLog(self, text, LoggingLevel.Debug, priority);
         }
 
-        public static void Notice(this ILogger self, string text)
+        public static void Notice(this ILogger self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Notice);
+            CreateLog(self, text, LoggingLevel.Notice, priority);
         }
 
-        public static void Warning(this ILogger self, string text)
+        public static void Warning(this ILogger self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Warning);
+            CreateLog(self, text, LoggingLevel.Warning, priority);
         }
 
-        public static void Error(this ILogger self, string text)
+        public static void Error(this ILogger self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Error);
+            CreateLog(self, text, LoggingLevel.Error, priority);
         }
 
-        public static void Exception(this ILogger self, string text)
+        public static void Exception(this ILogger self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Exception);
+            CreateLog(self, text, LoggingLevel.Exception, priority);
         }
 
         // Slaves
 
-        public static void Verbose(this ILoggerSlave self, string text, LoggingLevel level = LoggingLevel.Verbose)
+        public static void Verbose(this ILoggerSlave self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, level);
+            CreateLog(self, text, LoggingLevel.Verbose, priority);
         }
 
-        public static void Debug(this ILoggerSlave self, string text)
+        public static void Debug(this ILoggerSlave self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Debug);
+            CreateLog(self, text, LoggingLevel.Debug, priority);
         }
 
-        public static void Notice(this ILoggerSlave self, string text)
+        public static void Notice(this ILoggerSlave self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Notice);
+            CreateLog(self, text, LoggingLevel.Notice, priority);
         }
 
-        public static void Warning(this ILoggerSlave self, string text)
+        public static void Warning(this ILoggerSlave self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Warning);
+            CreateLog(self, text, LoggingLevel.Warning, priority);
         }
 
-        public static void Error(this ILoggerSlave self, string text)
+        public static void Error(this ILoggerSlave self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Error);
+            CreateLog(self, text, LoggingLevel.Error, priority);
         }
 
-        public static void Exception(this ILoggerSlave self, string text)
+        public static void Exception(this ILoggerSlave self, string text, LoggingPriority priority = LoggingPriority.Standard)
         {
-            CreateLog(self, text, LoggingLevel.Exception);
+            CreateLog(self, text, LoggingLevel.Exception, priority);
         }
     }
 }

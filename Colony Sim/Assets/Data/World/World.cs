@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using ColonySim.Systems;
 using UnityEngine;
 using ColonySim.Helpers;
-using ILogger = ColonySim.LoggingUtility.ILoggerSlave;
+using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 using ColonySim.LoggingUtility;
+using ColonySim.World.Tiles;
 
 namespace ColonySim.World
 {
@@ -156,6 +157,20 @@ namespace ColonySim.World
             }
         }
 
+        public IEnumerable<ITileData> GetTiles()
+        {
+            for (int x = 0; x < WorldChunks.GetLength(0); x++)
+            {
+                for (int y = 0; y < WorldChunks.GetLength(1); y++)
+                {
+                    foreach (var tile in WorldChunks[x,y].GetTiles())
+                    {
+                        yield return tile;
+                    }
+                }
+            }
+        }
+
         public RectI worldRect;
 
         public float[] groundNoiseMap;
@@ -166,13 +181,10 @@ namespace ColonySim.World
             WorldChunks = new IWorldChunk[width, height];
             worldRect = new RectI(new Vector2Int(0, 0), width, height);
             Size = new Vector2Int(width*WorldSystem.CHUNK_SIZE, height*WorldSystem.CHUNK_SIZE);
-            groundNoiseMap = NoiseMap.GenerateNoiseMap(new Vector2Int(width * WorldSystem.CHUNK_SIZE, height * WorldSystem.CHUNK_SIZE), 10, NoiseMap.GroundWave(987));
-            this.Notice($"<color=blue>[Generating world of Size {WorldChunks.Length}]</color>");
-
-            GenerateWorldChunks();           
+            this.Notice($"<color=blue>[Generating world of Size {WorldChunks.Length}]</color>");       
         }
 
-        private void GenerateWorldChunks()
+        public void GenerateWorldChunks()
         {
             for (int x = 0; x < WorldChunks.GetLength(0); x++)
             {
@@ -181,6 +193,22 @@ namespace ColonySim.World
                     this.Verbose($"Creating Chunk At::{x}-{y}");
                     WorldChunks[x, y] = GenerateNewChunk(x, y);
                 }
+            }
+        }
+
+        public void WorldGeneration(float seed)
+        {
+            groundNoiseMap = NoiseMap.GenerateNoiseMap(Size, 4, NoiseMap.GroundWave(seed));
+            foreach (var tile in GetTiles())
+            {
+                //WorldPoint Point = tile.Coordinates;
+                //float noise = groundNoiseMap[Point.X + Point.Y * Size.x];
+                //Debug.Log($"{tile.Coordinates}::{noise}");
+                //if (noise < 0.22f)
+                //{
+                    
+                //}
+                tile.Container.AddEntity(new DirtFloor());
             }
         }
 

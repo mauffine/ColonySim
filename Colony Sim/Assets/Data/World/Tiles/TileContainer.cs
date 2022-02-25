@@ -25,10 +25,13 @@ namespace ColonySim.World
 
         public IEnumerable<IEntity> TileEntities()
         {
-            foreach (var entity in Entities)
+            if (Entities != null)
             {
-                yield return entity;
-            }
+                foreach (var entity in Entities)
+                {
+                    yield return entity;
+                }
+            }            
         }
 
         public override int GetHashCode()

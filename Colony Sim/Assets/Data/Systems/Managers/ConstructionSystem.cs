@@ -19,6 +19,9 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
         public string LoggingPrefix => "<color=purple>[CONSTRUCTION]</color>";
         [SerializeField]
@@ -30,6 +33,9 @@ namespace ColonySim.Systems
 
         private InputControl placementCtxt;
         private InputControl removalCtxt;
+
+        private ITileData waypointTile;
+        private CharacterWaypoint waypoint;
 
         public override void Init()
         {
@@ -60,7 +66,7 @@ namespace ColonySim.Systems
             removalCtxt = context.control;
             if (context.performed && InputSystem.AllowMouseEvent)
             {
-
+                PlaceWaypoint();
             }
         }
 
@@ -75,9 +81,48 @@ namespace ColonySim.Systems
             }
             else
             {
-                this.Verbose("No Tile Data");
+                this.Debug("No Tile Data");
             }
         }
 
+        private void PlaceWaypoint()
+        {
+            ITileData Data = CursorSystem.Get.highlightedTile;
+            if (Data != null)
+            {
+                if (waypoint == null) { waypoint = EntitySystem.Get.CreateWaypoint(Data); }
+                else { EntitySystem.Get.PlaceWaypoint(waypoint, waypointTile, Data); }
+                waypointTile = Data;
+                this.Verbose("Placed Waypoint");
+            }
+        }
+
+        public void OnDrawGizmos()
+        {
+            if (Initialized)
+            {
+                if (waypoint != null)
+                {
+                    WorldPoint Coordinates = waypointTile.Coordinates;
+                    Gizmos.color = new Color(1f, 0.5f, 0.5f, 0.7f);
+                    Gizmos.DrawSphere(
+                        new Vector3(Coordinates.X+0.5f, Coordinates.Y+0.5f, 1f),
+                        0.3f
+                    );
+                }
+            }          
+        }
+    }
+
+    public class CharacterWaypoint : EntityBase
+    {
+        public override string DefName => "Character Waypoint";
+
+        public override IEntityTrait[] Traits { get; }
+
+        public CharacterWaypoint()
+        {
+            
+        }
     }
 }

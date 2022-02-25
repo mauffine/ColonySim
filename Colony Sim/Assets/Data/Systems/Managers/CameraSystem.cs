@@ -17,6 +17,9 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
         public string LoggingPrefix => "<color=purple>[CAMERA]</color>";
         [SerializeField]

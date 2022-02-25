@@ -17,13 +17,18 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
         public string LoggingPrefix => "<color=green>[WORLDSYS]</color>";
         [SerializeField]
         private bool _stamp = false;
 
         public LoggingLevel _rendererLogging = LoggingLevel.Warning;
+        public LoggingPriority _rendererPriority = LoggingPriority.AlwaysShow;
         public LoggingLevel _worldLogging = LoggingLevel.Warning;
+        public LoggingPriority _worldPriority = LoggingPriority.AlwaysShow;
 
         #endregion
         public static WorldRenderer Renderer;
@@ -32,7 +37,7 @@ namespace ColonySim.Systems
         public Transform TileMapTransform;
         public Sprite ConcreteTileSprite;
 
-        public const int CHUNK_SIZE = 5;
+        public const int CHUNK_SIZE = 8;
         public GameWorld World;
 
         [SerializeField]
@@ -48,6 +53,8 @@ namespace ColonySim.Systems
             this.Notice("<color=blue>[World System Init]</color>");
             instance = this;
             World = new GameWorld(10, 10);
+            World.GenerateWorldChunks();
+            World.WorldGeneration(Time.realtimeSinceStartup);
             Renderer = new WorldRenderer();
             Renderer.TileMapTransform = this.TileMapTransform;
             Simulation = new WorldSimulation();

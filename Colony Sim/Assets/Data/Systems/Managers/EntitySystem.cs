@@ -19,6 +19,9 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
         public string LoggingPrefix => "<color=green>[ENTITYSYS]</color>";
         [SerializeField]
@@ -30,6 +33,23 @@ namespace ColonySim.Systems
             this.Notice("<color=blue>[Entity System Init]</color>");
             instance = this;
             base.Init();
+        }
+
+        public CharacterWaypoint CreateWaypoint(ITileData Data)
+        {
+            ITileContainer Container = Data.Container;
+            CharacterWaypoint entity = new CharacterWaypoint();
+            Container.AddEntity(entity);
+            return entity;
+        }
+
+        public void PlaceWaypoint(IEntity EntityData, ITileData TileData, ITileData NewTileData)
+        {
+            if (TileData.Container.HasEntity(EntityData.ID))
+            {
+                TileData.Container.RemoveEntity(EntityData);
+                NewTileData.Container.AddEntity(EntityData);
+            }
         }
 
         public void CreateWallEntity(ITileData Data)

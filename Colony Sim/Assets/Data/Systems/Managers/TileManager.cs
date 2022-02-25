@@ -44,6 +44,13 @@ namespace ColonySim.World.Tiles
             new Vector2Int(-1,0),                      new Vector2Int(1,0),
             new Vector2Int(-1,-1),new Vector2Int(0,-1), new Vector2Int(-1,-1)
         };
+
+        public static readonly string[] IndexToString = new string[]
+        {
+            "NW", "N", "NE",
+            "W",       "E",
+            "SW", "S", "SE"
+        };
     }
 
     public class TileManager : ColonySim.Systems.System, ILogger
@@ -55,6 +62,9 @@ namespace ColonySim.World.Tiles
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
         public string LoggingPrefix => "<color=olive>[TILEMGR]</color>";
         [SerializeField]

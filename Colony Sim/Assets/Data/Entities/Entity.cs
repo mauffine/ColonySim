@@ -67,10 +67,13 @@ namespace ColonySim.Entities
 
         public void Trigger(IEntityTrigger Event)
         {
-            foreach (var trait in Traits)
+            if (Traits != null)
             {
-                trait.Trigger(Event);
-            }
+                foreach (var trait in Traits)
+                {
+                    trait.Trigger(Event);
+                }
+            }          
         }
 
         public ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()

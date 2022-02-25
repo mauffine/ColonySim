@@ -5,6 +5,7 @@ using ColonySim.World;
 using ColonySim.Entities;
 using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
+using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 using ColonySim.Helpers;
 using ColonySim.Systems;
 using System;
@@ -53,6 +54,8 @@ namespace ColonySim.Rendering
         public List<string> Logs { get; set; } = new List<string>();
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         private LoggingLevel _loggingLevel = WorldSystem.Get._rendererLogging;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        private LoggingPriority _loggingPriority = WorldSystem.Get._rendererPriority;
         public bool Stamp { get => _stamp; set => _stamp = value; }
         private bool _stamp = false;
         public string LoggingPrefix => "<color=orange>[RENDERER]</color>";
@@ -187,17 +190,10 @@ namespace ColonySim.Rendering
         private RenderedEntity GetRenderedEntity(IEntity EntityData, ITileData TileData) 
         { return GetRenderedTile(TileData).GetRenderedEntity(EntityData); }
 
-        // Logging
-        public static void Verbose(string text) => instance.Verbose(text);
-        public static void Debug(string text) => instance.Debug(text);
-        public static void Notice(string text) => instance.Notice(text);
-        public static void Warning(string text) => instance.Warning(text);
-        public static void Error(string text) => instance.Error(text);
-
         #endregion
     }
 
-    public interface IRenderObject
+    public interface IRenderObject : ILoggerSlave
     {
         WorldPoint Coordinates { get; }
         /// <summary>
@@ -220,6 +216,9 @@ namespace ColonySim.Rendering
 
     public class RenderedChunk : IRenderObject
     {
+        public LoggingUtility.ILogger Master => WorldRenderer.Get;
+        public string LoggingPrefix => $"<color=green>[RCHUNK:{Object.name}]</color>";
+
         public GameObject Object;
         public RenderedTile[,] RenderedTiles;
         public IEnumerable<RenderedTile> GetRenderedTiles() {
@@ -246,7 +245,7 @@ namespace ColonySim.Rendering
 
             this.coordinates = ChunkData.Coordinates;
 
-            WorldRenderer.Verbose($"Created Render Chunk::{_go.name}");
+            this.Verbose($"Created Render Chunk::{_go.name}");
 
             InitialiseRenderedTiles();
         }
@@ -305,6 +304,9 @@ namespace ColonySim.Rendering
 
     public class RenderedTile : IRenderObject, IEntityTaskManager
     {
+        public LoggingUtility.ILogger Master => WorldRenderer.Get;
+        public string LoggingPrefix => $"<color=green>[RTILE:{Object.name}]</color>";
+
         public GameObject Object;
         public Dictionary<EntityID, RenderedEntity> RenderedEntities = new Dictionary<EntityID, RenderedEntity>();
         public IEnumerable<RenderedEntity> GetRenderedEntities()
@@ -345,7 +347,7 @@ namespace ColonySim.Rendering
 
         public void RenderDirty()
         {
-            WorldRenderer.Debug($"Rendering Tile {Coordinates}");
+            this.Debug($"Rendering Tile {Coordinates}");
             renderUpdateEvent?.Invoke(this);
             ITileData Data = WorldRenderer.Get.GetTileData(this);
 
@@ -427,6 +429,9 @@ namespace ColonySim.Rendering
 
     public class RenderedEntity : IRenderObject, IEntityTaskManager
     {
+        public LoggingUtility.ILogger Master => WorldRenderer.Get;
+        public string LoggingPrefix => $"<color=green>[RENTITY:{Object.name}]</color>";
+
         public GameObject Object;
         public EntityID ID;
         public WorldPoint Coordinates { get => coordinates; }
@@ -447,10 +452,9 @@ namespace ColonySim.Rendering
 
         public RenderedEntity(Transform Parent, RenderedTile Tile, IEntity Data)
         {
-            WorldRenderer.Debug($"Render Object Creation::{Data.DefName}{Tile.Coordinates}(#{Data.ID})");
             GameObject _go = new GameObject();
             _go.transform.SetParent(Parent);
-            _go.name = $"{Data.DefName} #{Data.ID}";
+            _go.name = $"{Data.DefName}{Tile.Coordinates} #{Data.ID}";
             _go.transform.localPosition = Vector2.zero;
 
             Object = _go;
@@ -458,6 +462,8 @@ namespace ColonySim.Rendering
             this.ID = Data.ID;
             this.Tile = Tile;
             this.coordinates = Tile.Coordinates;
+
+            this.Debug($"Render Object Creation::{Data.DefName}{Tile.Coordinates}(#{Data.ID})", LoggingPriority.High);
 
             if (Data.EntityGraphicsDef != null)
             {
@@ -472,7 +478,7 @@ namespace ColonySim.Rendering
 
         public void RenderDirty()
         {
-            WorldRenderer.Debug($"Rendering Dirty {Object.name}{Tile.Coordinates}");
+            this.Debug($"Rendering Dirty {Object.name}{Tile.Coordinates}");
             renderUpdateEvent?.Invoke(this);
             BuildMesh();
         }
@@ -502,7 +508,7 @@ namespace ColonySim.Rendering
                 EntityTextureSettings TextureSettings = GraphicsDef.GetTexture(WorldRenderer.Get.GetTileData(Tile));
                 if (TextureSettings != null)
                 {
-                    WorldRenderer.Debug($"Building Entity Mesh {Object.name}{Tile.Coordinates}::Texture::({TextureSettings.TextureID})");
+                    this.Debug($"Building Entity Mesh {Object.name}{Tile.Coordinates}::Texture::({TextureSettings.TextureID})");
                     if (readingFromNeighbours != TextureSettings.ReadFromNeighbours)
                     {
                         if (TextureSettings.ReadFromNeighbours != null)
@@ -519,7 +525,7 @@ namespace ColonySim.Rendering
                                             new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
                                         if (Neighbour != null)
                                         {
-                                            WorldRenderer.Debug($"Adding Neighbour Render Update {Coordinates}::{neighbourPos}");
+                                            this.Debug($"Adding Neighbour Render Update {Coordinates}::{neighbourPos}", LoggingPriority.Low);
                                             Neighbour.OnRenderUpdate(x => SetDirty());
                                         }                                        
                                     }
@@ -531,7 +537,7 @@ namespace ColonySim.Rendering
                                             new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
                                         if (Neighbour != null)
                                         {
-                                            WorldRenderer.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}");
+                                            this.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}", LoggingPriority.Low);
                                             Neighbour.CancelOnRenderUpdate(x => SetDirty());
                                         }                                        
                                     }
@@ -549,7 +555,7 @@ namespace ColonySim.Rendering
                                             new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
                                         if (Neighbour != null)
                                         {
-                                            WorldRenderer.Debug($"Adding Neighbour Render Update {Coordinates}::{neighbourPos}");
+                                            this.Debug($"Adding Neighbour Render Update {Coordinates}::{neighbourPos}", LoggingPriority.Low);
                                             Neighbour.OnRenderUpdate(x => SetDirty());
                                         }
                                     }        
@@ -558,7 +564,7 @@ namespace ColonySim.Rendering
                         }
                         else
                         {
-                            WorldRenderer.Debug($"Clearing Neighbour Render Update {Coordinates}");
+                            this.Debug($"Clearing Neighbour Render Update {Coordinates}");
                             for (int i = 0; i < readingFromNeighbours.Length; i++)
                             {
                                 if (readingFromNeighbours[i])
@@ -568,7 +574,7 @@ namespace ColonySim.Rendering
                                         new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
                                     if (Neighbour != null)
                                     {
-                                        WorldRenderer.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}");
+                                        this.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}", LoggingPriority.Low);
                                         Neighbour.CancelOnRenderUpdate(x => SetDirty());
                                     }
                                 }
@@ -591,8 +597,7 @@ namespace ColonySim.Rendering
                     }
                     int vIndex = meshData.vertices.Count;
 
-                    Quaternion rotation = Quaternion.Euler(0, 0, TextureSettings.Angle);
-                    Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
+                    this.Verbose($"Building {Texture.ToString()} @{TextureSettings.Angle}", LoggingPriority.Low);
 
                     meshData.vertices.Add(new Vector3(0, 0));
                     meshData.vertices.Add(new Vector3(0, 1));
@@ -601,38 +606,25 @@ namespace ColonySim.Rendering
 
                     
 
-                    //if (TextureSettings.Angle != 0 && TextureSettings.Angle != 360)
-                    //{
-                    //    Debug.Log($"Rotating tile {Coordinates} to {TextureSettings.Angle}");
-                    //    Vector3 target = Vector3.zero;
-                    //    switch (TextureSettings.Angle)
-                    //    {
-                    //        case 90:
-                    //            meshData.UVs.Add(new Vector2(0, 1));
-                    //            meshData.UVs.Add(new Vector2(1, 1));
-                    //            meshData.UVs.Add(new Vector2(1, 0));
-                    //            meshData.UVs.Add(new Vector2(0, 0));
-                    //            break;
-                    //        case 180:
-                    //            meshData.UVs.Add(new Vector2(1, 1));
-                    //            meshData.UVs.Add(new Vector2(1, 0));
-                    //            meshData.UVs.Add(new Vector2(0, 0));
-                    //            meshData.UVs.Add(new Vector2(0, 1));
-                    //            break;
-                    //        case 270:
-                    //            meshData.UVs.Add(new Vector2(1, 0));
-                    //            meshData.UVs.Add(new Vector2(0, 0));
-                    //            meshData.UVs.Add(new Vector2(0, 1));
-                    //            meshData.UVs.Add(new Vector2(1, 1));
-                    //            break;
-                    //    }
-                    //}
+                    meshData.UVs.Add(new Vector3(0, 0));
+                    meshData.UVs.Add(new Vector2(0, 1));
+                    meshData.UVs.Add(new Vector2(1, 1));
+                    meshData.UVs.Add(new Vector2(1, 0));
 
+                    Vector2 pivot = new Vector2(0.5f, 0.5f);
+                    float rads = Mathf.Deg2Rad * TextureSettings.Angle;
+                    float rotMatrix00 = Mathf.Cos(rads);
+                    float rotMatrix01 = -Mathf.Sin(rads);
+                    float rotMatrix10 = Mathf.Sin(rads);
+                    float rotMatrix11 = Mathf.Cos(rads);
 
-                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(0, 0)));
-                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(0, 1)));
-                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(1, 1)));
-                    meshData.UVs.Add(matrix.MultiplyPoint3x4(new Vector2(1, 0)));
+                    for (int i = 0; i < meshData.UVs.Count; i++)
+                    {
+                        Vector2 meshPivot = meshData.UVs[i] - pivot;
+                        float x = rotMatrix00 * meshPivot.x + rotMatrix01 * meshPivot.y;
+                        float y = rotMatrix10 * meshPivot.x + rotMatrix11 * meshPivot.y;
+                        meshData.UVs[i] = new Vector2(x, y) + pivot;
+                    }
 
                     meshData.AddTriangle(vIndex, 0, 1, 2);
                     meshData.AddTriangle(vIndex, 0, 2, 3);

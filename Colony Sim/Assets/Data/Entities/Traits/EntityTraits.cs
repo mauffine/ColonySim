@@ -93,18 +93,4 @@ namespace ColonySim.Entities
             return Name;
         }
     }
-
-    public class Trait_MessageOnTileEntry : EntityBaseTrait
-    {
-        public override string TRAIT_DEF_NAME => "MESSAGE";
-        public override IEntityModule[] TraitModules { get; }
-
-        public Trait_MessageOnTileEntry()
-        {
-            TraitModules = new IEntityModule[]
-            {
-                new Module_MessageOnTileEntry()
-            };
-        }
-    }
 }

@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
   controlled: {fileID: 519420031}
   FOVCamera: {fileID: 469121153}
@@ -201,6 +202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
 --- !u!4 &46400741
 Transform:
@@ -5111,6 +5113,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
 --- !u!4 &365389521
 Transform:
@@ -5156,6 +5159,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
 --- !u!4 &402714542
 Transform:
@@ -5425,12 +5429,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
   _rendererLogging: 4
+  _rendererPriority: 3
   _worldLogging: 4
+  _worldPriority: 3
   TileMapTransform: {fileID: 1470466182}
   ConcreteTileSprite: {fileID: 21300000, guid: b5d37ea3fa992e346981cb5d6eec890e, type: 3}
-  DrawGizmoTiles: 0
+  DrawGizmoTiles: 1
   DrawGizmoChunks: 1
   DrawGizmoNoiseMap: 0
 --- !u!4 &600916230
@@ -5639,6 +5646,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
 --- !u!4 &1401068156
 Transform:
@@ -5684,6 +5692,52 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1545644270
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1545644271}
+  - component: {fileID: 1545644272}
+  m_Layer: 0
+  m_Name: CreatureController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1545644271
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545644270}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1673750026}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1545644272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545644270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 132a339778c54754ebe5d4b54e950932, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _loggingLevel: 4
+  _loggingPriority: 6
+  _stamp: 0
 --- !u!1 &1580964943
 GameObject:
   m_ObjectHideFlags: 0
@@ -5728,6 +5782,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
   InputAsset: {fileID: -944628639613478452, guid: b8b7cbf5a8312c948b48233506359a7c, type: 3}
 --- !u!1 &1598362919
@@ -5860,6 +5915,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
   Systems:
   - {fileID: 46400740}
@@ -5891,6 +5947,7 @@ Transform:
   - {fileID: 365389521}
   - {fileID: 1804357769}
   - {fileID: 2145364199}
+  - {fileID: 1545644271}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5998,7 +6055,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9bdc8360aa3f5241a8a7eca22df6952, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 4
+  _loggingLevel: 5
+  _loggingPriority: 6
   _stamp: 0
 --- !u!4 &1804357769
 Transform:
@@ -6044,6 +6102,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loggingLevel: 4
+  _loggingPriority: 6
   _stamp: 0
 --- !u!4 &2145364199
 Transform:

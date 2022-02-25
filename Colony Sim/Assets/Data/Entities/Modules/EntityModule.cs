@@ -9,15 +9,4 @@ namespace ColonySim.Entities
     {
 
     }
-
-    public class Module_MessageOnTileEntry : IEntityModule, IEntityTriggerSystem
-    {
-        public void Trigger(IEntityTrigger Event)
-        {
-            if (Event is ITileTrigger tileEvent)
-            {
-                Debug.Log("Event Triggered!");
-            }
-        }
-    }
 }
