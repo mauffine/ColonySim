@@ -17,7 +17,11 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=purple>[CAMERA]</color>";
         [SerializeField]
         private bool _stamp = false;
         #endregion
@@ -27,7 +31,8 @@ namespace ColonySim.Systems
         public static float MinimumCameraBound = 3;
         public static float MaximumCameraBound = 20;
 
-        private bool movingCamera;
+        private bool _runningCameraMove = false;
+        private bool cameraMoveActuated = false;
 
         private void Awake()
         {
@@ -36,7 +41,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[Camera System Init]</color>");
+            this.Notice("<color=blue>[Camera System Init]</color>");
             var distance = Vector3.Distance(FOVCamera.transform.position, Background.transform.position);
             initHeightAtDist = FrustumHeightAtDistance(distance);
             desiredZ = FOVCamera.transform.position.z;
@@ -77,25 +82,42 @@ namespace ColonySim.Systems
         }
 
         public void OnMovement(InputAction.CallbackContext context)
-        {            
-            movingCamera = true;
-            StartCoroutine(OnMovementContinue());
+        {
+            cameraMoveActuated = true;
+            if (!_runningCameraMove)
+            {
+                StartCoroutine(OnMovementContinue());
+            }
         }
         IEnumerator OnMovementContinue()
         {
+            this.Verbose("CameraMovementBegin");
+            Vector2 targetPosition = Camera.main.transform.position;
             Vector2 velocity = Vector2.zero;
-            while (movingCamera)
+            _runningCameraMove = true;
+            while (_runningCameraMove)
             {
-                Vector2 targetPosition = (Vector2)Camera.main.transform.position + InputSystem.Get.CameraActions.Movement.ReadValue<Vector2>();
-                Vector2 movement = Vector2.SmoothDamp(Camera.main.transform.position, targetPosition, ref velocity, Instance_CameraMoveMultiplier());
+                Vector2 cameraPos = Camera.main.transform.position;
+                if (cameraMoveActuated)
+                {
+                    targetPosition += InputSystem.Get.CameraActions.Movement.ReadValue<Vector2>() * Time.deltaTime * Instance_CameraMoveMultiplier() * 5;
+                }
+
+                Vector2 movement = Vector2.SmoothDamp(cameraPos, targetPosition, ref velocity, Time.deltaTime * 65f);
                 Camera.main.transform.position = new Vector3(movement.x, movement.y, Camera.main.transform.position.z);
+
+                if (!cameraMoveActuated && (Vector2)Camera.main.transform.position == targetPosition)
+                {
+                    this.Verbose("CameraMovementEnd");
+                    _runningCameraMove = false;
+                }
                 yield return null;
             }
         }
 
         public void OnMovementCancel(InputAction.CallbackContext context)
         {
-            movingCamera = false;
+            cameraMoveActuated = false;
         }
 
         public static float CameraZoomMultiplier()
@@ -110,7 +132,7 @@ namespace ColonySim.Systems
 
         private float Instance_CameraMoveMultiplier()
         {
-            return Camera.main.orthographicSize * 0.1f;
+            return Camera.main.orthographicSize;
         }
         #endregion
 

@@ -20,7 +20,11 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=blue>[APPLICATION]</color>";
         [SerializeField]
         private bool _stamp = false;
 
@@ -42,7 +46,7 @@ namespace ColonySim.Systems
             DataPath = Application.dataPath + "/Data/";
             if (Systems != null)
             {
-                this.Verbose("<color=blue>[Initialising Application Systems..]</color>");
+                this.Notice("<color=blue>[Initialising Application Systems..]</color>");
                 InitializedSystems = new System[Systems.Length];
                 foreach (var sys in Systems)
                 {

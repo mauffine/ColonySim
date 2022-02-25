@@ -1,8 +1,11 @@
+using ColonySim.Systems;
 using ColonySim.World;
+using ColonySim.World.Tiles;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ColonySim.Entities.Material;
 
 namespace ColonySim.Entities
 {
@@ -16,26 +19,61 @@ namespace ColonySim.Entities
         ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new();
     }
 
+    public interface IEntityTaskSystem
+    {
+        void AssignTask(EntityTask Task);
+    }
+
+    public interface IEntityHasMaterial
+    {
+        IEntityMaterialDef Material { get; }
+    }
+
+    public struct EntityID
+    {
+        public int ID;
+
+        public EntityID(int ID)
+        {
+            this.ID = ID;
+        }
+
+        public static implicit operator int(EntityID EntityID) { return EntityID.ID; }
+        public static explicit operator EntityID(int ID) { return new EntityID(ID); }
+
+        public override string ToString()
+        {
+            return ID.ToString();
+        }
+    }
+
     /// <summary>
     /// Game Object
     /// </summary>
-    public interface IEntity : IEntityTriggerSystem, IEntityModuleSearch
+    public interface IEntity : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
-        string Name { get; }
+        string DefName { get; }
+        EntityID ID { get; set; }
         IEntityTrait[] Traits { get; }
+        IEntityGraphics EntityGraphicsDef { get; }
     }
 
     public abstract class EntityBase : IEntity
     {
-        public abstract string Name { get; }
+        public abstract string DefName { get; }
+        public EntityID ID { get; set; }
         public abstract IEntityTrait[] Traits { get; }
+        public IEntityGraphics EntityGraphicsDef { get; protected set; }
 
         public void Trigger(IEntityTrigger Event)
         {
-            foreach (var trait in Traits)
+            if (Traits != null)
             {
-                trait.Trigger(Event);
-            }
+                foreach (var trait in Traits)
+                {
+                    trait.Trigger(Event);
+                }
+            }          
         }
 
         public ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()
@@ -48,6 +86,17 @@ namespace ColonySim.Entities
                 }
             }
             return default;
+        }
+
+        public void AssignTask(EntityTask Task)
+        {
+            if (Traits != null)
+            {
+                foreach (var trait in Traits)
+                {
+                    trait.AssignTask(Task);
+                }
+            }
         }
     }
 }

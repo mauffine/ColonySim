@@ -18,14 +18,18 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=purple>[CURSOR]</color>";
         [SerializeField]
         private bool _stamp = false;
         #endregion
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[Cursor System Init]</color>");
+            this.Notice("<color=blue>[Cursor System Init]</color>");
             instance = this;
             base.Init();
         }

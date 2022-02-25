@@ -1,4 +1,4 @@
-// GENERATED AUTOMATICALLY FROM 'Assets/Data/Systems/InputControlMap.inputactions'
+// GENERATED AUTOMATICALLY FROM 'Assets/Data/Systems/Managers/InputControlMap.inputactions'
 
 using System;
 using System.Collections;

@@ -17,10 +17,15 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=purple>[INPUT]</color>";
         [SerializeField]
         private bool _stamp = false;
         #endregion
+
         [SerializeField] private InputActionAsset InputAsset;
         private InputControlMap inputActions;
         private void Awake()
@@ -29,7 +34,7 @@ namespace ColonySim.Systems
         }
         public override void Init()
         {
-            this.Verbose("<color=blue>[Input System Init]</color>");
+            this.Notice("<color=blue>[Input System Init]</color>");
             inputActions = new InputControlMap();
             Initialized = true;
             base.Init();

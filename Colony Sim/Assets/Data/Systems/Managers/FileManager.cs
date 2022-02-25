@@ -25,7 +25,11 @@ namespace ColonySim.Systems
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
         private LoggingLevel _loggingLevel = LoggingLevel.Warning;
+        public LoggingPriority LoggingPriority { get => _loggingPriority; set => _loggingPriority = value; }
+        [SerializeField]
+        private LoggingPriority _loggingPriority = LoggingPriority.AlwaysShow;
         public bool Stamp { get => _stamp; set => _stamp = value; }
+        public string LoggingPrefix => "<color=navy>[FILEMANAGER]</color>";
         [SerializeField]
         private bool _stamp = false;
         #endregion
@@ -34,7 +38,8 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Verbose("<color=blue>[File Manager Init]</color>");
+            this.Notice("<color=blue>[File Manager Init]</color>");
+            instance = this;
             Initialized = true;
             base.Init();
         }

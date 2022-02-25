@@ -11,7 +11,14 @@ namespace ColonySim
 
     public class WorldSimulation
     {
+        private static WorldSimulation instance;
+        public static WorldSimulation Get => instance;
         List<IWorldTick> Simulated;
+
+        public WorldSimulation()
+        {
+            instance = this;
+        }
 
         public void Tick()
         {
