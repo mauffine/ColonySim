@@ -1,14 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using ColonySim.World;
 using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
 using ColonySim.Rendering;
+using ISystem = ColonySim.Systems.System;
 
-namespace ColonySim.Systems
+namespace ColonySim.World
 {
-    public class WorldSystem : System, ILogger
+    public class WorldSystem : ISystem, ILogger
     {
         #region Static
         private static WorldSystem instance;
@@ -33,13 +33,13 @@ namespace ColonySim.Systems
         #endregion
         public static WorldRenderer Renderer;
         public static WorldSimulation Simulation;
+        public static GameWorld World => _world;
+        private static GameWorld _world;
 
         public Transform TileMapTransform;
-        public Sprite ConcreteTileSprite;
 
-        public const int CHUNK_SIZE = 8;
-        public GameWorld World;
-
+        public const int CHUNK_SIZE = 12;
+        
         [SerializeField]
         private bool DrawGizmoTiles;
         [SerializeField]
@@ -47,19 +47,18 @@ namespace ColonySim.Systems
         [SerializeField]
         private bool DrawGizmoNoiseMap;
 
-
         public override void Init()
         {
             this.Notice("<color=blue>[World System Init]</color>");
             instance = this;
-            World = new GameWorld(10, 10);
-            World.GenerateWorldChunks();
-            World.WorldGeneration(Time.realtimeSinceStartup);
+            _world = new GameWorld(5, 5);
+            _world.GenerateWorldChunks();
+            _world.WorldGeneration(Time.realtimeSinceStartup);
             Renderer = new WorldRenderer();
             Renderer.TileMapTransform = this.TileMapTransform;
             Simulation = new WorldSimulation();
 
-            foreach (var Chunk in World.GetChunks())
+            foreach (var Chunk in _world.Chunks())
             {
                 Renderer.RenderNewChunk(Chunk);
                 Simulation.Simulate(Chunk);
@@ -81,16 +80,38 @@ namespace ColonySim.Systems
             return new WorldPoint(X, Y);
         }
 
-        public ITileData GetTileData(WorldPoint worldPos)
+        #region Static Helpers
+
+        public IWorldChunk this[ChunkLocation Coordinate] =>
+            Chunk(Coordinate);
+
+        public ITileData this[WorldPoint Coordinate] =>
+            Tile(Coordinate);
+
+        public static ITileData Tile(WorldPoint Coordinates)
         {
-            ITileData Data = World.GetTileData(worldPos);
-            return Data;
+            instance.Debug($"Getting Tile At::{Coordinates}", LoggingPriority.Low);
+            if (Coordinates.X >= 0 && Coordinates.Y >= 0 &&
+                Coordinates.X < _world.Size.x && Coordinates.Y < _world.Size.y)
+                return TileUnsf(Coordinates);
+            return null;
         }
 
-        public IWorldChunk GetChunk(WorldPoint worldPos)
+        public static IWorldChunk Chunk(ChunkLocation Coordinates)
         {
-            return World.GetChunk(worldPos);
+            if (Coordinates.X >= 0 && Coordinates.Y >= 0 &&
+                Coordinates.X < _world.ChunkSize.x && Coordinates.Y < _world.ChunkSize.y)
+                return ChunkUnsf(Coordinates);
+            return null;
         }
+
+        public static ITileData TileUnsf(WorldPoint Coordinate) =>
+            _world.Tile(Coordinate);
+
+        public static IWorldChunk ChunkUnsf(WorldPoint worldPos) =>
+            _world.Chunk(worldPos);
+
+        #endregion
 
         public void OnDrawGizmos()
         {
@@ -98,9 +119,8 @@ namespace ColonySim.Systems
             {
                 if (DrawGizmoTiles)
                 {
-                    foreach (var tile in World)
+                    foreach (WorldPoint Coordinates in _world.WorldCoordinates())
                     {
-                        WorldPoint Coordinates = tile.Coordinates;
                         Gizmos.DrawWireCube(
                             new Vector3(Coordinates.X+.5f, Coordinates.Y+.5f),
                             Vector3.one);
@@ -108,7 +128,7 @@ namespace ColonySim.Systems
                 }
                 if (DrawGizmoChunks)
                 {
-                    foreach (var chunk in World.GetChunks())
+                    foreach (var chunk in _world.Chunks())
                     {
                         Gizmos.color = new Color(0, 0, 1, .1f);
                         Gizmos.DrawCube(
@@ -121,10 +141,9 @@ namespace ColonySim.Systems
                 }
                 if (DrawGizmoNoiseMap)
                 {
-                    foreach (var tile in World)
+                    foreach (WorldPoint Coordinates in _world.WorldCoordinates())
                     {
-                        WorldPoint Coordinates = tile.Coordinates;
-                        float h = World.groundNoiseMap[Coordinates.X + Coordinates.Y * World.Size.x];
+                        float h = _world.groundNoiseMap[Coordinates.X + Coordinates.Y * World.Size.x];
                         Gizmos.color = new Color(h, h, h, .9f);
                         Gizmos.DrawCube(
                             new Vector3(Coordinates.X + .5f, Coordinates.Y + .5f),

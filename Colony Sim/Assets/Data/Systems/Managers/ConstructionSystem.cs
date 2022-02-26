@@ -31,9 +31,6 @@ namespace ColonySim.Systems
         private WorldPoint CurrentPosition => CursorSystem.Get.currentMousePosition;
         private WorldPoint OldPosition => CursorSystem.Get.oldMousePosition;
 
-        private InputControl placementCtxt;
-        private InputControl removalCtxt;
-
         private ITileData waypointTile;
         private CharacterWaypoint waypoint;
 
@@ -54,7 +51,6 @@ namespace ColonySim.Systems
 
         public void OnPlaceTile(InputAction.CallbackContext context)
         {
-            placementCtxt = context.control;
             if (context.performed && InputSystem.AllowMouseEvent)
             {
                 PlaceTile();
@@ -63,7 +59,6 @@ namespace ColonySim.Systems
 
         public void OnRemoveTile(InputAction.CallbackContext context)
         {
-            removalCtxt = context.control;
             if (context.performed && InputSystem.AllowMouseEvent)
             {
                 PlaceWaypoint();
