@@ -93,9 +93,9 @@ namespace ColonySim.World
 
         public IEnumerable<WorldPoint> WorldCoordinates()
         {
-            for (int x = 0; x < WorldChunks.GetLength(0); x++)
+            for (int x = 0; x < WorldChunks.GetLength(0)*WorldSystem.CHUNK_SIZE; x++)
             {
-                for (int y = 0; y < WorldChunks.GetLength(1); y++)
+                for (int y = 0; y < WorldChunks.GetLength(1) * WorldSystem.CHUNK_SIZE; y++)
                 {
                     yield return new WorldPoint(x, y);
                 }

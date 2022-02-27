@@ -90,6 +90,9 @@ namespace ColonySim.World
             new LocalPoint(Coordinate.X % WorldSystem.CHUNK_SIZE,
             Coordinate.Y % WorldSystem.CHUNK_SIZE);
 
+        public static implicit operator ChunkLocation(LocalPoint Coordinate) =>
+            Coordinate.ChunkCoordinate;
+
         /// <summary>
         /// Return a Local Point copied relative to Chunk.
         /// </summary>

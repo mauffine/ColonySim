@@ -42,33 +42,32 @@ namespace ColonySim.Entities
 
         public bool Instanced = true;
         private ITextureRule[] TextureRules;
+        private readonly string DefName;
 
-        public EntityGraphics(string TextureID, string MaterialID, RenderLayer Layer = RenderLayer.BASE)
-        { this.TextureID = TextureID; this.MaterialID = MaterialID; this.Layer = Layer; }
+        public EntityGraphics(string TextureID, string MaterialID, string DefName, RenderLayer Layer = RenderLayer.BASE)
+        { this.TextureID = TextureID; this.MaterialID = MaterialID; this.Layer = Layer; this.DefName = DefName; }
 
         public EntityTextureSettings GetTexture(ITileData TileData)
         {
-            AdjacentTileData adjacentTileData = TileManager.Get.GetAdjacentTiles(TileData);
+            AdjacentTileData adjacentTileData = TileManager.AdjacencyData(TileData);
             if (TextureRules != null)
             {
                 for (int i = 0; i < TextureRules.Length; i++)
                 {
                     var textureRule = TextureRules[i];
-                    //UnityEngine.Debug.Log($"CHECKING RULE::{i}");
-                    if (textureRule.Match(TileData, adjacentTileData, out EntityTextureSettings Settings))
+                    int matchingNeighbours = 0;
+                    foreach (var neighbour in adjacentTileData)
                     {
-                        //UnityEngine.Debug.Log($"CHECKING RULE::{i}::PASS");
+                        if (neighbour != null && neighbour.Container.GetEntity(DefName) != null)
+                        {
+                            matchingNeighbours++;
+                        }
+                    }
+                    if (textureRule.Match(TileData, adjacentTileData, matchingNeighbours, out EntityTextureSettings Settings))
+                    {
                         return Settings;
                     }
-                    else
-                    {
-                        //UnityEngine.Debug.Log($"CHECKING RULE::{i}::FAIL");
-                    }
                 }
-            }
-            else
-            {
-                //UnityEngine.Debug.Log("DEFAULT TEXTURE");
             }
 
             return new EntityTextureSettings()
@@ -87,7 +86,7 @@ namespace ColonySim.Entities
 
     public interface ITextureRule
     {
-        bool Match(ITileData Data, AdjacentTileData adjacencyData, out EntityTextureSettings TextureSettings);
+        bool Match(ITileData Data, AdjacentTileData adjacencyData, int matchingNeighbours, out EntityTextureSettings TextureSettings);
     }
 
     public enum NeighbourRule { DontCare = 0, Exists = 1, Not = -1 }
@@ -123,7 +122,7 @@ namespace ColonySim.Entities
             }
         }
 
-        public bool Match(ITileData Data, AdjacentTileData adjacencyData, out EntityTextureSettings Settings)
+        public bool Match(ITileData Data, AdjacentTileData adjacencyData, int matchingNeighbours, out EntityTextureSettings Settings)
         {
             string _transformLog = Transform == TransformRule.Fixed ? "FIXED" : "ROTATED";
             adjacentTileData = adjacencyData;          
@@ -134,7 +133,26 @@ namespace ColonySim.Entities
                 ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray()
             };
 
-            this.Debug($"{adjacentTileData.Origin}::CHECKING::{this.TextureID}::{_transformLog}", LoggingPriority.Low);
+            this.Debug($"{adjacentTileData.Origin}::CHECKING::{this.TextureID}::{_transformLog}::{matchingNeighbours}", LoggingPriority.Low);
+
+            int maxNeighbourCount = 8;
+            int minNeighbourCount = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                if(NeighbourRules[i] == NeighbourRule.Not)
+                {
+                    maxNeighbourCount--;
+                }else if(NeighbourRules[i] == NeighbourRule.Exists)
+                {
+                    minNeighbourCount++;
+                }
+            }
+
+            if (matchingNeighbours > maxNeighbourCount || matchingNeighbours < minNeighbourCount)
+            {               
+                this.Debug($"{this.TextureID}::NEIGHBOURCHECK::<color=red>FAIL</color>", LoggingPriority.Low);
+                return false;
+            }
 
             bool allRulesPass = true;
             switch (Transform)
@@ -176,11 +194,23 @@ namespace ColonySim.Entities
                         };
                         return true;
                     }
-                    this.Verbose($"{this.TextureID}::<color=red>FAIL</color>", LoggingPriority.Low);
+                    this.Debug($"{this.TextureID}::<color=red>FAIL</color>", LoggingPriority.Low);
                     return false;
                 case TransformRule.RMirrorX:
+                    if (RotationMatch(Data, out float _Angle))
+                    {
+                        this.Verbose($"{this.TextureID}::<color=green>PASS</color>", LoggingPriority.Low);
+                        Settings = new EntityTextureSettings()
+                        {
+                            TextureID = this.TextureID,
+                            Angle = _Angle,
+                            ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray()
+                        };
+                        return true;
+                    }
                     if (RotatedMirrorMatch(Data, out float mirroredAngle))
                     {
+                        this.Verbose($"{this.TextureID}::<color=green>MIRROR PASS</color>", LoggingPriority.Low);
                         Settings = new EntityTextureSettings()
                         {
                             TextureID = this.TextureID,
@@ -190,6 +220,7 @@ namespace ColonySim.Entities
                         };
                         return true;
                     }
+                    this.Debug($"{this.TextureID}::<color=red>FAIL</color>", LoggingPriority.Low);
                     return false;
                 default:
                     return false;
@@ -209,21 +240,19 @@ namespace ColonySim.Entities
             // Check every 90 degree angle
             for (int angle = 0; angle <= 270; angle += 90)
             {
-                this.Verbose($"@{angle}::");
+                this.Debug($"@{angle}::", LoggingPriority.Low);
                 NeighbourRule[] RotatedRules = new NeighbourRule[8];
                 for (int i = 0; i < 8; i++)
                 {
                     NeighbourRule rule = NeighbourRules[GetRotatedIndex(i, angle)];
                     RotatedRules[i] = rule;
-                    this.Debug($"RotatedRules[{i}:{AdjacentTileData.IndexToString[i]}] = {rule}", LoggingPriority.Low);
+                    //this.Debug($"RotatedRules[{i}:{AdjacentTileData.IndexToString[i]}] = {rule}", LoggingPriority.Low);
                 }
 
                 bool angleRulesPass = true;
                 // Check each neighbour
                 for (int i = 0; i < 8; i++)
                 {
-                    int rotatedIndex = angle == 0 ? i : GetRotatedMirroredIndex(i, angle);
-
                     switch (RotatedRules[i])
                     {
                         case NeighbourRule.Exists:
@@ -243,13 +272,8 @@ namespace ColonySim.Entities
                 }
                 if (angleRulesPass)
                 {
-                    //UnityEngine.Debug.Log($"@ANGLE::{angle}::PASS");
                     Angle = angle;
                     return true;
-                }
-                else
-                {
-                    //UnityEngine.Debug.Log($"@ANGLE::{angle}::FAIL");
                 }
             }
             Angle = 0;
@@ -258,6 +282,45 @@ namespace ColonySim.Entities
 
         private bool RotatedMirrorMatch(ITileData Neighbour, out float Angle)
         {
+            // Check every 90 degree angle
+            for (int angle = 0; angle <= 270; angle += 90)
+            {
+                this.Verbose($"@{angle}::");
+                NeighbourRule[] RotatedRules = new NeighbourRule[8];
+                for (int i = 0; i < 8; i++)
+                {
+                    NeighbourRule rule = NeighbourRules[GetRotatedMirroredIndex(i, angle)];
+                    RotatedRules[i] = rule;
+                    this.Debug($"RotatedMirrorRules[{i}:{AdjacentTileData.IndexToString[i]}] = {rule}", LoggingPriority.Low);
+                }
+
+                bool angleRulesPass = true;
+                // Check each neighbour
+                for (int i = 0; i < 8; i++)
+                {
+                    switch (RotatedRules[i])
+                    {
+                        case NeighbourRule.Exists:
+                            angleRulesPass = angleRulesPass && MatchingNeighbour(adjacentTileData.AdjacentTiles[i]);
+                            string passLog = angleRulesPass ? "<color=green>PASS</color>" : "<color=red>FAIL</color>";
+                            this.Debug($"{AdjacentTileData.IndexToString[i]} - Exists? = {passLog}", LoggingPriority.Low);
+                            break;
+                        case NeighbourRule.Not:
+                            angleRulesPass = angleRulesPass && !MatchingNeighbour(adjacentTileData.AdjacentTiles[i]);
+                            string _passLog = angleRulesPass ? "<color=green>PASS</color>" : "<color=red>FAIL</color>";
+                            this.Debug($"{AdjacentTileData.IndexToString[i]} - Not? = {_passLog}", LoggingPriority.Low);
+                            break;
+                        default:
+                            break;
+                    }
+                    if (!angleRulesPass) break;
+                }
+                if (angleRulesPass)
+                {
+                    Angle = angle;
+                    return true;
+                }
+            }
             Angle = 0;
             return false;
         }

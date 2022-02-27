@@ -44,6 +44,7 @@ namespace ColonySim.World.Tiles {
             EntityGraphicsDef = new EntityGraphics(
                 "entity.wall-single",
                 "basic",
+                DefName,
                 RenderLayer.CONSTRUCTS);
 
             EntityGraphicsDef.AddTextureRules(new TextureAdjacentSelectionRule[]
@@ -55,9 +56,9 @@ namespace ColonySim.World.Tiles {
                    TextureAdjacentSelectionRule.TransformRule.Fixed,
                    new int[]
                    {
-                        -1, -1, -1,
+                         0, -1,  0,
                         -1,     -1,
-                        -1, -1, -1
+                         0, -1,  0
                    }
                  ),
 
@@ -130,7 +131,7 @@ namespace ColonySim.World.Tiles {
                 (
                    this,
                    "entity.wall-trijunction-full",
-                   TextureAdjacentSelectionRule.TransformRule.Rotated,
+                   TextureAdjacentSelectionRule.TransformRule.RMirrorX,
                    new int[]
                    {
                           1,  1, -1,
@@ -182,7 +183,7 @@ namespace ColonySim.World.Tiles {
                 (
                    this,
                    "entity.wall-full-corner",
-                   TextureAdjacentSelectionRule.TransformRule.Rotated,
+                   TextureAdjacentSelectionRule.TransformRule.RMirrorX,
                    new int[]
                    {
                           0,  -1,   0,
@@ -209,6 +210,7 @@ namespace ColonySim.World.Tiles {
             EntityGraphicsDef = new EntityGraphics(
                 "entity.concretefloor",
                 "simpleNoise",
+                DefName,
                 RenderLayer.TILE);
             
         }
@@ -229,6 +231,7 @@ namespace ColonySim.World.Tiles {
             EntityGraphicsDef = new EntityGraphics(
                 "entity.dirtfloor",
                 "simpleNoise",
+                DefName,
                 RenderLayer.TILE);
 
         }

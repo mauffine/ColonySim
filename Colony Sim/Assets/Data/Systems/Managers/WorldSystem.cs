@@ -5,6 +5,8 @@ using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
 using ColonySim.Rendering;
 using ISystem = ColonySim.Systems.System;
+using UnityEditor;
+using ColonySim.Systems;
 
 namespace ColonySim.World
 {
@@ -124,6 +126,14 @@ namespace ColonySim.World
                         Gizmos.DrawWireCube(
                             new Vector3(Coordinates.X+.5f, Coordinates.Y+.5f),
                             Vector3.one);
+
+                        Vector3 v = new Vector3(Coordinates.X, Coordinates.Y + .5f);
+                        Vector3 dif = new Vector3(CursorSystem.Get.currentMousePosition.X - Coordinates.X, CursorSystem.Get.currentMousePosition.Y - Coordinates.Y);
+                        if (Mathf.Abs(dif.x) < 3 && Mathf.Abs(dif.y) < 3)
+                        {
+                            Handles.Label(v, Coordinates.ToString());
+                        }
+                        
                     }
                 }
                 if (DrawGizmoChunks)

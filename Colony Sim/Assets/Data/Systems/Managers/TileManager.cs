@@ -11,9 +11,6 @@ namespace ColonySim.World.Tiles
     public class AdjacentTileData
     {
         public WorldPoint Origin;
-        //[0] [1] [2]
-        //[3] [O] [4]
-        //[5] [6] [7]
         public ITileData[] AdjacentTiles;
 
         public ITileData North => AdjacentTiles[1];
@@ -38,11 +35,24 @@ namespace ColonySim.World.Tiles
             }
         }
 
+        public int NeighbourCount()
+        {
+            int neighbours = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                if(AdjacentTiles[i] != null)
+                {
+                    neighbours++;
+                }
+            }
+            return neighbours;
+        }
+
         public static readonly Vector2Int[] ToCoordinate = new Vector2Int[]
         {
             new Vector2Int(-1,1), new Vector2Int(0,1), new Vector2Int(1,1),
             new Vector2Int(-1,0),                      new Vector2Int(1,0),
-            new Vector2Int(-1,-1),new Vector2Int(0,-1), new Vector2Int(-1,-1)
+            new Vector2Int(-1,-1),new Vector2Int(0,-1), new Vector2Int(1,-1)
         };
 
         public static readonly string[] IndexToString = new string[]
@@ -78,31 +88,57 @@ namespace ColonySim.World.Tiles
             base.Init();
         }
 
-        public AdjacentTileData GetAdjacentTiles(ITileData OriginData)
-        {
-            return GetAdjacentTiles(OriginData.Coordinates);
-        }
-
-        public AdjacentTileData GetAdjacentTiles(WorldPoint Origin)
+        public static ITileData[] AdjacentTiles(WorldPoint Origin)
         {
             int _X = Origin.X;
             int _Y = Origin.Y;
-            ITileData[] AdjacencyData = new ITileData[8];
+            ITileData[] adjacentTiles = new ITileData[8];
             int i = 0;
             for (int y = _Y + 1; y > _Y - 2; y--)
             {
                 for (int x = _X - 1; x < _X + 2; x++)
                 {
-                    this.Debug($"Adjacency Data[{i}]:{x - _X} - {y - _Y}");
+                    instance.Debug($"Adjacency Data[{i}]:{x - _X} - {y - _Y}");
                     //If this is the origin, skip
                     if (y == _Y && x == _X)
                     {
                         continue;
                     }
-                    AdjacencyData[i] = GetTileData((x, y));
+                    adjacentTiles[i] = GetTileData((x, y));
                     i++;
                 }
             }
+            return adjacentTiles;
+        }
+
+        public static WorldPoint[] AdjacentCoordinates(WorldPoint Origin)
+        {
+            int _X = Origin.X;
+            int _Y = Origin.Y;
+            WorldPoint[] adjacentTiles = new WorldPoint[8];
+            int i = 0;
+            for (int y = _Y + 1; y > _Y - 2; y--)
+            {
+                for (int x = _X - 1; x < _X + 2; x++)
+                {
+                    if (y == _Y && x == _X)
+                    {
+                        continue;
+                    }
+                    adjacentTiles[i] = new WorldPoint(_X+x, _Y+y); 
+                    i++;
+                }
+            }
+            return adjacentTiles;
+        }
+
+        public static AdjacentTileData AdjacencyData(ITileData OriginData) =>
+             AdjacencyData(OriginData.Coordinates);
+
+
+        public static AdjacentTileData AdjacencyData(WorldPoint Origin)
+        {
+            ITileData[] AdjacencyData = AdjacentTiles(Origin);
             AdjacentTileData AdjacenctTiles = new AdjacentTileData(Origin, AdjacencyData);
             return AdjacenctTiles;
         }
@@ -113,7 +149,7 @@ namespace ColonySim.World.Tiles
             return GetTileData(AdjustedCoordinate);
         }
 
-        public ITileData GetTileData((int X, int Y) Coordinates) => 
+        public static ITileData GetTileData((int X, int Y) Coordinates) => 
             WorldSystem.Tile(new WorldPoint(Coordinates));
 
         public ITileData GetTileData(WorldPoint Coordinates) =>
