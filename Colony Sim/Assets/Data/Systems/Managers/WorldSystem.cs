@@ -90,6 +90,8 @@ namespace ColonySim.World
         public ITileData this[WorldPoint Coordinate] =>
             Tile(Coordinate);
 
+        public static ITileData Tile(int X, int Y) => Tile(new WorldPoint(X, Y));
+
         public static ITileData Tile(WorldPoint Coordinates)
         {
             instance.Debug($"Getting Tile At::{Coordinates}", LoggingPriority.Low);

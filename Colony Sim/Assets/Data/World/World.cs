@@ -81,6 +81,9 @@ namespace ColonySim.World
             return WorldChunks[chunkLoc.X, chunkLoc.Y].Tile(Coordinates);         
         }
 
+        public ITileData Tile(int X, int Y) =>
+            Tile(new WorldPoint(X, Y));
+
         #region Enumerations
 
         public IEnumerator<ITileData> GetEnumerator()

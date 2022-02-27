@@ -1,4 +1,6 @@
 using ColonySim.Entities.Material;
+using ColonySim.Systems.Navigation;
+using ColonySim.World;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,7 +17,9 @@ namespace ColonySim.Entities
     {
         public abstract string TRAIT_DEF_NAME { get; }
         public abstract IEntityModule[] TraitModules { get; }
-        public void Trigger(IEntityTrigger Event)
+
+        #region Delegations
+        public virtual void Trigger(IEntityTrigger Event)
         {
             if (TraitModules != null)
             {
@@ -29,7 +33,7 @@ namespace ColonySim.Entities
             }           
         }
 
-        public ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()
+        public virtual ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()
         {
             if (TraitModules != null)
             {
@@ -61,6 +65,8 @@ namespace ColonySim.Entities
                 }
             }           
         }
+
+        #endregion
     }
 
     public class Trait_HasMaterial : EntityBaseTrait
@@ -76,7 +82,7 @@ namespace ColonySim.Entities
         }
     }
 
-    public class Trait_IsTile : EntityBaseTrait, ITaskWorker_GetTileName, IWalkData
+    public class Trait_Ground : EntityBaseTrait, ITaskWorker_GetTileName, IWalkNavData
     {
         public override string TRAIT_DEF_NAME => "TILE";
         public override IEntityModule[] TraitModules { get; }
@@ -85,7 +91,7 @@ namespace ColonySim.Entities
 
         protected string Name;
 
-        public Trait_IsTile(string Name, bool Navigable = true, int cost = 1)
+        public Trait_Ground(string Name, bool Navigable = true, int cost = 1)
         {
             this.Name = Name;
             Walkable = Navigable;
@@ -97,11 +103,35 @@ namespace ColonySim.Entities
             return Name;
         }
     }
-    public interface INavData
+
+    public class Trait_Impassable : EntityBaseTrait, IWalkNavData
+    {
+        public override string TRAIT_DEF_NAME => "IMPASSABLE";
+        public override IEntityModule[] TraitModules { get; }
+        public int Cost { get; private set; } = 0;
+        public bool Walkable { get; private set; } = false;
+
+        public override void Trigger(IEntityTrigger Event)
+        {
+            if(Event is EntityTrigger_OnTileEnter EntryEvent)
+            {
+                ITileNavData navData = EntryEvent.Data.NavData(NavigationMode.Walking);
+                navData.NavEntityAdded(this);
+
+            }
+            else if (Event is EntityTrigger_OnTileExit ExitEvent)
+            {
+                ITileNavData navData = ExitEvent.Data.NavData(NavigationMode.Walking);
+                navData.NavEntityRemoved(this);
+            }
+        }
+    }
+
+    public interface IEntityNavData
     {
         int Cost { get; }
     }
-    public interface IWalkData : INavData
+    public interface IWalkNavData : IEntityNavData
     {
         bool Walkable { get; }
     }

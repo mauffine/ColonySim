@@ -13,18 +13,33 @@ namespace ColonySim.Entities
 
     public interface ITileTrigger : IEntityTrigger
     {
-        ITileContainer Data { get; }
+        ITileData Data { get; }
     }
 
     public class EntityTrigger_OnTileEnter : ITileTrigger
     {
         public ITriggerCondition[] Conditions { get; }
 
-        public ITileContainer Data => data;
-        private readonly ITileContainer data;
+        public ITileData Data => data;
+        private readonly ITileData data;
+        public ITileContainer Container => container;
+        private readonly ITileContainer container;
 
-        public EntityTrigger_OnTileEnter(ITileContainer ContainerData)
-        { data = ContainerData; }
+        public EntityTrigger_OnTileEnter(ITileData Data, ITileContainer Container)
+        { data = Data; container = Container; }
+    }
+
+    public class EntityTrigger_OnTileExit : ITileTrigger
+    {
+        public ITriggerCondition[] Conditions { get; }
+
+        public ITileData Data => data;
+        private readonly ITileData data;
+        public ITileContainer Container => container;
+        private readonly ITileContainer container;
+
+        public EntityTrigger_OnTileExit(ITileData Data, ITileContainer Container)
+        { data = Data; container = Container; }
     }
 
     public interface ITriggerCondition

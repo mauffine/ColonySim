@@ -22,21 +22,11 @@ namespace ColonySim.World
     {
         List<IEntity> Entities;
         private int _entityIDCounter;
+        private readonly ITileData TileData;
 
-        public IEnumerable<IEntity> TileEntities()
+        public TileContainer(ITileData TileData)
         {
-            if (Entities != null)
-            {
-                foreach (var entity in Entities)
-                {
-                    yield return entity;
-                }
-            }            
-        }
-
-        public override int GetHashCode()
-        {
-            return Entities.GetHashCode() ^ Entities.Count;
+            this.TileData = TileData;
         }
 
         public void AddEntity(IEntity Entity)
@@ -44,21 +34,31 @@ namespace ColonySim.World
             if (Entities == null) { Entities = new List<IEntity>() { Entity }; }
             else { Entities.Add(Entity); }
             Entity.ID = new EntityID(_entityIDCounter++);
-            EntityTrigger_OnTileEnter _event = new EntityTrigger_OnTileEnter(this);
-            Entity.Trigger(_event);
+
+            Entity.Trigger(new EntityTrigger_OnTileEnter(TileData, this));
         }
 
         public void RemoveEntity(IEntity Entity)
         {
             Entities.Remove(Entity);
-            Entity.Trigger(new EntityTrigger_OnTileEnter(this));
+            Entity.Trigger(new EntityTrigger_OnTileExit(TileData, this));
         }
+
+        #region Events
 
         public void Trigger(IEntityTrigger Event)
         {
             foreach (var entity in Entities)
             {
                 entity.Trigger(Event);
+            }
+        }
+
+        public void AssignTask(EntityTask Task)
+        {
+            foreach (var entity in TileEntities())
+            {
+                entity.AssignTask(Task);
             }
         }
 
@@ -73,6 +73,10 @@ namespace ColonySim.World
             }
             return default;
         }
+
+        #endregion
+
+        #region Helpers
 
         public EntityID GetEntityID(IEntity Entity)
         {
@@ -112,12 +116,22 @@ namespace ColonySim.World
 
         public bool HasEntity(EntityID ID) => GetEntity(ID) != null;
 
-        public void AssignTask(EntityTask Task)
+        public IEnumerable<IEntity> TileEntities()
         {
-            foreach (var entity in TileEntities())
+            if (Entities != null)
             {
-                entity.AssignTask(Task);
+                foreach (var entity in Entities)
+                {
+                    yield return entity;
+                }
             }
         }
+
+        public override int GetHashCode()
+        {
+            return Entities.GetHashCode() ^ Entities.Count;
+        }
+
+        #endregion
     }
 }

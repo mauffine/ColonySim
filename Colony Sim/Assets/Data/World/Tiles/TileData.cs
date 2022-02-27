@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ColonySim.Entities;
 using ColonySim.Entities.Material;
+using ColonySim.Systems.Navigation;
 using ColonySim.World.Tiles;
 
 namespace ColonySim.World
@@ -13,19 +14,43 @@ namespace ColonySim.World
     {
         LocalPoint Coordinates { get; }
         ITileContainer Container { get; }
+
+        ITileNavData NavData(NavigationMode Mode);
     }
 }
 
-namespace ColonySim.World.Tiles { 
+namespace ColonySim.World.Tiles {
 
     public class TileData : ITileData
     {
         public ITileContainer Container { get; }
         public LocalPoint Coordinates { get { return coordinates; } }
         private readonly LocalPoint coordinates;
+        private Dictionary<NavigationMode, ITileNavData> _navData;
 
         public TileData((int X, int Y) Chunk, int X, int Y)
-        { coordinates = new LocalPoint(Chunk, X, Y); Container = new TileContainer(); }
+        { coordinates = new LocalPoint(Chunk, X, Y); Container = new TileContainer(this); }
+
+        public ITileNavData NavData(NavigationMode Mode)
+        {
+            if (_navData == null) _navData = new Dictionary<NavigationMode, ITileNavData>();
+            if (!_navData.ContainsKey(Mode))
+            {
+                switch (Mode)
+                {
+                    case NavigationMode.None:
+                        break;
+                    case NavigationMode.Walking:
+                        _navData.Add(Mode, new TileNav_Walkable());
+                        break;
+                    case NavigationMode.Flying:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return _navData[Mode];
+        }
     }
 
     public class ConcreteWall : EntityBase
@@ -37,7 +62,7 @@ namespace ColonySim.World.Tiles {
         {
             Traits = new IEntityTrait[]
             {
-                new Trait_IsTile(DefName, false),
+                new Trait_Impassable(),
                 new Trait_HasMaterial(new BasicWallMaterialDef()),
             };
 
@@ -205,7 +230,7 @@ namespace ColonySim.World.Tiles {
         {
             Traits = new IEntityTrait[]
             {
-                new Trait_IsTile(DefName)
+                new Trait_Ground(DefName)
             };
             EntityGraphicsDef = new EntityGraphics(
                 "entity.concretefloor",
@@ -226,7 +251,7 @@ namespace ColonySim.World.Tiles {
         {
             Traits = new IEntityTrait[]
             {
-                new Trait_IsTile(DefName)
+                new Trait_Ground(DefName)
             };
             EntityGraphicsDef = new EntityGraphics(
                 "entity.dirtfloor",

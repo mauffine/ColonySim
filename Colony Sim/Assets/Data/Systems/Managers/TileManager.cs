@@ -111,25 +111,30 @@ namespace ColonySim.World.Tiles
             return adjacentTiles;
         }
 
-        public static WorldPoint[] AdjacentCoordinates(WorldPoint Origin)
+        public static WorldPoint[] AdjacentCoordinates(int originX, int originY)
         {
-            int _X = Origin.X;
-            int _Y = Origin.Y;
             WorldPoint[] adjacentTiles = new WorldPoint[8];
             int i = 0;
-            for (int y = _Y + 1; y > _Y - 2; y--)
+            instance.Debug($"Adjacent Tiles For ({originX},{originY})..", LoggingPriority.Low);
+            for (int y = originY + 1; y > originY - 2; y--)
             {
-                for (int x = _X - 1; x < _X + 2; x++)
+                for (int x = originX - 1; x < originX + 2; x++)
                 {
-                    if (y == _Y && x == _X)
+                    if (x == originX && y == originY)
                     {
                         continue;
                     }
-                    adjacentTiles[i] = new WorldPoint(_X+x, _Y+y); 
+                    
+                    adjacentTiles[i] = new WorldPoint(x, y);
                     i++;
                 }
             }
             return adjacentTiles;
+        }
+
+        public static WorldPoint[] AdjacentCoordinates(WorldPoint Origin)
+        {
+            return AdjacentCoordinates(Origin.X, Origin.Y);
         }
 
         public static AdjacentTileData AdjacencyData(ITileData OriginData) =>

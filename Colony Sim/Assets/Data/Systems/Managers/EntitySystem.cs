@@ -8,6 +8,7 @@ using ILogger = ColonySim.LoggingUtility.ILogger;
 using ColonySim.Rendering;
 using ColonySim.Systems;
 using ISystem = ColonySim.Systems.System;
+using ColonySim.Systems.Navigation;
 
 namespace ColonySim.Entities
 {
@@ -57,6 +58,7 @@ namespace ColonySim.Entities
         {
             TileData.Container.AddEntity(EntityData);
             WorldRenderer.SetTileDirty(TileData);
+            NavigationSystem.SetTileDirty(TileData.Coordinates);
             return true;
         }
 
@@ -64,6 +66,7 @@ namespace ColonySim.Entities
         {
             TileData.Container.RemoveEntity(EntityData);
             WorldRenderer.SetTileDirty(TileData);
+            NavigationSystem.SetTileDirty(TileData.Coordinates);
             return true;
         }
 

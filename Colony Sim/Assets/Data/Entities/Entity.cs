@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ColonySim.Entities.Material;
+using ColonySim.Systems.Navigation;
+using System;
 
 namespace ColonySim.Entities
 {
@@ -56,6 +58,7 @@ namespace ColonySim.Entities
         EntityID ID { get; set; }
         IEntityTrait[] Traits { get; }
         IEntityGraphics EntityGraphicsDef { get; }
+
     }
 
     public abstract class EntityBase : IEntity
@@ -64,6 +67,11 @@ namespace ColonySim.Entities
         public EntityID ID { get; set; }
         public abstract IEntityTrait[] Traits { get; }
         public IEntityGraphics EntityGraphicsDef { get; protected set; }
+
+        protected void EntityNavData(NavigationMode Mode)
+        {
+
+        }
 
         public void Trigger(IEntityTrigger Event)
         {
