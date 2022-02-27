@@ -37,7 +37,7 @@ namespace ColonySim.World.Tiles {
         {
             Traits = new IEntityTrait[]
             {
-                new Trait_IsTile(DefName),
+                new Trait_IsTile(DefName, false),
                 new Trait_HasMaterial(new BasicWallMaterialDef()),
             };
 
