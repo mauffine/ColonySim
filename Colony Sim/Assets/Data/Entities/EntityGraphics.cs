@@ -134,7 +134,7 @@ namespace ColonySim.Entities
                 ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray()
             };
 
-            this.Debug($"{adjacentTileData.Origin.Coordinates}::CHECKING::{this.TextureID}::{_transformLog}", LoggingPriority.Low);
+            this.Debug($"{adjacentTileData.Origin}::CHECKING::{this.TextureID}::{_transformLog}", LoggingPriority.Low);
 
             bool allRulesPass = true;
             switch (Transform)
