@@ -10,7 +10,7 @@ namespace ColonySim.World.Tiles
 {
     public class AdjacentTileData
     {
-        public ITileData Origin;
+        public WorldPoint Origin;
         //[0] [1] [2]
         //[3] [O] [4]
         //[5] [6] [7]
@@ -25,7 +25,7 @@ namespace ColonySim.World.Tiles
         public ITileData SEast => AdjacentTiles[7];
         public ITileData SWest => AdjacentTiles[5];
 
-        public AdjacentTileData(ITileData Origin, ITileData[] AdjacencyData)
+        public AdjacentTileData(WorldPoint Origin, ITileData[] AdjacencyData)
         {
             this.Origin = Origin; this.AdjacentTiles = AdjacencyData;
         }
@@ -80,12 +80,16 @@ namespace ColonySim.World.Tiles
 
         public AdjacentTileData GetAdjacentTiles(ITileData OriginData)
         {
-            WorldPoint Origin = OriginData.Coordinates;
+            return GetAdjacentTiles(OriginData.Coordinates);
+        }
+
+        public AdjacentTileData GetAdjacentTiles(WorldPoint Origin)
+        {
             int _X = Origin.X;
             int _Y = Origin.Y;
             ITileData[] AdjacencyData = new ITileData[8];
             int i = 0;
-            for (int y = _Y + 1; y > _Y - 2; y--)                
+            for (int y = _Y + 1; y > _Y - 2; y--)
             {
                 for (int x = _X - 1; x < _X + 2; x++)
                 {
@@ -99,7 +103,7 @@ namespace ColonySim.World.Tiles
                     i++;
                 }
             }
-            AdjacentTileData AdjacenctTiles = new AdjacentTileData(OriginData, AdjacencyData);
+            AdjacentTileData AdjacenctTiles = new AdjacentTileData(Origin, AdjacencyData);
             return AdjacenctTiles;
         }
 
@@ -110,9 +114,9 @@ namespace ColonySim.World.Tiles
         }
 
         public ITileData GetTileData((int X, int Y) Coordinates) => 
-            WorldSystem.Get.GetTileData(new WorldPoint(Coordinates));
+            WorldSystem.Tile(new WorldPoint(Coordinates));
 
         public ITileData GetTileData(WorldPoint Coordinates) =>
-            WorldSystem.Get.GetTileData(Coordinates);
+            WorldSystem.Tile(Coordinates);
     }
 }

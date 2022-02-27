@@ -68,9 +68,9 @@ namespace ColonySim.Rendering
             instance = this;
         }
 
-        private Dictionary<IWorldChunk, RenderedChunk> RenderedChunks = new Dictionary<IWorldChunk, RenderedChunk>();
-        private List<IRenderObject> renderObjects_dirty = new List<IRenderObject>();
-        private List<IRenderObject> renderMeshQueue = new List<IRenderObject>();
+        private readonly Dictionary<IWorldChunk, RenderedChunk> RenderedChunks = new Dictionary<IWorldChunk, RenderedChunk>();
+        private readonly List<IRenderObject> renderObjects_dirty = new List<IRenderObject>();
+        private readonly List<IRenderObject> renderMeshQueue = new List<IRenderObject>();
 
         public void Tick()
         {
@@ -151,20 +151,20 @@ namespace ColonySim.Rendering
         // Get Chunk Data
 
         private IWorldChunk GetChunkData(WorldPoint Coordinates)
-        { return WorldSystem.Get.GetChunk(Coordinates); }
+        { return WorldSystem.Chunk(Coordinates); }
 
         public IWorldChunk GetChunkData(RenderedChunk RenderObject)
-        { return WorldSystem.Get.GetChunk(RenderObject.Coordinates); }
+        { return WorldSystem.Chunk(RenderObject.Coordinates); }
 
         private RenderedChunk GetRenderedChunk(IWorldChunk ChunkData)
         { return RenderedChunks[ChunkData]; }
 
         // Get Tile Data
         private ITileData GetTileData(WorldPoint Coordinates)
-        { return WorldSystem.Get.GetTileData(Coordinates); }
+        { return WorldSystem.Tile(Coordinates); }
 
         public ITileData GetTileData(RenderedTile RenderObject)
-        { return WorldSystem.Get.GetTileData(RenderObject.Coordinates); }
+        { return WorldSystem.Tile(RenderObject.Coordinates); }
 
         private RenderedTile GetRenderedTile(ITileData TileData)
         { return RenderedChunks[GetChunkData(TileData.Coordinates)].GetTile(TileData.Coordinates); }
@@ -229,7 +229,7 @@ namespace ColonySim.Rendering
             }
         }
         public WorldPoint Coordinates { get => coordinates; }
-        private ChunkLocation coordinates;
+        private readonly ChunkLocation coordinates;
         public bool Rendering { get; } = true;
 
         private Action<IRenderObject> renderUpdateEvent;
@@ -448,7 +448,6 @@ namespace ColonySim.Rendering
         private readonly RenderedTile Tile;
         private MeshData meshData;
         private bool[] readingFromNeighbours;
-        private List<MeshData> Meshes;
 
         public RenderedEntity(Transform Parent, RenderedTile Tile, IEntity Data)
         {
@@ -597,7 +596,7 @@ namespace ColonySim.Rendering
                     }
                     int vIndex = meshData.vertices.Count;
 
-                    this.Verbose($"Building {Texture.ToString()} @{TextureSettings.Angle}", LoggingPriority.Low);
+                    this.Verbose($"Building {Texture} @{TextureSettings.Angle}", LoggingPriority.Low);
 
                     meshData.vertices.Add(new Vector3(0, 0));
                     meshData.vertices.Add(new Vector3(0, 1));

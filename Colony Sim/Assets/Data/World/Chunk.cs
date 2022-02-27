@@ -12,7 +12,7 @@ namespace ColonySim.World
         ITileData[,] TileData { get; }
         public RectI ChunkRect { get; }
 
-        ITileData GetTileData(LocalPoint Coordinates);
+        ITileData Tile(LocalPoint Coordinates);
         IEnumerable<ITileData> GetTiles();
     }
     /// <summary>
@@ -27,8 +27,6 @@ namespace ColonySim.World
         public RectI ChunkRect => chunkRect;
         private readonly RectI chunkRect;
 
-        private GameWorld World => WorldSystem.Get.World;
-
         public WorldChunk(ChunkLocation Coordinates, RectI ChunkRect, int CHUNK_SIZE)
         {
             coordinates = Coordinates;
@@ -38,13 +36,12 @@ namespace ColonySim.World
 
         private void GenerateChunk(int CHUNK_SIZE)
         {
-            var Rand = new System.Random();
             TileData = new ITileData[CHUNK_SIZE, CHUNK_SIZE];
             for (int x = 0; x < CHUNK_SIZE; x++)
             {
                 for (int y = 0; y < CHUNK_SIZE; y++)
                 {
-                    ITileData Data = TileData[x, y] = new TileData(Coordinates, x, y);
+                    TileData[x, y] = new TileData(Coordinates, x, y);
                 }
             }
         }
@@ -65,13 +62,9 @@ namespace ColonySim.World
             
         }
 
-        public ITileData GetTileData(LocalPoint Point)
+        public ITileData Tile(LocalPoint Point)
         {
-            if (Point.X < TileData.GetLength(0) && Point.Y < TileData.GetLength(1))
-            {
-                return TileData[Point.X, Point.Y];
-            }
-            return null;          
+            return TileData[Point.X, Point.Y];
         }
     }
 }

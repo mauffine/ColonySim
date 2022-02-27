@@ -54,16 +54,12 @@ namespace ColonySim.Systems
             Ray ray = Camera.main.ScreenPointToRay(mousePos);
             Vector3 mouseVector = ray.GetPoint(-ray.origin.z / ray.direction.z);
             WorldPoint worldPoint = WorldSystem.Get.VectorToWorldPoint(mouseVector);
-            currentMousePosition = worldPoint;
-            var tileData = WorldSystem.Get.GetTileData(worldPoint);
-            if (tileData != null)
+            if (worldPoint != currentMousePosition)
             {
-                highlightedTile = tileData;
+                currentMousePosition = worldPoint;
+                highlightedTile = WorldSystem.Tile(worldPoint);
             }
-            else
-            {
-                highlightedTile = null;
-            }
+            
         }
 
         public void OnMousePointer(InputAction.CallbackContext context)

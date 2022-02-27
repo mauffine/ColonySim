@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using ColonySim.World;
 using ColonySim.World.Tiles;
-using ColonySim.Entities;
 using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
 using ColonySim.Rendering;
+using ColonySim.Systems;
+using ISystem = ColonySim.Systems.System;
 
-namespace ColonySim.Systems
+namespace ColonySim.Entities
 {
-    public class EntitySystem : System, ILogger
+    public class EntitySystem : ISystem, ILogger
     {
         #region Static
         private static EntitySystem instance;
@@ -52,12 +53,24 @@ namespace ColonySim.Systems
             }
         }
 
+        public bool PlaceEntity(IEntity EntityData, ITileData TileData)
+        {
+            TileData.Container.AddEntity(EntityData);
+            WorldRenderer.SetTileDirty(TileData);
+            return true;
+        }
+
+        public bool RemoveEntity(IEntity EntityData, ITileData TileData)
+        {
+            TileData.Container.RemoveEntity(EntityData);
+            WorldRenderer.SetTileDirty(TileData);
+            return true;
+        }
+
         public void CreateWallEntity(ITileData Data)
         {
-            ITileContainer Container = Data.Container;
             ConcreteWall entity = new ConcreteWall();
-            Container.AddEntity(entity);
-            WorldRenderer.SetTileDirty(Data);
+            PlaceEntity(entity, Data);
         }
     }
 }

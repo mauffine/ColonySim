@@ -5432,11 +5432,10 @@ MonoBehaviour:
   _loggingPriority: 6
   _stamp: 0
   _rendererLogging: 4
-  _rendererPriority: 3
+  _rendererPriority: 6
   _worldLogging: 4
-  _worldPriority: 3
+  _worldPriority: 6
   TileMapTransform: {fileID: 1470466182}
-  ConcreteTileSprite: {fileID: 21300000, guid: b5d37ea3fa992e346981cb5d6eec890e, type: 3}
   DrawGizmoTiles: 1
   DrawGizmoChunks: 1
   DrawGizmoNoiseMap: 0
@@ -5464,7 +5463,6 @@ GameObject:
   m_Component:
   - component: {fileID: 781862703}
   - component: {fileID: 781862702}
-  - component: {fileID: 781862701}
   - component: {fileID: 781862700}
   m_Layer: 0
   m_Name: Foreground Camera
@@ -5472,7 +5470,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &781862700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5488,7 +5486,7 @@ MonoBehaviour:
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
-  m_CameraType: 0
+  m_CameraType: 1
   m_Cameras: []
   m_RendererIndex: -1
   m_VolumeLayerMask:
@@ -5500,19 +5498,11 @@ MonoBehaviour:
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
-  m_ClearDepth: 1
+  m_ClearDepth: 0
   m_AllowXRRendering: 1
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
---- !u!81 &781862701
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 781862699}
-  m_Enabled: 1
 --- !u!20 &781862702
 Camera:
   m_ObjectHideFlags: 0
@@ -5553,7 +5543,7 @@ Camera:
   m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
-  m_OcclusionCulling: 0
+  m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
 --- !u!4 &781862703
@@ -5564,7 +5554,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 781862699}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 5, y: 5, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
