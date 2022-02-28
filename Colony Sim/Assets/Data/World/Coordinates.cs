@@ -37,7 +37,7 @@ namespace ColonySim.World
 
         public override string ToString()
         {
-            return string.Format("({0},{1})", X, Y);
+            return $"({X},{Y})";
         }
 
         public override int GetHashCode() =>
@@ -72,6 +72,8 @@ namespace ColonySim.World
     {
         public int X { get; }
         public int Y { get; }
+        public int WorldX => X + ChunkCoordinate.X * WorldSystem.CHUNK_SIZE;
+        public int WorldY => Y + ChunkCoordinate.Y * WorldSystem.CHUNK_SIZE;
         public ChunkLocation ChunkCoordinate { get; }
 
         public LocalPoint((int X, int Y) Chunk, (int X, int Y) Coordinates)

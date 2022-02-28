@@ -7,10 +7,20 @@ using ColonySim.World.Tiles;
 
 namespace ColonySim.World
 {
+    public interface INavNode : ICoordinate
+    {
+        INavEdge[] Edges { get; }
+    }
+
+    public interface INavEdge
+    {
+        int PathingCost { get; }
+    }
+
     /// <summary>
     /// Game Tile
     /// </summary>
-    public interface ITileData
+    public interface ITileData : INavNode
     {
         LocalPoint Coordinates { get; }
         ITileContainer Container { get; }
@@ -26,6 +36,11 @@ namespace ColonySim.World.Tiles {
         public ITileContainer Container { get; }
         public LocalPoint Coordinates { get { return coordinates; } }
         private readonly LocalPoint coordinates;
+        public int X => coordinates.WorldX;
+        public int Y => coordinates.WorldY;
+        //TODO: Edges by mode
+        public INavEdge[] Edges => _navData[NavigationMode.Walking].Edges;
+
         private Dictionary<NavigationMode, ITileNavData> _navData;
 
         public TileData((int X, int Y) Chunk, int X, int Y)
@@ -41,7 +56,10 @@ namespace ColonySim.World.Tiles {
                     case NavigationMode.None:
                         break;
                     case NavigationMode.Walking:
-                        _navData.Add(Mode, new TileNav_Walkable());
+                        if (_navData.ContainsKey(Mode) == false)
+                        {
+                            _navData.Add(Mode, new TileNav_Walkable(this));
+                        }                      
                         break;
                     case NavigationMode.Flying:
                         break;

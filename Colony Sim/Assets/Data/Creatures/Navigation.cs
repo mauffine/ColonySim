@@ -28,7 +28,8 @@ namespace ColonySim.Creatures
         private Stack<Node> currentPath;
         private WorldPoint _destination;
 
-        private Vector2? currentNode;
+        //private Vector2? currentNode;
+        private float moveDelta;
 
         public void SetTilePosition(WorldPoint tileCoordinates)
         {
@@ -45,42 +46,45 @@ namespace ColonySim.Creatures
 
         public void WorldTick(float delta)
         {
-            Move(delta);
+            if(currentPath != null)
+            {
+                Move(delta);
+            }          
+        }
+
+        private void Move(float delta)
+        {
+            moveDelta += delta;
+            if (moveDelta > 0.5f)
+            {
+                var nextNode = currentPath.Pop();
+                SetTilePosition(new WorldPoint(nextNode.X, nextNode.Y));
+                moveDelta = 0;
+                if (currentPath.Count == 0)
+                {
+                    currentPath = null;
+                }
+            }
+
         }
 
         //private void Move(float delta)
         //{
-        //    moveDelta += delta;
-        //    if (moveDelta > 0.5f)
+        //    if(currentNode != null && currentNode != Position)
         //    {
-        //        var nextNode = currentPath.Pop();
-        //        SetTilePosition(new WorldPoint(nextNode.Position));
-        //        moveDelta = 0;
-        //        if (currentPath.Count == 0)
-        //        {
-        //            currentPath = null;
-        //        }
+        //        Position = Vector2.MoveTowards(Position, (Vector2)currentNode, delta * 8);
         //    }
-
+        //    else if (currentPath != null)
+        //    {
+        //        // If we're at the next node
+        //        var next = currentPath.Pop();
+        //        currentNode = new Vector2(next.X+ 0.5f, next.Y + 0.5f);
+        //        if (currentPath.Count == 0) currentPath = null;
+        //    }
+        //    else
+        //    {
+        //        currentNode = null;
+        //    }
         //}
-
-        private void Move(float delta)
-        {
-            if(currentNode != null && currentNode != Position)
-            {
-                Position = Vector2.MoveTowards(Position, (Vector2)currentNode, delta * 8);
-            }
-            else if (currentPath != null)
-            {
-                // If we're at the next node
-                var next = currentPath.Pop();
-                currentNode = new Vector2(next.Position.x + 0.5f, next.Position.y + 0.5f);
-                if (currentPath.Count == 0) currentPath = null;
-            }
-            else
-            {
-                currentNode = null;
-            }
-        }
     }
 }

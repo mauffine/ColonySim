@@ -34,6 +34,7 @@ namespace ColonySim.Systems.Navigation
             if (startNode == null || endNode == null)
             {
                 this.Warning($"Invalid Nodes:: {Start} - {End}");
+                return null;
             }
 
             OpenList.Enqueue(startNode, 0);
@@ -54,17 +55,18 @@ namespace ColonySim.Systems.Navigation
 
                 ClosedList.Add(Current);
 
-                foreach (Edge edge in Current.Edges)
+                foreach (var navEdge in Current.Edges)
                 {
-                    if (edge == null) continue;
-                    Node neighbour = edge.node;
+                    if (navEdge == null) continue;
+                    PathEdge edge = (PathEdge)navEdge;
+                    Node neighbour = edge.Node;
                     if (ClosedList.Contains(neighbour)) continue;
                     if (OpenList.Contains(neighbour)) continue;
 
                     neighbour.OriginNode = Current;
                     // Distance is always 1 to an adjacent tile - No diagonal adjustment.
-                    neighbour.Weight = Current.Weight + edge.cost + Distance(Current.Position, neighbour.Position);
-                    neighbour.HeuristicScore = neighbour.Weight + HeuristicWeight(neighbour.Position, endNode.Position);
+                    neighbour.Weight = Current.Weight + edge.PathingCost + Distance((Current.X, Current.Y), (neighbour.X, neighbour.Y));
+                    neighbour.HeuristicScore = neighbour.Weight + HeuristicWeight((neighbour.X, neighbour.Y), (endNode.X, endNode.Y));
 
                     OpenList.Enqueue(neighbour, neighbour.HeuristicScore);
 
