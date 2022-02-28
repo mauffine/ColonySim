@@ -57,6 +57,12 @@ namespace ColonySim.World
 
         public static bool operator !=(WorldPoint a, WorldPoint b) =>
             !a.Equals(b);
+
+        public static bool operator ==(WorldPoint a, Vector2 b) =>
+            a.X == b.x && a.Y == b.y;
+
+        public static bool operator !=(WorldPoint a, Vector2 b) =>
+            a.X != b.x || a.Y != b.y;
     }
 
     /// <summary>

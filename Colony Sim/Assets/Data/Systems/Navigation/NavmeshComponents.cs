@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ColonySim.World.Tiles;
 using ColonySim.World;
 using ColonySim.LoggingUtility;
-using ILogger = ColonySim.LoggingUtility.ILogger;
 using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 
 namespace ColonySim.Systems.Navigation
@@ -17,8 +16,13 @@ namespace ColonySim.Systems.Navigation
 
     public class Node
     {
-        public int cost;
-        public Edge[] edges;
+        public (int x, int y) Position;
+        public int Cost;
+        public Edge[] Edges;
+
+        public Node OriginNode;
+        public float HeuristicScore; 
+        public float Weight;
     }
     public class Edge
     {
@@ -49,7 +53,8 @@ namespace ColonySim.Systems.Navigation
                     if (navData.Traversible)
                     {
                         Node n = new Node();
-                        n.cost = navData.Cost;
+                        n.Cost = navData.Cost;
+                        n.Position = (x, y);
                         nodes[x, y] = n;
                     }
                 }
@@ -153,7 +158,8 @@ namespace ColonySim.Systems.Navigation
                 index++;
             }
 
-            node.edges = edges;
+            node.Edges = edges;
+            node.Position = (X, Y);
         }
 
         public Node this[int X, int Y] =>

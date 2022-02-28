@@ -31,6 +31,7 @@ namespace ColonySim.Systems
         private WorldPoint CurrentPosition => CursorSystem.Get.currentMousePosition;
         private WorldPoint OldPosition => CursorSystem.Get.oldMousePosition;
 
+        public WorldPoint? WaypointCoordinate => waypointTile?.Coordinates;
         private ITileData waypointTile;
         private CharacterWaypoint waypoint;
 

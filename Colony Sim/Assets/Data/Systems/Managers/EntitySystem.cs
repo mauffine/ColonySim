@@ -58,7 +58,7 @@ namespace ColonySim.Entities
         {
             TileData.Container.AddEntity(EntityData);
             WorldRenderer.SetTileDirty(TileData);
-            NavigationSystem.SetTileDirty(TileData.Coordinates);
+            NavigationSystem.InvalidateNavigation(TileData.Coordinates);
             return true;
         }
 
@@ -66,7 +66,7 @@ namespace ColonySim.Entities
         {
             TileData.Container.RemoveEntity(EntityData);
             WorldRenderer.SetTileDirty(TileData);
-            NavigationSystem.SetTileDirty(TileData.Coordinates);
+            NavigationSystem.InvalidateNavigation(TileData.Coordinates);
             return true;
         }
 

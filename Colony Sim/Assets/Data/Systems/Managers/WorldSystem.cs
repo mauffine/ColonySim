@@ -45,6 +45,8 @@ namespace ColonySim.World
         [SerializeField]
         private bool DrawGizmoTiles;
         [SerializeField]
+        private bool DrawGizmoTileCoordinates;
+        [SerializeField]
         private bool DrawGizmoChunks;
         [SerializeField]
         private bool DrawGizmoNoiseMap;
@@ -129,13 +131,15 @@ namespace ColonySim.World
                             new Vector3(Coordinates.X+.5f, Coordinates.Y+.5f),
                             Vector3.one);
 
-                        Vector3 v = new Vector3(Coordinates.X, Coordinates.Y + .5f);
-                        Vector3 dif = new Vector3(CursorSystem.Get.currentMousePosition.X - Coordinates.X, CursorSystem.Get.currentMousePosition.Y - Coordinates.Y);
-                        if (Mathf.Abs(dif.x) < 3 && Mathf.Abs(dif.y) < 3)
+                        if (DrawGizmoTileCoordinates)
                         {
-                            Handles.Label(v, Coordinates.ToString());
-                        }
-                        
+                            Vector3 v = new Vector3(Coordinates.X, Coordinates.Y + .5f);
+                            Vector3 dif = new Vector3(CursorSystem.Get.currentMousePosition.X - Coordinates.X, CursorSystem.Get.currentMousePosition.Y - Coordinates.Y);
+                            if (Mathf.Abs(dif.x) < 3 && Mathf.Abs(dif.y) < 3)
+                            {
+                                Handles.Label(v, Coordinates.ToString());
+                            }
+                        }             
                     }
                 }
                 if (DrawGizmoChunks)

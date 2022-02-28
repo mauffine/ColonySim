@@ -1,3 +1,4 @@
+using ColonySim.Systems;
 using ColonySim.World;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,10 +30,26 @@ namespace ColonySim.Creatures
     {
         public override ICreatureNavigation Navigation => _navigation;
         private CreatureBaseNavigation _navigation;
+        private WorldPoint? Waypoint => ConstructionSystem.Get.WaypointCoordinate;
+        private WorldPoint currentTarget;
 
         public TestCreature()
         {
             _navigation = new CreatureBaseNavigation();
+        }
+
+        public override void WorldTick(float delta)
+        {
+            base.WorldTick(delta);
+
+            if (Waypoint != null && Waypoint != currentTarget)
+            {
+                currentTarget = (WorldPoint)Waypoint;
+                _navigation.Destination(currentTarget);
+            }
+
+            _navigation.WorldTick(delta);
+
         }
     }
 }

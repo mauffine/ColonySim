@@ -31,7 +31,7 @@ namespace ColonySim.Systems.Navigation
         [SerializeField]
         private bool drawNavMeshGizmo = false;
 
-        private NavMesh navMesh;
+        private static NavMesh navMesh;
 
         public override void Init()
         {
@@ -47,17 +47,53 @@ namespace ColonySim.Systems.Navigation
             navMesh.GenerateNavMesh(WorldSystem.World);
         }
 
-        public static void SetTileDirty(WorldPoint Coordinates)
+        public static void InvalidateNavigation(WorldPoint Coordinates)
         {
-            instance.instance_SetTileDirty(Coordinates.X, Coordinates.Y);
+            instance.instance_InvalidateNavigation(Coordinates.X, Coordinates.Y);
         }
 
-        private void instance_SetTileDirty(int X, int Y)
+        private void instance_InvalidateNavigation(int X, int Y)
         {
             this.Verbose($"Regenerating Dirty Node ({X},{Y})");
             navMesh.RefreshNode(X, Y);
             UPDATE_GIZMOS();
         }
+
+        public static Stack<Node> Path(WorldPoint Start, WorldPoint End)
+        {
+            instance.Notice($"Navigating From {Start} to {End}");
+            var heuristic = new AStar(Start, End);
+            return heuristic.Path();
+        }
+
+        public static Coroutine RunCoroutine(IEnumerator coroutine)
+        {
+            return instance.StartCoroutine(coroutine);
+        }
+
+        #region Helpers
+
+        public static Node Node(WorldPoint Point) => navMesh[Point.X, Point.Y];
+        public static Node Node(int X, int Y) => navMesh[X, Y];
+        public static Node[] Adjacent(WorldPoint Point) => Adjacent(Point.X, Point.Y);
+        public static Node[] Adjacent(int X, int Y)
+        {
+            List<Node> adjacentNodes = new List<Node>();
+            foreach (var pos in TileManager.AdjacentCoordinates(X, Y))
+            {
+                if (navMesh[pos.X, pos.Y] != null)
+                {
+                    adjacentNodes.Add(navMesh[pos.X,pos.Y]);
+                }
+            }
+            return adjacentNodes.ToArray();
+        }
+
+        #endregion
+
+#if DEBUG
+
+        #region Gizmos
 
         [Conditional("DEBUG")]
         private void UPDATE_GIZMOS()
@@ -65,10 +101,6 @@ namespace ColonySim.Systems.Navigation
             this.Verbose($"GIZMO REFRESH");
             nodeGizmoData = null;
         }
-
-#if DEBUG
-
-        #region Gizmos
 
         private Dictionary<Vector3, Vector3?[]> nodeGizmoData;
 
@@ -92,9 +124,9 @@ namespace ColonySim.Systems.Navigation
                                     if (node != null)
                                     {                                       
                                         Vector3?[] edgePositions = new Vector3?[8];
-                                        for (int i = 0; i < node.edges.Length; i++)
+                                        for (int i = 0; i < node.Edges.Length; i++)
                                         {
-                                            if (node.edges[i] != null)
+                                            if (node.Edges[i] != null)
                                             {
                                                 Vector2 edgeDir = AdjacentTileData.ToCoordinate[i];
                                                 edgePositions[i] = new Vector3(nodePos.x + edgeDir.x, nodePos.y + edgeDir.y);

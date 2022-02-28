@@ -5496,10 +5496,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6dab1d19bc76219439c52d6a09a3b899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 4
+  _loggingLevel: 5
   _loggingPriority: 6
   _stamp: 0
-  drawNavMeshGizmo: 0
+  drawNavMeshGizmo: 1
 --- !u!1 &781862699
 GameObject:
   m_ObjectHideFlags: 0
@@ -5775,6 +5775,7 @@ MonoBehaviour:
   _loggingLevel: 4
   _loggingPriority: 6
   _stamp: 0
+  drawCharactersGizmo: 1
 --- !u!1 &1580964943
 GameObject:
   m_ObjectHideFlags: 0
