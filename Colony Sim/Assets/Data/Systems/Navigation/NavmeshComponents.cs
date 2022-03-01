@@ -39,11 +39,11 @@ namespace ColonySim.Systems.Navigation
     public class PathEdge : INavEdge
     {
         public int PathingCost { get; private set; }
-        public Node Node;   
+        public INavNode Destination { get; }
         
-        public PathEdge(int PathingCost, Node Node)
+        public PathEdge(int PathingCost, INavNode Node)
         {
-            this.PathingCost = PathingCost; this.Node = Node;
+            this.PathingCost = PathingCost; Destination = Node;
         }
     }
 
@@ -66,7 +66,7 @@ namespace ColonySim.Systems.Navigation
     //            for (int y = 0; y < world.Size.y; y++)
     //            {
     //                ITileData t = world.Tile(x, y);
-    //                var navData = t.NavData(NavigationMode.Walking);
+    //                var navData = t.NavData[NavigationMode.Walking];
 
     //                if (navData.Traversible)
     //                {
@@ -99,7 +99,7 @@ namespace ColonySim.Systems.Navigation
     //        ITileData tileData = WorldSystem.Tile(X, Y);
     //        if (tileData != null)
     //        {
-    //            ITileNavData navData = tileData.NavData(NavigationMode.Walking);
+    //            ITileNavData navData = tileData.NavData[NavigationMode.Walking];
     //            if (navData != null)
     //            {
     //                if (navData.Traversible)
@@ -133,7 +133,7 @@ namespace ColonySim.Systems.Navigation
     //        ITileData tileData = WorldSystem.Tile(X, Y);
     //        if (tileData != null)
     //        {
-    //            ITileNavData navData = tileData.NavData(NavigationMode.Walking);
+    //            ITileNavData navData = tileData.NavData[NavigationMode.Walking];
     //            if (navData != null)
     //            {
     //                GenerateNode(navData, X, Y);

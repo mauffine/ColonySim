@@ -15,6 +15,7 @@ namespace ColonySim.World
     public interface INavEdge
     {
         int PathingCost { get; }
+        INavNode Destination { get; }
     }
 
     /// <summary>
@@ -25,7 +26,7 @@ namespace ColonySim.World
         LocalPoint Coordinates { get; }
         ITileContainer Container { get; }
 
-        ITileNavData NavData(NavigationMode Mode);
+        Dictionary<NavigationMode, ITileNavData> NavData { get; set; }
     }
 }
 
@@ -39,36 +40,12 @@ namespace ColonySim.World.Tiles {
         public int X => coordinates.WorldX;
         public int Y => coordinates.WorldY;
         //TODO: Edges by mode
-        public INavEdge[] Edges => _navData[NavigationMode.Walking].Edges;
+        public INavEdge[] Edges => NavData[NavigationMode.Walking].Edges;
 
-        private Dictionary<NavigationMode, ITileNavData> _navData;
+        public Dictionary<NavigationMode, ITileNavData> NavData { get; set; }
 
         public TileData((int X, int Y) Chunk, int X, int Y)
         { coordinates = new LocalPoint(Chunk, X, Y); Container = new TileContainer(this); }
-
-        public ITileNavData NavData(NavigationMode Mode)
-        {
-            if (_navData == null) _navData = new Dictionary<NavigationMode, ITileNavData>();
-            if (!_navData.ContainsKey(Mode))
-            {
-                switch (Mode)
-                {
-                    case NavigationMode.None:
-                        break;
-                    case NavigationMode.Walking:
-                        if (_navData.ContainsKey(Mode) == false)
-                        {
-                            _navData.Add(Mode, new TileNav_Walkable(this));
-                        }                      
-                        break;
-                    case NavigationMode.Flying:
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return _navData[Mode];
-        }
     }
 
     public class ConcreteWall : EntityBase

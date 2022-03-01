@@ -115,13 +115,13 @@ namespace ColonySim.Entities
         {
             if(Event is EntityTrigger_OnTileEnter EntryEvent)
             {
-                ITileNavData navData = EntryEvent.Data.NavData(NavigationMode.Walking);
+                ITileNavData navData = EntryEvent.Data.NavData[NavigationMode.Walking];
                 navData.NavEntityAdded(this);
 
             }
             else if (Event is EntityTrigger_OnTileExit ExitEvent)
             {
-                ITileNavData navData = ExitEvent.Data.NavData(NavigationMode.Walking);
+                ITileNavData navData = ExitEvent.Data.NavData[NavigationMode.Walking];
                 navData.NavEntityRemoved(this);
             }
         }

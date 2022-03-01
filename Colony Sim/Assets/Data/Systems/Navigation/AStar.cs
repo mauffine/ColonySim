@@ -15,6 +15,7 @@ namespace ColonySim.Systems.Navigation
 
         private readonly SimplePriorityQueue<Node> OpenList = new SimplePriorityQueue<Node>();
         private readonly List<Node> ClosedList = new List<Node>();
+
         private readonly WorldPoint Start;
         private readonly WorldPoint End;
         private Node Current;
@@ -59,7 +60,7 @@ namespace ColonySim.Systems.Navigation
                 {
                     if (navEdge == null) continue;
                     PathEdge edge = (PathEdge)navEdge;
-                    Node neighbour = edge.Node;
+                    Node neighbour = NavigationSystem.Node(edge.Destination);
                     if (ClosedList.Contains(neighbour)) continue;
                     if (OpenList.Contains(neighbour)) continue;
 
