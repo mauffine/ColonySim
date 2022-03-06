@@ -54,6 +54,33 @@ namespace ColonySim.Helpers
 			}
 		}
 
+		public IEnumerable<Vector2Int> GetBoundaries()
+        {
+			// LHS
+			for (int y = this.min.y; y < this.max.y; y++)
+			{
+				yield return new Vector2Int(this.min.x, y);
+			}
+
+			// THS
+			for (int x = this.min.x; x < this.max.x; x++)
+			{
+				yield return new Vector2Int(x, this.max.y);
+			}
+
+			// RHS
+			for (int y = this.min.y; y < this.max.y; y++)
+			{
+				yield return new Vector2Int(this.max.x, y);
+			}
+
+			// BHS
+			for (int x = this.min.x; x < this.max.x; x++)
+			{
+				yield return new Vector2Int(x, this.min.y);
+			}
+		}
+
 		/// Clip: clip this rectangle inside an other
 		public void Clip(RectI other)
 		{
@@ -83,6 +110,16 @@ namespace ColonySim.Helpers
 				v.y >= this.min.y &&
 				v.x < this.max.x &&
 				v.y < this.max.y
+			);
+		}
+
+		public bool Contains(int x, int y)
+        {
+			return (
+				x >= this.min.x &&
+				y >= this.min.y &&
+				x < this.max.x &&
+				y < this.max.y
 			);
 		}
 

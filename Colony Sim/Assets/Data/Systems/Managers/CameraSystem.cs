@@ -42,6 +42,7 @@ namespace ColonySim.Systems
         public override void Init()
         {
             this.Notice("<color=blue>[Camera System Init]</color>");
+            instance = this;
             var distance = Vector3.Distance(FOVCamera.transform.position, Background.transform.position);
             initHeightAtDist = FrustumHeightAtDistance(distance);
             desiredZ = FOVCamera.transform.position.z;
@@ -50,11 +51,10 @@ namespace ColonySim.Systems
 
         public override void OnInitialized()
         {
-            InputSystem sys = InputSystem.Get;
-            sys.CameraActions.SetCallbacks(this);
-            sys.CameraActions.Movement.performed += OnMovement;
-            sys.CameraActions.Movement.canceled += OnMovementCancel;
-            sys.CameraActions.Enable();
+            InputSystem.CameraActions.SetCallbacks(this);
+            InputSystem.CameraActions.Movement.performed += OnMovement;
+            InputSystem.CameraActions.Movement.canceled += OnMovementCancel;
+            InputSystem.CameraActions.Enable();
             base.OnInitialized();
         }
 
@@ -100,7 +100,7 @@ namespace ColonySim.Systems
                 Vector2 cameraPos = Camera.main.transform.position;
                 if (cameraMoveActuated)
                 {
-                    targetPosition += InputSystem.Get.CameraActions.Movement.ReadValue<Vector2>() * Time.deltaTime * Instance_CameraMoveMultiplier() * 5;
+                    targetPosition += InputSystem.CameraActions.Movement.ReadValue<Vector2>() * Time.deltaTime * Instance_CameraMoveMultiplier() * 5;
                 }
 
                 Vector2 movement = Vector2.SmoothDamp(cameraPos, targetPosition, ref velocity, Time.deltaTime * 65f);

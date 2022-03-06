@@ -33,21 +33,15 @@ namespace ColonySim.Systems.Navigation
         public INavEdge[] Edges { get; set; }
 
         private int intraversible = 0;
-        private WorldPoint Coordinates;
-
-        public TileNav_Walkable(WorldPoint Coordinates)
-        {
-            this.Coordinates = Coordinates;
-        }
 
         public void NavEntityAdded(IEntityNavData NavData)
         {
-            Debug.Log("Nav Entity Added!");
             if (NavData is IWalkNavData WalkData)
             {
                 Cost += WalkData.Cost;
                 if (!WalkData.Walkable) intraversible++;
             }
+            Debug.Log($"Nav Entity Added::Traversible:{Traversible}");
         }
 
         public void NavEntityRemoved(IEntityNavData NavData)

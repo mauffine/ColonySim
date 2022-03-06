@@ -14,39 +14,6 @@ namespace ColonySim.Systems.Navigation
         Flying = 2
     }
 
-    public class Node : INavNode
-    {
-        public int X { get; }
-        public int Y { get; }
-        public INavEdge[] Edges { get; private set; }
-        public int Cost;
-
-        public Node OriginNode;
-        public float HeuristicScore; 
-        public float Weight;
-
-        public Node(int X, int Y,int Cost)
-        {
-            this.X = X; this.Y = Y; this.Cost = Cost;
-        }
-
-        public void SetEdges(PathEdge[] Edges)
-        {
-            this.Edges = Edges;
-        }
-    }
-
-    public class PathEdge : INavEdge
-    {
-        public int PathingCost { get; private set; }
-        public INavNode Destination { get; }
-        
-        public PathEdge(int PathingCost, INavNode Node)
-        {
-            this.PathingCost = PathingCost; Destination = Node;
-        }
-    }
-
     //public class NavMesh : ILoggerSlave
     //{
     //    public LoggingUtility.ILogger Master => NavigationSystem.Get;

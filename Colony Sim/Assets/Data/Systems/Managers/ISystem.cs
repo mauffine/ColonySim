@@ -9,11 +9,11 @@ namespace ColonySim.Systems
     /// </summary>
     public interface ISystem
     {
-        public void Init();
-        public void OnInitialized();
-        public void Tick();
+        void Init();
+        void OnInitialized();
+        void Tick();
 
-        public bool Initialized { get; }
+        bool Initialized { get; }
     }
 
     public abstract class System : MonoBehaviour, ISystem

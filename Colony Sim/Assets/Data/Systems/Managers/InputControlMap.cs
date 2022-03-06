@@ -1,4 +1,4 @@
-// GENERATED AUTOMATICALLY FROM 'Assets/Data/Systems/Managers/InputControlMap.inputactions'
+// GENERATED AUTOMATICALLY FROM 'Assets/Data/Systems/Input/InputControlMap.inputactions'
 
 using System;
 using System.Collections;
@@ -35,6 +35,22 @@ namespace ColonySim
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Undo"",
+                    ""type"": ""Button"",
+                    ""id"": ""d0344953-aede-4d3a-871e-5efad76f42a9"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Redo"",
+                    ""type"": ""Button"",
+                    ""id"": ""4fd7dd68-7a2d-4c1e-9b52-7f7902f869b5"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -57,6 +73,28 @@ namespace ColonySim
                     ""processors"": """",
                     ""groups"": ""PC"",
                     ""action"": ""Remove Tile"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5165c723-e8e1-48da-96e8-634f8a7b3caf"",
+                    ""path"": ""<Keyboard>/z"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""Undo"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4a6c4641-f3a3-493e-bf16-a05580c519d3"",
+                    ""path"": ""<Keyboard>/x"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""Redo"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -178,6 +216,52 @@ namespace ColonySim
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Player"",
+            ""id"": ""3751751d-245b-4c29-8f5a-506a942b14c0"",
+            ""actions"": [
+                {
+                    ""name"": ""Move"",
+                    ""type"": ""Button"",
+                    ""id"": ""828f1480-a9a1-4191-830a-0d40f2c64190"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Select"",
+                    ""type"": ""Button"",
+                    ""id"": ""32e419f2-9a6a-40e1-8bb9-61e70ef9ec99"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""33b0ccab-e49c-47f3-bb24-35c4f60b204c"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fed2fdc0-e5eb-44af-ad3c-8467c89b905c"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -203,6 +287,8 @@ namespace ColonySim
             m_Construction = asset.FindActionMap("Construction", throwIfNotFound: true);
             m_Construction_PlaceTile = m_Construction.FindAction("Place Tile", throwIfNotFound: true);
             m_Construction_RemoveTile = m_Construction.FindAction("Remove Tile", throwIfNotFound: true);
+            m_Construction_Undo = m_Construction.FindAction("Undo", throwIfNotFound: true);
+            m_Construction_Redo = m_Construction.FindAction("Redo", throwIfNotFound: true);
             // Camera
             m_Camera = asset.FindActionMap("Camera", throwIfNotFound: true);
             m_Camera_Zoom = m_Camera.FindAction("Zoom", throwIfNotFound: true);
@@ -210,6 +296,10 @@ namespace ColonySim
             // Mouse
             m_Mouse = asset.FindActionMap("Mouse", throwIfNotFound: true);
             m_Mouse_MousePointer = m_Mouse.FindAction("MousePointer", throwIfNotFound: true);
+            // Player
+            m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
+            m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
+            m_Player_Select = m_Player.FindAction("Select", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -261,12 +351,16 @@ namespace ColonySim
         private IConstructionActions m_ConstructionActionsCallbackInterface;
         private readonly InputAction m_Construction_PlaceTile;
         private readonly InputAction m_Construction_RemoveTile;
+        private readonly InputAction m_Construction_Undo;
+        private readonly InputAction m_Construction_Redo;
         public struct ConstructionActions
         {
             private @InputControlMap m_Wrapper;
             public ConstructionActions(@InputControlMap wrapper) { m_Wrapper = wrapper; }
             public InputAction @PlaceTile => m_Wrapper.m_Construction_PlaceTile;
             public InputAction @RemoveTile => m_Wrapper.m_Construction_RemoveTile;
+            public InputAction @Undo => m_Wrapper.m_Construction_Undo;
+            public InputAction @Redo => m_Wrapper.m_Construction_Redo;
             public InputActionMap Get() { return m_Wrapper.m_Construction; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -282,6 +376,12 @@ namespace ColonySim
                     @RemoveTile.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRemoveTile;
                     @RemoveTile.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRemoveTile;
                     @RemoveTile.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRemoveTile;
+                    @Undo.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnUndo;
+                    @Undo.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnUndo;
+                    @Undo.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnUndo;
+                    @Redo.started -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRedo;
+                    @Redo.performed -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRedo;
+                    @Redo.canceled -= m_Wrapper.m_ConstructionActionsCallbackInterface.OnRedo;
                 }
                 m_Wrapper.m_ConstructionActionsCallbackInterface = instance;
                 if (instance != null)
@@ -292,6 +392,12 @@ namespace ColonySim
                     @RemoveTile.started += instance.OnRemoveTile;
                     @RemoveTile.performed += instance.OnRemoveTile;
                     @RemoveTile.canceled += instance.OnRemoveTile;
+                    @Undo.started += instance.OnUndo;
+                    @Undo.performed += instance.OnUndo;
+                    @Undo.canceled += instance.OnUndo;
+                    @Redo.started += instance.OnRedo;
+                    @Redo.performed += instance.OnRedo;
+                    @Redo.canceled += instance.OnRedo;
                 }
             }
         }
@@ -370,6 +476,47 @@ namespace ColonySim
             }
         }
         public MouseActions @Mouse => new MouseActions(this);
+
+        // Player
+        private readonly InputActionMap m_Player;
+        private IPlayerActions m_PlayerActionsCallbackInterface;
+        private readonly InputAction m_Player_Move;
+        private readonly InputAction m_Player_Select;
+        public struct PlayerActions
+        {
+            private @InputControlMap m_Wrapper;
+            public PlayerActions(@InputControlMap wrapper) { m_Wrapper = wrapper; }
+            public InputAction @Move => m_Wrapper.m_Player_Move;
+            public InputAction @Select => m_Wrapper.m_Player_Select;
+            public InputActionMap Get() { return m_Wrapper.m_Player; }
+            public void Enable() { Get().Enable(); }
+            public void Disable() { Get().Disable(); }
+            public bool enabled => Get().enabled;
+            public static implicit operator InputActionMap(PlayerActions set) { return set.Get(); }
+            public void SetCallbacks(IPlayerActions instance)
+            {
+                if (m_Wrapper.m_PlayerActionsCallbackInterface != null)
+                {
+                    @Move.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
+                    @Move.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
+                    @Move.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
+                    @Select.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSelect;
+                    @Select.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSelect;
+                    @Select.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSelect;
+                }
+                m_Wrapper.m_PlayerActionsCallbackInterface = instance;
+                if (instance != null)
+                {
+                    @Move.started += instance.OnMove;
+                    @Move.performed += instance.OnMove;
+                    @Move.canceled += instance.OnMove;
+                    @Select.started += instance.OnSelect;
+                    @Select.performed += instance.OnSelect;
+                    @Select.canceled += instance.OnSelect;
+                }
+            }
+        }
+        public PlayerActions @Player => new PlayerActions(this);
         private int m_PCSchemeIndex = -1;
         public InputControlScheme PCScheme
         {
@@ -383,6 +530,8 @@ namespace ColonySim
         {
             void OnPlaceTile(InputAction.CallbackContext context);
             void OnRemoveTile(InputAction.CallbackContext context);
+            void OnUndo(InputAction.CallbackContext context);
+            void OnRedo(InputAction.CallbackContext context);
         }
         public interface ICameraActions
         {
@@ -392,6 +541,11 @@ namespace ColonySim
         public interface IMouseActions
         {
             void OnMousePointer(InputAction.CallbackContext context);
+        }
+        public interface IPlayerActions
+        {
+            void OnMove(InputAction.CallbackContext context);
+            void OnSelect(InputAction.CallbackContext context);
         }
     }
 }

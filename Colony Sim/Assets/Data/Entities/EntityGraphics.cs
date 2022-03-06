@@ -13,7 +13,7 @@ namespace ColonySim.Entities
     public interface IEntityGraphics
     {
         string MaterialID { get; }
-        float DrawPriority { get; }
+        int DrawPriority { get; }
         RenderLayer Layer { get; }
 
         EntityTextureSettings GetTexture(ITileData TileData);
@@ -37,7 +37,7 @@ namespace ColonySim.Entities
     {
         public string TextureID { get; protected set; }
         public string MaterialID { get; protected set; } = "tilables";
-        public float DrawPriority { get; protected set; } = 0f;
+        public int DrawPriority { get; protected set; } = 0;
         public RenderLayer Layer { get; protected set; }
 
         public bool Instanced = true;
@@ -183,7 +183,7 @@ namespace ColonySim.Entities
                     
                     return allRulesPass;
                 case TransformRule.Rotated:
-                    if (RotationMatch(Data, out float Angle))
+                    if (RotationMatch(out float Angle))
                     {
                         this.Verbose($"{this.TextureID}::<color=green>PASS</color>", LoggingPriority.Low);
                         Settings = new EntityTextureSettings()
@@ -197,7 +197,7 @@ namespace ColonySim.Entities
                     this.Debug($"{this.TextureID}::<color=red>FAIL</color>", LoggingPriority.Low);
                     return false;
                 case TransformRule.RMirrorX:
-                    if (RotationMatch(Data, out float _Angle))
+                    if (RotationMatch(out float _Angle))
                     {
                         this.Verbose($"{this.TextureID}::<color=green>PASS</color>", LoggingPriority.Low);
                         Settings = new EntityTextureSettings()
@@ -208,7 +208,7 @@ namespace ColonySim.Entities
                         };
                         return true;
                     }
-                    if (RotatedMirrorMatch(Data, out float mirroredAngle))
+                    if (RotatedMirrorMatch(out float mirroredAngle))
                     {
                         this.Verbose($"{this.TextureID}::<color=green>MIRROR PASS</color>", LoggingPriority.Low);
                         Settings = new EntityTextureSettings()
@@ -231,11 +231,10 @@ namespace ColonySim.Entities
         {
             if (Neighbour == null) return false;
             IEntity Match = Neighbour.Container.GetEntity(Entity.DefName);
-            string _matchLog = Match != null ? "EXISTS" : "NOT";
             return Match != null;
         }
 
-        private bool RotationMatch(ITileData Neighbour, out float Angle)
+        private bool RotationMatch(out float Angle)
         {
             // Check every 90 degree angle
             for (int angle = 0; angle <= 270; angle += 90)
@@ -280,7 +279,7 @@ namespace ColonySim.Entities
             return false;
         }
 
-        private bool RotatedMirrorMatch(ITileData Neighbour, out float Angle)
+        private bool RotatedMirrorMatch(out float Angle)
         {
             // Check every 90 degree angle
             for (int angle = 0; angle <= 270; angle += 90)

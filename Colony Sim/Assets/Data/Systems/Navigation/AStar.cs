@@ -13,12 +13,16 @@ namespace ColonySim.Systems.Navigation
         public LoggingUtility.ILogger Master => NavigationSystem.Get;
         public string LoggingPrefix => $"<color=yellow>[ASTAR]</color>";
 
-        private readonly SimplePriorityQueue<Node> OpenList = new SimplePriorityQueue<Node>();
-        private readonly List<Node> ClosedList = new List<Node>();
+        private readonly SimplePriorityQueue<INavNode> OpenList = new SimplePriorityQueue<INavNode>();
+        private readonly List<INavNode> ClosedList = new List<INavNode>();
+        private readonly Dictionary<INavNode, INavNode> Trace = new Dictionary<INavNode, INavNode>();
+
+        private readonly Dictionary<INavNode, float> Weights = new Dictionary<INavNode, float>();
+        private readonly Dictionary<INavNode, float> HeuristicScores = new Dictionary<INavNode, float>();
 
         private readonly WorldPoint Start;
         private readonly WorldPoint End;
-        private Node Current;
+        private INavNode Current;
 
         public AStar(WorldPoint Start, WorldPoint End)
         {
@@ -26,11 +30,11 @@ namespace ColonySim.Systems.Navigation
             this.End = End;
         }
 
-        public Stack<Node> Path()
+        public Stack<INavNode> Path()
         {
             this.Verbose("Generating Heuristic Path...");
-            Node startNode = NavigationSystem.Node(Start);
-            Node endNode = NavigationSystem.Node(End);
+            INavNode startNode = WorldSystem.Tile(Start);
+            INavNode endNode = WorldSystem.Tile(End);
 
             if (startNode == null || endNode == null)
             {
@@ -39,6 +43,8 @@ namespace ColonySim.Systems.Navigation
             }
 
             OpenList.Enqueue(startNode, 0);
+            Weights[startNode] = 0;
+            HeuristicScores[startNode] = HeuristicWeight((Start.X, Start.Y), (End.X, End.Y));
 
             bool targetReached = false;
             int nodesTraversed = 0;
@@ -56,32 +62,40 @@ namespace ColonySim.Systems.Navigation
 
                 ClosedList.Add(Current);
 
-                foreach (var navEdge in Current.Edges)
+                foreach (var edge in Current.Edges)
                 {
-                    if (navEdge == null) continue;
-                    PathEdge edge = (PathEdge)navEdge;
-                    Node neighbour = NavigationSystem.Node(edge.Destination);
+                    if (edge == null) continue;
+                    INavNode neighbour = edge.Destination;
                     if (ClosedList.Contains(neighbour)) continue;
-                    if (OpenList.Contains(neighbour)) continue;
 
-                    neighbour.OriginNode = Current;
-                    // Distance is always 1 to an adjacent tile - No diagonal adjustment.
-                    neighbour.Weight = Current.Weight + edge.PathingCost + Distance((Current.X, Current.Y), (neighbour.X, neighbour.Y));
-                    neighbour.HeuristicScore = neighbour.Weight + HeuristicWeight((neighbour.X, neighbour.Y), (endNode.X, endNode.Y));
+                    float weight = Weights[Current] + edge.PathingCost + Distance((Current.X, Current.Y), (neighbour.X, neighbour.Y));
+                    bool alreadyOpen = OpenList.Contains(neighbour);
+                    if (alreadyOpen && weight >= Weights[neighbour]) continue;
 
-                    OpenList.Enqueue(neighbour, neighbour.HeuristicScore);
+                    if (Trace.ContainsKey(neighbour) == false) Trace.Add(neighbour, Current);
+                    else Trace[neighbour] = Current;
+                    if (Weights.ContainsKey(neighbour) == false) Weights.Add(neighbour, weight);
+                    else Weights[neighbour] = weight;
 
+                    float heuristicWeight = weight + HeuristicWeight((neighbour.X, neighbour.Y), (endNode.X, endNode.Y));
+                    if (HeuristicScores.ContainsKey(neighbour) == false) HeuristicScores.Add(neighbour, heuristicWeight);
+                    else HeuristicScores[neighbour] = heuristicWeight;
+
+                    if (!alreadyOpen)
+                    {
+                        OpenList.Enqueue(neighbour, HeuristicScores[neighbour]);
+                    }
                 }
             }  
 
             if (targetReached)
             {
-                this.Verbose($"Path Located ({nodesTraversed}) at cost::{Current.HeuristicScore}");
-                Stack<Node> Path = new Stack<Node>();
+                this.Verbose($"Path Located ({nodesTraversed}) after {nodesTraversed} nodes.");
+                Stack<INavNode> Path = new Stack<INavNode>();
                 do
                 {
                     Path.Push(Current);
-                    Current = Current.OriginNode;
+                    Current = Trace[Current];
                 } while (Current != null && Current != startNode);
                 return Path;
             }

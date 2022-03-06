@@ -7,6 +7,8 @@ using static ColonySim.InputControlMap;
 using ColonySim.World;
 using ColonySim.LoggingUtility;
 using ILogger = ColonySim.LoggingUtility.ILogger;
+using ColonySim.Systems.Actions;
+using ColonySim.Systems.Tasks;
 
 namespace ColonySim.Systems
 {
@@ -31,9 +33,7 @@ namespace ColonySim.Systems
         private WorldPoint CurrentPosition => CursorSystem.Get.currentMousePosition;
         private WorldPoint OldPosition => CursorSystem.Get.oldMousePosition;
 
-        public WorldPoint? WaypointCoordinate => waypointTile?.Coordinates;
-        private ITileData waypointTile;
-        private CharacterWaypoint waypoint;
+        private bool placingEntity;
 
         public override void Init()
         {
@@ -44,15 +44,30 @@ namespace ColonySim.Systems
 
         public override void OnInitialized()
         {
-            InputSystem sys = InputSystem.Get;
-            sys.ConstructionActions.SetCallbacks(this);
-            sys.ConstructionActions.Enable();
+            InputSystem.ConstructionActions.SetCallbacks(this);
+            //InputSystem.ConstructionActions.Enable();
             base.OnInitialized();
+        }
+
+        public override void Tick()
+        {
+            base.Tick();
+            if (InputSystem.AllowMouseEvent)
+            {
+                if (CurrentPosition != OldPosition)
+                {
+                    if (placingEntity)
+                    {
+                        PlaceTile();
+                    }
+                }
+            }
         }
 
         public void OnPlaceTile(InputAction.CallbackContext context)
         {
-            if (context.performed && InputSystem.AllowMouseEvent)
+            placingEntity = context.control.IsActuated() && InputSystem.AllowMouseEvent;
+            if (placingEntity)
             {
                 PlaceTile();
             }
@@ -62,7 +77,7 @@ namespace ColonySim.Systems
         {
             if (context.performed && InputSystem.AllowMouseEvent)
             {
-                PlaceWaypoint();
+                RemoveTile();
             }
         }
 
@@ -72,7 +87,8 @@ namespace ColonySim.Systems
             ITileData Data = CursorSystem.Get.highlightedTile;
             if (Data != null)
             {
-                EntitySystem.Get.CreateWallEntity(Data);
+                IEntity newEntity = EntitySystem.Get.CreateWallEntity();
+                new Action_PlaceEntity(CurrentPosition, newEntity).AutoExec();
                 this.Verbose("Placed Entity");
             }
             else
@@ -81,15 +97,20 @@ namespace ColonySim.Systems
             }
         }
 
-        private void PlaceWaypoint()
+        private void RemoveTile()
         {
+            this.Debug("Clicked::" + CurrentPosition);
             ITileData Data = CursorSystem.Get.highlightedTile;
             if (Data != null)
             {
-                if (waypoint == null) { waypoint = EntitySystem.Get.CreateWaypoint(Data); }
-                else { EntitySystem.Get.PlaceWaypoint(waypoint, waypointTile, Data); }
-                waypointTile = Data;
-                this.Verbose("Placed Waypoint");
+                IEntity[] toRemove = Data.Container.Contents;
+                foreach (var entity in toRemove)
+                {
+                    if (entity.EntityType != EntityType.FLOOR)
+                    {
+                        EntitySystem.Get.RemoveEntity(entity, Data);
+                    }
+                }
             }
         }
 
@@ -97,28 +118,25 @@ namespace ColonySim.Systems
         {
             if (Initialized)
             {
-                if (waypoint != null)
-                {
-                    WorldPoint Coordinates = waypointTile.Coordinates;
-                    Gizmos.color = new Color(1f, 0.5f, 0.5f, 0.7f);
-                    Gizmos.DrawSphere(
-                        new Vector3(Coordinates.X+0.5f, Coordinates.Y+0.5f, 1f),
-                        0.3f
-                    );
-                }
+
             }          
         }
-    }
 
-    public class CharacterWaypoint : EntityBase
-    {
-        public override string DefName => "Character Waypoint";
-
-        public override IEntityTrait[] Traits { get; }
-
-        public CharacterWaypoint()
+        public void OnUndo(InputAction.CallbackContext context)
         {
+            if (context.performed)
+            {
+                ActionHandler.Undo(1);
+            }
             
+        }
+
+        public void OnRedo(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                ActionHandler.Redo(1);
+            }          
         }
     }
 }

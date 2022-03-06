@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ColonySim.Systems;
+using System;
 
 namespace ColonySim.World
 {
@@ -63,6 +64,9 @@ namespace ColonySim.World
 
         public static bool operator !=(WorldPoint a, Vector2 b) =>
             a.X != b.x || a.Y != b.y;
+
+        public static implicit operator Vector3(WorldPoint v) =>
+            new Vector3(v.X, v.Y);
     }
 
     /// <summary>
@@ -140,6 +144,12 @@ namespace ColonySim.World
 
         public ChunkLocation((int X, int Y) Coordinates)
         { this.X = Coordinates.X; this.Y = Coordinates.Y; }
+
+        public WorldPoint Origin =>
+            new WorldPoint(X * WorldSystem.CHUNK_SIZE, Y * WorldSystem.CHUNK_SIZE);
+
+        public WorldPoint Boundary =>
+             new WorldPoint((X+1) * WorldSystem.CHUNK_SIZE - 1, (Y+1) * WorldSystem.CHUNK_SIZE - 1);
 
         public static implicit operator (int, int)(ChunkLocation Chunk) =>
             (Chunk.X, Chunk.Y);

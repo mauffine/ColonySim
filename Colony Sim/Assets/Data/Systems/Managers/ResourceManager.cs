@@ -31,6 +31,14 @@ namespace ColonySim.Systems
         private const string EntityTexturePath = EntityResourcePath + "Textures";
         private const string EntityShaderPath = EntityResourcePath + "Shaders";
 
+        private const string CreatureResourcePath = "Creatures/";
+
+        private const string CharacterResourcePath = CreatureResourcePath + "Characters/";
+        private const string CharacterTexturePath = CharacterResourcePath + "Textures";
+
+        private const string UtilityResourcePath = "Utility/";
+        private const string UtilityTexturePath = UtilityResourcePath + "Textures";
+
         public override void Init()
         {
             this.Notice("<color=blue>[Resource Manager Init]</color>");
@@ -89,6 +97,42 @@ namespace ColonySim.Systems
                 return shader;
             }
             this.Warning($"Failed to locate Material: {shaderName} at path: {_path}");
+            return null;
+        }
+
+        public static Texture2D LoadCharacterTexture(string textureName)
+        {
+            return instance.Instance_LoadCharacterTexture(textureName);
+        }
+
+        private Texture2D Instance_LoadCharacterTexture(string textureName)
+        {
+            this.Verbose($"Retrieving Character Texture: {textureName}");
+            string _path = $"{CharacterTexturePath}/{textureName}";
+            Texture2D tileTexture = Resources.Load(_path) as Texture2D;
+            if (tileTexture != null)
+            {
+                return tileTexture;
+            }
+            this.Warning($"Failed to locate Texture: {textureName} at path: {_path}");
+            return null;
+        }
+
+        public static Texture2D LoadUtilityTexture(string textureName)
+        {
+            return instance.Instance_LoadUtilityTexture(textureName);
+        }
+
+        private Texture2D Instance_LoadUtilityTexture(string textureName)
+        {
+            this.Verbose($"Retrieving Character Texture: {textureName}");
+            string _path = $"{UtilityTexturePath}/{textureName}";
+            Texture2D tileTexture = Resources.Load(_path) as Texture2D;
+            if (tileTexture != null)
+            {
+                return tileTexture;
+            }
+            this.Warning($"Failed to locate Texture: {textureName} at path: {_path}");
             return null;
         }
     }

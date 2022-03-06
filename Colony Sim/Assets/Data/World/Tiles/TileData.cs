@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ColonySim.Creatures;
 using ColonySim.Entities;
 using ColonySim.Entities.Material;
 using ColonySim.Systems.Navigation;
@@ -25,6 +26,7 @@ namespace ColonySim.World
     {
         LocalPoint Coordinates { get; }
         ITileContainer Container { get; }
+        ICreature Creature { get; set; }
 
         Dictionary<NavigationMode, ITileNavData> NavData { get; set; }
     }
@@ -39,6 +41,7 @@ namespace ColonySim.World.Tiles {
         private readonly LocalPoint coordinates;
         public int X => coordinates.WorldX;
         public int Y => coordinates.WorldY;
+        public ICreature Creature { get; set; }
         //TODO: Edges by mode
         public INavEdge[] Edges => NavData[NavigationMode.Walking].Edges;
 
@@ -52,6 +55,7 @@ namespace ColonySim.World.Tiles {
     {
         public override string DefName => "Concrete Wall";
         public override IEntityTrait[] Traits { get; }
+        public override EntityType EntityType => EntityType.CONSTRUCT;
 
         public ConcreteWall()
         {
@@ -220,6 +224,7 @@ namespace ColonySim.World.Tiles {
         public override string DefName => "Concrete Floor";
 
         public override IEntityTrait[] Traits { get; }
+        public override EntityType EntityType => EntityType.FLOOR;
 
         public ConcreteFloor()
         {
@@ -241,6 +246,7 @@ namespace ColonySim.World.Tiles {
         public override string DefName => "Dirt Floor";
 
         public override IEntityTrait[] Traits { get; }
+        public override EntityType EntityType => EntityType.FLOOR;
 
         public DirtFloor()
         {

@@ -49,6 +49,15 @@ namespace ColonySim.Entities
         }
     }
 
+    public enum EntityType
+    {
+        Nil = 0,
+        FLOOR = 1,
+        FURNITURE = 2,
+        CONSTRUCT = 3,
+        ITEM = 4,
+    }
+
     /// <summary>
     /// Game Object
     /// </summary>
@@ -58,7 +67,7 @@ namespace ColonySim.Entities
         EntityID ID { get; set; }
         IEntityTrait[] Traits { get; }
         IEntityGraphics EntityGraphicsDef { get; }
-
+        EntityType EntityType { get; }
     }
 
     public abstract class EntityBase : IEntity
@@ -67,6 +76,7 @@ namespace ColonySim.Entities
         public EntityID ID { get; set; }
         public abstract IEntityTrait[] Traits { get; }
         public IEntityGraphics EntityGraphicsDef { get; protected set; }
+        public abstract EntityType EntityType { get; }  
 
         protected void EntityNavData(NavigationMode Mode)
         {

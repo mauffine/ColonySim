@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using ColonySim.Entities;
 
 namespace ColonySim.World
 {
     public interface ITileContainer : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
-        IEnumerable<IEntity> TileEntities();
         void AddEntity(IEntity Entity);
         void RemoveEntity(IEntity Entity);
         EntityID GetEntityID(IEntity Entity);
@@ -14,13 +14,17 @@ namespace ColonySim.World
         IEntity GetEntity(string EntityDefName);
 
         bool HasEntity(EntityID EntityID);
+
+        IEntity[] Contents { get; }
+        IEntity First { get; }
+        IEnumerable<IEntity> TileEntities();
     }
     /// <summary>
     /// Game Tile
     /// </summary>
     public class TileContainer : ITileContainer
     {
-        List<IEntity> Entities;
+        private SortedSet<IEntity> SortedEntities;
         private int _entityIDCounter;
         private readonly ITileData TileData;
 
@@ -31,8 +35,8 @@ namespace ColonySim.World
 
         public void AddEntity(IEntity Entity)
         {
-            if (Entities == null) { Entities = new List<IEntity>() { Entity }; }
-            else { Entities.Add(Entity); }
+            if (SortedEntities == null) { SortedEntities = new SortedSet<IEntity>(new SortByRenderOrder()); }
+            SortedEntities.Add(Entity);
             Entity.ID = new EntityID(_entityIDCounter++);
 
             Entity.Trigger(new EntityTrigger_OnTileEnter(TileData, this));
@@ -40,7 +44,7 @@ namespace ColonySim.World
 
         public void RemoveEntity(IEntity Entity)
         {
-            Entities.Remove(Entity);
+            SortedEntities.Remove(Entity);
             Entity.Trigger(new EntityTrigger_OnTileExit(TileData, this));
         }
 
@@ -48,7 +52,7 @@ namespace ColonySim.World
 
         public void Trigger(IEntityTrigger Event)
         {
-            foreach (var entity in Entities)
+            foreach (var entity in SortedEntities)
             {
                 entity.Trigger(Event);
             }
@@ -64,9 +68,9 @@ namespace ColonySim.World
 
         public ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()
         {
-            if (Entities != null)
+            if (SortedEntities != null)
             {
-                foreach (var entity in Entities)
+                foreach (var entity in SortedEntities)
                 {
                     return entity.FindModule<ModuleType>();
                 }
@@ -104,7 +108,7 @@ namespace ColonySim.World
 
         public IEntity GetEntity(string EntityDefName)
         {
-            foreach (var entity in Entities)
+            foreach (var entity in SortedEntities)
             {
                 if (entity.DefName == EntityDefName)
                 {
@@ -116,11 +120,13 @@ namespace ColonySim.World
 
         public bool HasEntity(EntityID ID) => GetEntity(ID) != null;
 
+        public IEntity First => SortedEntities.First();
+        public IEntity[] Contents => SortedEntities.ToArray();
         public IEnumerable<IEntity> TileEntities()
         {
-            if (Entities != null)
+            if (SortedEntities != null)
             {
-                foreach (var entity in Entities)
+                foreach (var entity in SortedEntities)
                 {
                     yield return entity;
                 }
@@ -129,9 +135,27 @@ namespace ColonySim.World
 
         public override int GetHashCode()
         {
-            return Entities.GetHashCode() ^ Entities.Count;
+            return SortedEntities.GetHashCode() ^ SortedEntities.Count;
         }
 
         #endregion
+    }
+
+    public class SortByRenderOrder : IComparer<IEntity>
+    {
+        public int Compare(IEntity x, IEntity y)
+        {
+            if (x.EntityGraphicsDef != null && y.EntityGraphicsDef != null)
+            {
+                int xV = (x.EntityGraphicsDef.DrawPriority+1) * (int)x.EntityGraphicsDef.Layer;
+                int yV = (y.EntityGraphicsDef.DrawPriority+1) * (int)y.EntityGraphicsDef.Layer;
+                return yV.CompareTo(xV);
+            }
+            if (x.EntityGraphicsDef == null && y.EntityGraphicsDef == null)
+            {
+                return 0;
+            }
+            return x.EntityGraphicsDef == null ? -1 : 1;
+        }
     }
 }

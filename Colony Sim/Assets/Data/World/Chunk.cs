@@ -10,10 +10,14 @@ namespace ColonySim.World
     {
         ChunkLocation Coordinates { get; }
         ITileData[,] TileData { get; }
-        public RectI ChunkRect { get; }
+        RectI ChunkRect { get; }
+        WorldRegion[] Regions { get; }
 
         ITileData Tile(LocalPoint Coordinates);
         IEnumerable<ITileData> GetTiles();
+
+        void AddRegion(WorldRegion region);
+        void ClearRegions();
     }
     /// <summary>
     /// Collection of Tiles
@@ -26,6 +30,8 @@ namespace ColonySim.World
         private readonly ChunkLocation coordinates;
         public RectI ChunkRect => chunkRect;
         private readonly RectI chunkRect;
+        public WorldRegion[] Regions => pathfindingRegions.ToArray();
+        private List<WorldRegion> pathfindingRegions;
 
         public WorldChunk(ChunkLocation Coordinates, RectI ChunkRect, int CHUNK_SIZE)
         {
@@ -44,6 +50,10 @@ namespace ColonySim.World
                     TileData[x, y] = new TileData(Coordinates, x, y);
                 }
             }
+            pathfindingRegions = new List<WorldRegion>()
+            {
+                new WorldRegion(coordinates.Origin, coordinates)
+            };
         }
 
         public IEnumerable<ITileData> GetTiles()
@@ -55,6 +65,19 @@ namespace ColonySim.World
                     yield return TileData[x, y];
                 }
             }
+        }
+
+        public void AddRegion(WorldRegion Region)
+        {
+            pathfindingRegions.Add(Region);
+        }
+
+        public void ClearRegions()
+        {
+            pathfindingRegions = new List<WorldRegion>()
+            {
+                new WorldRegion(coordinates.Origin, coordinates)
+            };
         }
 
         public void WorldTick(float delta)
