@@ -6,11 +6,11 @@ using ILogger = ColonySim.LoggingUtility.ILogger;
 
 namespace ColonySim.Systems.Tasks
 {
-    public class WorkSystem : System, ILogger
+    public class TaskSystem : System, ILogger
     {
         #region Static
-        private static WorkSystem instance;
-        public static WorkSystem Get => instance;
+        private static TaskSystem instance;
+        public static TaskSystem Get => instance;
         public List<string> Logs { get; set; } = new List<string>();
         public LoggingLevel LoggingLevel { get => _loggingLevel; set => _loggingLevel = value; }
         [SerializeField]
@@ -25,7 +25,7 @@ namespace ColonySim.Systems.Tasks
 
         #endregion
 
-        public Queue<IWorkOrder> WorkOrderQueue = new Queue<IWorkOrder>();
+        public Queue<IWorkOrder> TaskQueue = new Queue<IWorkOrder>();
         private List<IWorker> workers = new List<IWorker>();
 
         public override void Init()
@@ -37,29 +37,29 @@ namespace ColonySim.Systems.Tasks
 
         public static void Delegate(IWorkOrder Order)
         {
-            instance.WorkDelegated(Order);
+            instance.TaskDelegated(Order);
         }
 
-        private void WorkDelegated(IWorkOrder Order)
+        private void TaskDelegated(IWorkOrder Order)
         {
             this.Verbose("Delegating Work..");
             foreach (var worker in workers)
             {
                 if (worker.Available)
                 {
-                    AssignWorkTo(Order, worker);
+                    AssignTaskTo(Order, worker);
                     return;
                 }
             }
-            WorkOrderQueue.Enqueue(Order);
+            TaskQueue.Enqueue(Order);
         }
 
         public static void Assign(IWorkOrder Task, IWorker Worker)
         {
-            instance.AssignWorkTo(Task, Worker);
+            instance.AssignTaskTo(Task, Worker);
         }
 
-        private void AssignWorkTo(IWorkOrder Task, IWorker Worker)
+        private void AssignTaskTo(IWorkOrder Task, IWorker Worker)
         {
             instance.Verbose("Assigning Task to Worker..");
             Worker.AssignTask(Task);

@@ -42,10 +42,8 @@ namespace ColonySim.Creatures
         public bool Available { get; } = true;
 
         public override ICreatureNavigation Navigation => _navigation;
-        private CreatureBaseNavigation _navigation;
+        private readonly CreatureBaseNavigation _navigation;
         public override string RenderTexture => "survivor-temp";
-
-        private WorldPoint currentTarget;
 
         public TestCreature()
         {
@@ -58,9 +56,14 @@ namespace ColonySim.Creatures
             if (CurrentOrder != null)
             {
                 CurrentOrder.Tick();
-                if (CurrentOrder.State == IWorkState.Completed)
+                if ((CurrentOrder.Status & ITaskStatus.FINISHED) != 0)
                 {
                     TaskQueue.RemoveFirst();
+                    CurrentOrder = null;
+                    LookForWork();
+                }
+                else if ((CurrentOrder.Status & ITaskStatus.PAUSED) != 0)
+                {
                     CurrentOrder = null;
                     LookForWork();
                 }
@@ -69,26 +72,23 @@ namespace ColonySim.Creatures
 
         }
 
-        public void AssignTask(IWorkOrder Task, WorkAssignmentMode Assignment = WorkAssignmentMode.DEFAULT)
+        public void AssignTask(IWorkOrder Task, TaskAssignmentMethod Assignment = TaskAssignmentMethod.DEFAULT)
         {
             this.Verbose("Assigning Task..");
-            if (Assignment == WorkAssignmentMode.DEFAULT || Assignment == WorkAssignmentMode.ENQUEUE)
+            if (Assignment == TaskAssignmentMethod.DEFAULT || Assignment == TaskAssignmentMethod.ENQUEUE)
             {
                 TaskQueue.AddLast(Task);
-                Task.Assign(this);
                 LookForWork();
             }
-            else if (Assignment == WorkAssignmentMode.INTERRUPT)
+            else if (Assignment == TaskAssignmentMethod.INTERRUPT)
             {
                 if (CurrentOrder != null)
                 {
-                    CurrentOrder.Interrupt();
-                    TaskQueue.AddFirst(CurrentOrder);
-                    TaskQueue.AddFirst(Task);
-                    BeginTask(Task);
+                    CurrentOrder.Interrupt();                  
                 }
+                TaskQueue.AddFirst(Task);
             }
-            else if (Assignment == WorkAssignmentMode.CLEAR)
+            else if (Assignment == TaskAssignmentMethod.CLEAR)
             {
                 if (CurrentOrder != null)
                 {
@@ -96,7 +96,6 @@ namespace ColonySim.Creatures
                 }
                 TaskQueue.Clear();
                 TaskQueue.AddFirst(Task);
-                BeginTask(Task);
             }
             
         }
@@ -115,7 +114,8 @@ namespace ColonySim.Creatures
         private void BeginTask(IWorkOrder Task)
         {
             CurrentOrder = Task;
-            Task.Start();
+            Task.Assign(this);
+            Task.Execute();
         }
     }
 }

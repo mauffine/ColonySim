@@ -58,11 +58,11 @@ namespace ColonySim
                     if (selectedCreature != null && selectedCreature is IWorker Worker)
                     {
                         this.Notice($"Creating Interrupt Move..");
-                        Worker.AssignTask(newTask, WorkAssignmentMode.CLEAR);
+                        Worker.AssignTask(newTask, TaskAssignmentMethod.CLEAR);
                     }
                     else
                     {                       
-                        WorkSystem.Delegate(newTask);
+                        TaskSystem.Delegate(newTask);
                     }                   
                 }
             }

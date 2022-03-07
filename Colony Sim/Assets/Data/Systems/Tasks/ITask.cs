@@ -1,76 +1,214 @@
+using ColonySim.Creatures;
 using ColonySim.World;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ColonySim.LoggingUtility;
+using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
+using System;
 
 namespace ColonySim.Systems.Tasks
 {
+    [Flags]
+    public enum ITaskStatus
+    {
+        Nil = 0,
+        Cancelled = 1,
+        Pending = 2,
+        Running = 4,
+        Interrupted = 8,
+        Success = 16,
+        Failure = 32,
+
+        FINISHED = Success|Failure|Cancelled,
+        PAUSED = Pending|Interrupted
+    }
+
+    public enum ITaskTransition
+    {
+        Nil = 0,
+        Stopping = 1,
+        Interrupting = 2,
+        Finishing = 3
+    }
+
+    public enum TaskAssignmentMethod
+    {
+        DEFAULT = 0,
+        ENQUEUE = 1,
+        INTERRUPT = 2,
+        CLEAR = 3,
+    }
+
+    public interface IWorker
+    {
+        IWorkOrder CurrentOrder { get; }
+        ICreatureNavigation Navigation { get; }
+        LinkedList<IWorkOrder> TaskQueue { get; }
+        bool Available { get; }
+
+        void AssignTask(IWorkOrder Task, TaskAssignmentMethod AssignmentMode = TaskAssignmentMethod.DEFAULT);
+    }
 
     public interface ITask
     {
-        IWorkOrder WorkOrder { get; }
-        IWorkState State { get; }
+        ITaskStatus Status { get; }
+        ITaskTransition TransitionState { get; }
 
-        void SetState(IWorkState State);
-        bool Execute();
         void Tick();
-        void Finish();
-        void Assign(IWorkOrder Order);
+
+        void SetStatus(ITaskStatus taskState);
+        void Transition(ITaskTransition transitionState);
+        void Stop();
+        void Execute();
+        void Complete();
+        void Interrupt();
     }
 
-    public class MoveTo : ITask
+    public interface IWorkOrder : ITask
     {
-        public IWorkOrder WorkOrder { get; private set; }
-        public IWorkState State { get; private set; }
-        private WorldPoint Destination;
+        IWorker Worker { get; }
+        
+        ITaskState CurrentTask { get; }
+        ITaskState[] TaskList { get; }
 
-        private IWorker Worker => WorkOrder.Worker;
+        void Assign(IWorker Worker);       
+    }
 
-        public MoveTo(WorldPoint Destination)
+    public abstract class WorkOrder : IWorkOrder, ILoggerSlave
+    {
+        public LoggingUtility.ILogger Master => TaskSystem.Get;
+        public string LoggingPrefix => $"<color=red>[ORDER]</color>";
+
+        public ITaskStatus Status { get; protected set; }
+        public ITaskTransition TransitionState { get; protected set; }
+        public IWorker Worker { get; protected set; }
+        public ITaskState CurrentTask { get; protected set; }
+        public ITaskState[] TaskList { get; protected set; }
+
+        protected int TaskIndex = 0;
+        protected bool Running => (Status & ITaskStatus.Running) != 0;
+
+        public void Assign(IWorker Worker)
         {
-            this.Destination = Destination;
-            SetState(IWorkState.Pending);
+            this.Worker = Worker;
         }
 
-        public void Assign(IWorkOrder Order)
+        public virtual void SetStatus(ITaskStatus taskState)
         {
-            this.WorkOrder = Order;
-        }
-
-        public void SetState(IWorkState State)
-        {
-            this.State = State;
-        }
-
-        public bool Execute()
-        {
-            if (Worker.Navigation == null)
+            this.Status = taskState;
+            if (CurrentTask != null)
             {
-                Debug.LogWarning("Navigation is null!!");
+                CurrentTask.SetStatus(taskState);
             }
-            else
-            {
-                Worker.Navigation.Destination(Destination);
-            }
+        }
 
-            SetState(IWorkState.Running);
-            return true;
+        public virtual void Transition(ITaskTransition transitionState)
+        {
+            this.TransitionState = transitionState;
+            if (CurrentTask != null)
+            {
+                CurrentTask.Transition(transitionState);
+            }
+        }
+
+        public virtual void Stop() { Transition(ITaskTransition.Stopping); }
+        public virtual void Execute() { SetStatus(ITaskStatus.Running); }
+        public virtual void Complete() { Transition(ITaskTransition.Finishing); }
+        public virtual void Interrupt()
+        {
+            TransitionState = ITaskTransition.Interrupting;
         }
 
         public void Tick()
         {
-            if (State == IWorkState.Running)
+            UpdateState();
+            if (Running)
             {
-                if (WorkOrder.Worker.Navigation.Coordinates == Destination)
+                bool Success = false;
+                if (CurrentTask != null)
                 {
-                    SetState(IWorkState.Success);
+                    CurrentTask.Tick();
+                    this.Verbose($"Task State::{CurrentTask.Status}");
+                    Success = (CurrentTask.Status & ITaskStatus.FINISHED) != 0;
                 }
-            }           
+                if (CurrentTask == null || Success)
+                {
+                    this.Verbose("Checking Next Task..");
+                    // Is there another task?
+                    if (Next())
+                    {
+                        // If so, run.
+                        CurrentTask.Execute();
+                    }
+                    else
+                    {
+                        // Otherwise we're done.
+                        Complete();
+                    }
+                }
+            }
         }
 
-        public void Finish()
+        protected void UpdateState()
         {
-            SetState(IWorkState.Completed);
+            if (TransitionState != ITaskTransition.Nil)
+            {
+                switch (TransitionState)
+                {
+                    case ITaskTransition.Stopping:
+                        if ((CurrentTask.Status & ITaskStatus.FINISHED) != 0)
+                        {
+                            SetStatus(ITaskStatus.Cancelled);
+                        }
+                        break;
+                    case ITaskTransition.Interrupting:
+                        if ((CurrentTask.Status & ITaskStatus.PAUSED) != 0)
+                        {
+                            SetStatus(ITaskStatus.Interrupted);
+                        }
+                        break;
+                    case ITaskTransition.Finishing:
+                        if ((CurrentTask.Status&ITaskStatus.FINISHED)!=0)
+                        {
+                            SetStatus(CurrentTask.Status);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        protected bool Next()
+        {
+            this.Verbose("Finding Next Task..");
+            if (TaskList != null && TaskIndex < TaskList.Length)
+            {
+                if (CurrentTask != null)
+                {
+                    CurrentTask.Complete();
+                }
+                CurrentTask = TaskList[TaskIndex];
+                CurrentTask.Assign(this);
+                TaskIndex++;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public class MoveToWaypointTask : WorkOrder
+    {
+        public WorldPoint Destination { get; private set; }
+
+        public MoveToWaypointTask(WorldPoint Destination)
+        {
+            this.Destination = Destination;
+            TaskList = new ITaskState[]
+            {
+                new MoveTo(Destination)
+            };
         }
     }
 }

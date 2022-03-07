@@ -60,7 +60,7 @@ namespace ColonySim.Systems
             if (simulatedCreatures == null) simulatedCreatures = new List<ICreature>() { testCreature };
             else simulatedCreatures.Add(testCreature);
 
-            WorkSystem.Worker(testCreature);
+            TaskSystem.Worker(testCreature);
 
             RenderedCreature renderObject = new RenderedCreature(testCreature);
             renderObjects_dirty.Add(renderObject);
