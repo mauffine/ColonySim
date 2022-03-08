@@ -57,7 +57,7 @@ namespace ColonySim.Systems.Tasks
 
         void Tick();
 
-        void SetStatus(ITaskStatus taskState);
+        void SetStatus(ITaskStatus taskState); 
         void Transition(ITaskTransition transitionState);
         void Stop();
         void Execute();
@@ -100,6 +100,7 @@ namespace ColonySim.Systems.Tasks
             if (CurrentTask != null)
             {
                 CurrentTask.SetStatus(taskState);
+                this.Verbose($"Task State::{CurrentTask.Status}");
             }
         }
 
@@ -129,7 +130,6 @@ namespace ColonySim.Systems.Tasks
                 if (CurrentTask != null)
                 {
                     CurrentTask.Tick();
-                    this.Verbose($"Task State::{CurrentTask.Status}");
                     Success = (CurrentTask.Status & ITaskStatus.FINISHED) != 0;
                 }
                 if (CurrentTask == null || Success)

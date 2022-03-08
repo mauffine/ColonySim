@@ -55,10 +55,10 @@ namespace ColonySim
                 if (Data != null)
                 {
                     MoveToWaypointTask newTask = new MoveToWaypointTask(Data.Coordinates);
-                    if (selectedCreature != null && selectedCreature is IWorker Worker)
+                    if (selectedCreature != null)
                     {
                         this.Notice($"Creating Interrupt Move..");
-                        Worker.AssignTask(newTask, TaskAssignmentMethod.CLEAR);
+                        TaskSystem.Assign(newTask, selectedCreature.AI, TaskAssignmentMethod.CLEAR);
                     }
                     else
                     {                       
