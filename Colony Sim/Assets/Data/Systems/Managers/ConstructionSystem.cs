@@ -12,7 +12,7 @@ using ColonySim.Systems.Tasks;
 
 namespace ColonySim.Systems
 {
-    public class ConstructionSystem : System, IConstructionActions, ILogger
+    public class ConstructionSystem : System, IConstructionActions, ILogger, IEntityTaskManager
     {
         #region Static
         private static ConstructionSystem instance;
@@ -30,6 +30,8 @@ namespace ColonySim.Systems
         private bool _stamp = false;
         #endregion
 
+        public string BuildingDef = "entity.wall";
+
         private WorldPoint CurrentPosition => CursorSystem.Get.currentMousePosition;
         private WorldPoint OldPosition => CursorSystem.Get.oldMousePosition;
 
@@ -37,7 +39,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Construction System Init]</color>");
+            this.Notice("> Construction System Init <");
             instance = this;
             base.Init();
         }
@@ -66,7 +68,7 @@ namespace ColonySim.Systems
 
         public void OnPlaceTile(InputAction.CallbackContext context)
         {
-            placingEntity = context.control.IsActuated() && InputSystem.AllowMouseEvent;
+            placingEntity = context.performed && context.control.IsActuated() && InputSystem.AllowMouseEvent;
             if (placingEntity)
             {
                 PlaceTile();
@@ -87,9 +89,114 @@ namespace ColonySim.Systems
             ITileData Data = CursorSystem.Get.highlightedTile;
             if (Data != null)
             {
-                IEntity newEntity = EntitySystem.Get.CreateWallEntity();
-                new Action_PlaceEntity(CurrentPosition, newEntity).AutoExec();
-                this.Verbose("Placed Entity");
+                this.Verbose($"Placing new Entity at {Data.Coordinates}..");
+
+                IEntity EntityDef = EntitySystem.GetDef(BuildingDef);
+                if (EntityDef != null)
+                {
+                    Task_GetEntityPlacementFlags defPlacementFlagsTask = new Task_GetEntityPlacementFlags(this);
+                    EntityDef.AssignTask(defPlacementFlagsTask);
+
+                    List<IEntity> toReplace = new List<IEntity>();
+                    bool outcomeReplace = false;
+                    bool outcome = true;
+
+                    if (defPlacementFlagsTask.Completed)
+                    {
+                        this.Verbose($"[I]Placement Flags::{defPlacementFlagsTask.PlacementFlags[0].Height},{defPlacementFlagsTask.PlacementFlags[0]._onPlacement}");
+
+                        bool replace = false;
+                        // Whether the entity thinks it can be placed
+                        bool canPlace = true;
+                        // Whether existing entities think it can be placed.
+                        bool allowPlace = true;
+                        foreach (var entity in Data.Container)
+                        {
+                            foreach (var placementFlag in defPlacementFlagsTask.PlacementFlags)
+                            {
+                                var _ret = placementFlag.OnPlacement(entity);
+                                canPlace = canPlace && _ret;
+                                this.Verbose($"[I]CanPlace::{(canPlace ? "PASS" : "FAIL")}");
+                                if(canPlace) replace = replace || (placementFlag._onPlacement & EntityHeightRule.Replace) != 0;
+                            }
+                            if (canPlace)
+                            {
+                                Task_GetEntityPlacementFlags entityPlacementFlags = new Task_GetEntityPlacementFlags(this);
+                                entity.AssignTask(entityPlacementFlags);
+
+                                if (entityPlacementFlags.Completed)
+                                {
+                                    foreach (var placementFlag in entityPlacementFlags.PlacementFlags)
+                                    {
+                                        var _ret = placementFlag.AllowPlacement(EntityDef);
+                                        allowPlace = allowPlace && _ret;
+                                        this.Verbose($"[O]Allow Place::{(allowPlace ? "PASS" : "FAIL")}");
+                                        if (!allowPlace && replace && toReplace.Contains(entity) == false)
+                                        {
+                                            toReplace.Add(entity);
+                                        }
+                                    }
+                                }
+                            }   
+                        }
+                        if (!allowPlace)
+                        {
+                            outcome = outcome && canPlace && replace;
+                            this.Verbose($"[CHECK-REPLACE?]::{(outcome ? "PASS" : "FAIL")}");
+                            if (outcome) outcomeReplace = true;
+                        }
+                        else
+                        {
+                            outcome = outcome && canPlace && allowPlace;
+                            this.Verbose($"[CHECK]::{(outcome ? "PASS" : "FAIL")}");
+                        }
+                        
+                    }
+                    else
+                    {
+                        bool allowPlace = true;
+                        foreach (var entity in Data.Container)
+                        {
+                            Task_GetEntityPlacementFlags entityPlacementFlags = new Task_GetEntityPlacementFlags(this);
+                            entity.AssignTask(entityPlacementFlags);
+
+                            if (entityPlacementFlags.Completed)
+                            {
+                                foreach (var placementFlag in entityPlacementFlags.PlacementFlags)
+                                {
+                                    var _ret = placementFlag.AllowPlacement(EntityDef);
+                                    allowPlace = allowPlace && _ret;
+                                    this.Verbose($"[O]Placement Flags::{placementFlag}::{(allowPlace ? "PASS" : "FAIL")}");
+                                }
+                            }
+                        }
+                        outcome = outcome && allowPlace;
+                    }
+
+                    if (outcome)
+                    {
+                        this.Verbose($"Placing Entity..");
+                        IEntity newEntity = EntitySystem.Get.CreateEntity(BuildingDef);
+                        
+
+                        if (outcomeReplace && toReplace.Count > 0)
+                        {
+                            this.Verbose($"Replacing Existing Entities..");
+                            new Action_PlaceReplaceEntity(CurrentPosition, newEntity, toReplace.ToArray()).AutoExec();
+                            
+                        }
+                        else
+                        {
+                            new Action_PlaceEntity(CurrentPosition, newEntity).AutoExec();
+                        }
+                    }
+                    else
+                    {
+                        this.Debug("Entity Forbidden Placement!");
+                    }
+
+                    
+                }
             }
             else
             {
@@ -137,6 +244,26 @@ namespace ColonySim.Systems
             {
                 ActionHandler.Redo(1);
             }          
+        }
+
+        public void SetConcreteWall()
+        {
+            BuildingDef = "entity.wall";
+        }
+
+        public void SetDoor()
+        {
+            BuildingDef = "entity.door";
+        }
+
+        public void SetFloor()
+        {
+            BuildingDef = "entity.concretefloor";
+        }
+
+        public bool TaskResponse(IEntityTaskWorker Worker, EntityTask Task)
+        {
+            return true;
         }
     }
 }

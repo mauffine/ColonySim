@@ -14,7 +14,7 @@ namespace ColonySim.Entities
     {
         string MaterialID { get; }
         int DrawPriority { get; }
-        RenderLayer Layer { get; }
+        EntityLayer Layer { get; }
 
         EntityTextureSettings GetTexture(ITileData TileData);
         void AddTextureRules(ITextureRule[] textureAdjacentSelectionRules);
@@ -33,18 +33,27 @@ namespace ColonySim.Entities
         }
     }
 
-    public class EntityGraphics : IEntityGraphics
+    public struct TextureAdjacencyData
     {
+        public int ExactNeighbours;
+        public int LayerNeighbours;
+    }
+
+    public class EntityGraphics : IEntityGraphics, ILoggerSlave
+    {
+        public LoggingUtility.ILogger Master => WorldRenderer.Get;
+        public string LoggingPrefix => $"<color=magenta>[EGRAPHICS]</color>";
+
         public string TextureID { get; protected set; }
         public string MaterialID { get; protected set; } = "tilables";
         public int DrawPriority { get; protected set; } = 0;
-        public RenderLayer Layer { get; protected set; }
+        public EntityLayer Layer { get; protected set; }
 
         public bool Instanced = true;
         private ITextureRule[] TextureRules;
         private readonly string DefName;
 
-        public EntityGraphics(string TextureID, string MaterialID, string DefName, RenderLayer Layer = RenderLayer.BASE)
+        public EntityGraphics(string TextureID, string MaterialID, string DefName, EntityLayer Layer = EntityLayer.BASE)
         { this.TextureID = TextureID; this.MaterialID = MaterialID; this.Layer = Layer; this.DefName = DefName; }
 
         public EntityTextureSettings GetTexture(ITileData TileData)
@@ -52,30 +61,61 @@ namespace ColonySim.Entities
             AdjacentTileData adjacentTileData = TileManager.AdjacencyData(TileData);
             if (TextureRules != null)
             {
+                int exactNeighbours = 0;
+                int layerNeighbours = 0;
+
+                foreach (var neighbour in adjacentTileData)
+                {
+                    if (neighbour != null)
+                    {
+                        foreach (var entity in neighbour.Container.TileEntities())
+                        {
+                            if (entity.DefName == DefName)
+                            {
+                                exactNeighbours++;
+                            }
+                            if (entity.EntityGraphicsDef != null && entity.EntityGraphicsDef.Layer == this.Layer)
+                            {
+                                layerNeighbours++;
+                            }
+
+                        }
+                    }
+                }
+
+                TextureAdjacencyData textureAdjacencyData = new TextureAdjacencyData()
+                {
+                    ExactNeighbours = exactNeighbours,
+                    LayerNeighbours = layerNeighbours
+                };
+
                 for (int i = 0; i < TextureRules.Length; i++)
                 {
                     var textureRule = TextureRules[i];
-                    int matchingNeighbours = 0;
-                    foreach (var neighbour in adjacentTileData)
-                    {
-                        if (neighbour != null && neighbour.Container.GetEntity(DefName) != null)
-                        {
-                            matchingNeighbours++;
-                        }
-                    }
-                    if (textureRule.Match(TileData, adjacentTileData, matchingNeighbours, out EntityTextureSettings Settings))
+                   
+                    if (textureRule.Match(TileData, adjacentTileData, textureAdjacencyData, out EntityTextureSettings Settings))
                     {
                         return Settings;
                     }
                 }
+            }
+            else
+            {
+                return new EntityTextureSettings()
+                {
+                    TextureID = TextureID,
+                    Angle = 0,
+                    ReadFromNeighbours = null
+                };
             }
 
             return new EntityTextureSettings()
             {
                 TextureID = TextureID,
                 Angle = 0,
-                ReadFromNeighbours = null
+                ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray()
             };
+
         }
 
         public void AddTextureRules(ITextureRule[] Rules)
@@ -86,7 +126,7 @@ namespace ColonySim.Entities
 
     public interface ITextureRule
     {
-        bool Match(ITileData Data, AdjacentTileData adjacencyData, int matchingNeighbours, out EntityTextureSettings TextureSettings);
+        bool Match(ITileData Data, AdjacentTileData adjacencyData, TextureAdjacencyData neighbourData, out EntityTextureSettings TextureSettings);
     }
 
     public enum NeighbourRule { DontCare = 0, Exists = 1, Not = -1 }
@@ -105,16 +145,19 @@ namespace ColonySim.Entities
         //[5] [6] [7]
         public NeighbourRule[] NeighbourRules;
 
-        public enum MatchRule { ExactType }
+        public enum MatchRule { ExactType, Layer }
         public MatchRule TypeMatch;
 
         private AdjacentTileData adjacentTileData;
+        private readonly EntityLayer renderLayer;
 
-        public TextureAdjacentSelectionRule(IEntity Entity, string TextureID, TransformRule Transform, int[] Rules)
+        public TextureAdjacentSelectionRule(IEntity Entity, string TextureID, TransformRule Transform, int[] Rules, MatchRule TypeMatch = MatchRule.ExactType)
         {
             this.Entity = Entity;
             this.TextureID = TextureID;
             this.Transform = Transform;
+            this.renderLayer = Entity.EntityGraphicsDef.Layer;
+            this.TypeMatch = TypeMatch;
             NeighbourRules = new NeighbourRule[8];
             for (int i = 0; i < 8; i++)
             {
@@ -122,7 +165,7 @@ namespace ColonySim.Entities
             }
         }
 
-        public bool Match(ITileData Data, AdjacentTileData adjacencyData, int matchingNeighbours, out EntityTextureSettings Settings)
+        public bool Match(ITileData Data, AdjacentTileData adjacencyData, TextureAdjacencyData neighbourData, out EntityTextureSettings Settings)
         {
             string _transformLog = Transform == TransformRule.Fixed ? "FIXED" : "ROTATED";
             adjacentTileData = adjacencyData;          
@@ -133,22 +176,24 @@ namespace ColonySim.Entities
                 ReadFromNeighbours = Enumerable.Repeat(true, 8).ToArray()
             };
 
-            this.Debug($"{adjacentTileData.Origin}::CHECKING::{this.TextureID}::{_transformLog}::{matchingNeighbours}", LoggingPriority.Low);
+            this.Debug($"{adjacentTileData.Origin}::CHECKING::{this.TextureID}::{_transformLog}::{neighbourData.LayerNeighbours}::{neighbourData.ExactNeighbours}", LoggingPriority.Low);
 
             int maxNeighbourCount = 8;
             int minNeighbourCount = 0;
+
             for (int i = 0; i < 8; i++)
             {
-                if(NeighbourRules[i] == NeighbourRule.Not)
+                if (NeighbourRules[i] == NeighbourRule.Not)
                 {
                     maxNeighbourCount--;
-                }else if(NeighbourRules[i] == NeighbourRule.Exists)
+                }
+                else if (NeighbourRules[i] == NeighbourRule.Exists)
                 {
                     minNeighbourCount++;
                 }
             }
-
-            if (matchingNeighbours > maxNeighbourCount || matchingNeighbours < minNeighbourCount)
+            int val = TypeMatch == MatchRule.ExactType ? neighbourData.ExactNeighbours : neighbourData.LayerNeighbours;
+            if (val > maxNeighbourCount || val < minNeighbourCount)
             {               
                 this.Debug($"{this.TextureID}::NEIGHBOURCHECK::<color=red>FAIL</color>", LoggingPriority.Low);
                 return false;
@@ -230,8 +275,23 @@ namespace ColonySim.Entities
         private bool MatchingNeighbour(ITileData Neighbour)
         {
             if (Neighbour == null) return false;
-            IEntity Match = Neighbour.Container.GetEntity(Entity.DefName);
-            return Match != null;
+            switch (TypeMatch)
+            {
+                case MatchRule.ExactType:
+                    IEntity Match = Neighbour.Container.GetEntity(Entity.DefName);
+                    return Match != null;
+                case MatchRule.Layer:
+                    IEntity[] Matches = Neighbour.Container.EntitiesInLayer(renderLayer);
+                    if (Matches != null && Matches.Length > 0)
+                    {
+                        return true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
+            return false;
+            
         }
 
         private bool RotationMatch(out float Angle)

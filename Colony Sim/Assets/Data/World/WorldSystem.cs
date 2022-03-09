@@ -57,9 +57,9 @@ namespace ColonySim.World
 
         public override void Init()
         {
-            this.Notice("<color=blue>[World System Init]</color>");
+            this.Notice("> World System Init.. <");
             instance = this;
-            _world = new GameWorld(5, 5);
+            _world = new GameWorld(1, 1);
             _world.GenerateWorldChunks();
             _world.WorldGeneration(Time.realtimeSinceStartup);
             Renderer = new WorldRenderer();

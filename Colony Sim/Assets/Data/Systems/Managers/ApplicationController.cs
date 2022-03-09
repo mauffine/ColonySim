@@ -46,11 +46,11 @@ namespace ColonySim.Systems
             DataPath = Application.dataPath + "/Data/";
             if (Systems != null)
             {
-                this.Notice("<color=blue>[Initialising Application Systems..]</color>");
+                this.Notice("[Initialising Application Systems..]");
                 InitializedSystems = new System[Systems.Length];
                 foreach (var sys in Systems)
                 {
-                    this.Debug("<color=blue>[System Init..]</color>");
+                    this.Debug("[System Init..]");
                     sys.Init();
                 }
             }           
@@ -74,7 +74,7 @@ namespace ColonySim.Systems
             InitializedCount++;
             if (InitializedCount >= InitializedSystems.Length)
             {
-                this.Debug("<color=blue>[System Initialized..]</color>");
+                this.Debug("[System Initialized..]");
                 FinishInit();
             }
         }

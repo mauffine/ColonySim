@@ -83,7 +83,7 @@ namespace ColonySim.World.Tiles
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Tile Manager Init]</color>");
+            this.Notice("> Tile Manager Init.. <");
             instance = this;
             base.Init();
         }

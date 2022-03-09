@@ -9,6 +9,7 @@ using ColonySim.Rendering;
 using ColonySim.Systems;
 using ISystem = ColonySim.Systems.System;
 using ColonySim.Systems.Navigation;
+using System;
 
 namespace ColonySim.Entities
 {
@@ -32,18 +33,19 @@ namespace ColonySim.Entities
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Entity System Init]</color>");
+            this.Notice("> Entity System Init.. <");
             instance = this;
             base.Init();
         }
 
-        public void PlaceWaypoint(IEntity EntityData, ITileData TileData, ITileData NewTileData)
+        public static IEntity GetDef(string DefName)
         {
-            if (TileData.Container.HasEntity(EntityData.ID))
+            var entityDefs = LoadingSystem.Get.EntityDefs;
+            if (entityDefs.ContainsKey(DefName))
             {
-                TileData.Container.RemoveEntity(EntityData);
-                NewTileData.Container.AddEntity(EntityData);
+                return entityDefs[DefName];
             }
+            return null;
         }
 
         public bool PlaceEntity(IEntity EntityData, ITileData TileData)
@@ -64,10 +66,14 @@ namespace ColonySim.Entities
             return true;
         }
 
-        public IEntity CreateWallEntity()
+        public IEntity CreateEntity(string defName)
         {
-            return new ConcreteWall();
-            //PlaceEntity(entity, Data);
+            IEntity entityDef = GetDef(defName);
+            if (entityDef != null)
+            {
+                return (IEntity)Activator.CreateInstance(entityDef.GetType(), new object[] { });
+            }
+            return null;
         }
     }
 }

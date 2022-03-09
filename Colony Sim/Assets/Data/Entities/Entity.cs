@@ -117,4 +117,159 @@ namespace ColonySim.Entities
             }
         }
     }
+
+    [Flags]
+    public enum EntityHeightRule
+    {
+        Nil = 0,
+        Equal = 1,
+        Lesser = 2,
+        Greater = 4,
+
+        Forbid = 8,
+        Allow = 16,
+
+        Replace = 32,
+
+        GreaterOrEqual = Greater|Equal,
+        LesserOrEqual = Lesser|Equal,
+
+        ReplaceIf = Replace|Allow,
+
+        OPERATORS = Equal|Lesser|Greater,
+        QUALIFIERS = Forbid|Allow
+    }
+
+    public struct EntityPlacementFlags : IEntityTaskManager
+    {
+        public int Height;
+        // When this entity is placed
+        public EntityHeightRule _onPlacement;
+        // When another entity is placed
+        public EntityHeightRule _allowPlacement;
+
+        public EntityPlacementFlags(int Height, EntityHeightRule OnPlacement, EntityHeightRule AllowPlacement)
+        {
+            this.Height = Height; 
+            this._onPlacement = OnPlacement; this._allowPlacement = AllowPlacement;
+            if ((OnPlacement & EntityHeightRule.QUALIFIERS) == 0)
+            {
+                this._onPlacement |= EntityHeightRule.Allow;
+            }
+        }
+
+        public bool OnPlacement(IEntity Other)
+        {
+            Task_GetEntityPlacementFlags entityPlacementFlags = new Task_GetEntityPlacementFlags(this);
+            Other.AssignTask(entityPlacementFlags);
+
+            bool outcome = true;
+            if (entityPlacementFlags.Completed)
+            {
+                foreach (var flag in entityPlacementFlags.PlacementFlags)
+                {
+                    var _ret = OnPlacement(flag);
+                    outcome = outcome && _ret;
+                }
+            }
+
+            return outcome;
+        }
+
+        public bool OnPlacement(EntityPlacementFlags Other)
+        {
+            EntityHeightRule operation = (_onPlacement & EntityHeightRule.OPERATORS);
+            EntityHeightRule qualifier = (_onPlacement & EntityHeightRule.QUALIFIERS);
+
+            bool equalityCheck = (operation & EntityHeightRule.Equal) != 0;
+            bool result = false;
+
+            Debug.Log($"CHECK::{this.Height}v{Other.Height}");
+
+            if ((operation & EntityHeightRule.Lesser) != 0)
+            {
+                result = equalityCheck ? Other.Height <= this.Height : Other.Height < this.Height;
+                Debug.Log($"[L{(equalityCheck ? "E" : "")}]{(result ? "PASS" : "FAIL")}");
+            }
+            else if ((operation & EntityHeightRule.Greater) != 0)
+            {
+                result = equalityCheck ? Other.Height >= this.Height : Other.Height > this.Height;
+                Debug.Log($"[G{(equalityCheck ? "E" : "")}]{(result ? "PASS" : "FAIL")}");
+            }
+            else if (equalityCheck)
+            {
+                result = Other.Height == this.Height;
+                Debug.Log($"[E]{(result ? "PASS" : "FAIL")}");
+            }
+
+            if ((qualifier & EntityHeightRule.Forbid) != 0)
+            {
+                Debug.Log($"[F]{(!result ? "PASS" : "FAIL")}");
+                return !result;
+            }
+            Debug.Log($"[A]{(result ? "PASS" : "FAIL")}");
+            return result;
+        }
+
+        public bool AllowPlacement(IEntity Other)
+        {
+            Task_GetEntityPlacementFlags entityPlacementFlags = new Task_GetEntityPlacementFlags(this);
+            Other.AssignTask(entityPlacementFlags);
+
+            bool outcome = true;
+            if (entityPlacementFlags.Completed)
+            {
+                foreach (var flag in entityPlacementFlags.PlacementFlags)
+                {
+                    var _ret = AllowPlacement(flag);
+                    outcome = outcome && _ret;
+                }
+            }
+
+            return outcome;
+        }
+
+        public bool AllowPlacement(EntityPlacementFlags Other)
+        {
+            EntityHeightRule operation = (_allowPlacement & EntityHeightRule.OPERATORS);
+            EntityHeightRule qualifier = (_allowPlacement & EntityHeightRule.QUALIFIERS);
+
+            bool equalityCheck = (operation & EntityHeightRule.Equal) != 0;
+            bool result = false;
+
+            Debug.Log($"CHECK::{this.Height}v{Other.Height}");
+
+            if ((operation & EntityHeightRule.Lesser) != 0)
+            {
+                result = equalityCheck ? Other.Height <= this.Height : Other.Height < this.Height;
+                Debug.Log($"[L{(equalityCheck ? "E" : "")}]{(result ? "PASS" : "FAIL")}");
+            }
+            else if ((operation & EntityHeightRule.Greater) != 0)
+            {
+                result = equalityCheck ? Other.Height >= this.Height : Other.Height > this.Height;
+                Debug.Log($"[G{(equalityCheck ? "E" : "")}]{(result ? "PASS" : "FAIL")}");
+            }
+            else if(equalityCheck)
+            {
+                result = Other.Height == this.Height;
+                Debug.Log($"[E]{(result ? "PASS" : "FAIL")}");
+            }
+
+            if ((qualifier & EntityHeightRule.Forbid) != 0)
+            {
+                Debug.Log($"[F]{(!result ? "PASS" : "FAIL")}");
+                return !result;
+            }
+            Debug.Log($"[A]{(result ? "PASS" : "FAIL")}");
+            return result;
+        }
+
+        public bool TaskResponse(IEntityTaskWorker Worker, EntityTask Task)
+        { return true; }
+
+        public override string ToString()
+        {
+            return $"[{this.Height}::{this._onPlacement}]";
+        }
+    }
 }

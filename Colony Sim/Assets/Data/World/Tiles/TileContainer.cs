@@ -18,6 +18,8 @@ namespace ColonySim.World
         IEntity[] Contents { get; }
         IEntity First { get; }
         IEnumerable<IEntity> TileEntities();
+        IEntity[] EntitiesInLayer(EntityLayer Layer);
+        IEnumerator<IEntity> GetEnumerator();
     }
     /// <summary>
     /// Game Tile
@@ -130,6 +132,27 @@ namespace ColonySim.World
                 {
                     yield return entity;
                 }
+            }
+        }
+
+        public IEntity[] EntitiesInLayer(EntityLayer Layer)
+        {
+            List<IEntity> entities = new List<IEntity>();
+            foreach (var entity in SortedEntities)
+            {
+                if (entity.EntityGraphicsDef != null && entity.EntityGraphicsDef.Layer == Layer)
+                {
+                    entities.Add(entity);
+                }
+            }
+            return entities.ToArray();
+        }
+
+        public IEnumerator<IEntity> GetEnumerator()
+        {
+            foreach (var entity in SortedEntities)
+            {
+                yield return entity;
             }
         }
 

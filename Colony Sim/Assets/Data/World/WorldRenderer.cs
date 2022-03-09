@@ -26,7 +26,7 @@ namespace ColonySim.Entities
  * SHADOWS - Rendered at layer; IE. Characters cast shadows 
  * over a table, but not over a wall.
  */
-    public enum RenderLayer
+    public enum EntityLayer
     {
         BASE = 0,
         TILE = 1,
@@ -122,6 +122,7 @@ namespace ColonySim.Rendering
 
         public void RenderObject_SetDirty(IRenderObject RenderObject)
         {
+            this.Debug($"RenderObject Set Dirty::{RenderObject.Coordinates}");
             if(!renderObjects_dirty.Contains(RenderObject)) renderObjects_dirty.Add(RenderObject);
         }
 
@@ -185,8 +186,11 @@ namespace ColonySim.Rendering
 
         public RenderedTile GetRenderedTile(WorldPoint Coordinates)
         {
-            RenderedChunk ChunkData = RenderedChunks[Coordinates];
-            if (ChunkData != null) return ChunkData.Tile(Coordinates);
+            if (RenderedChunks.ContainsKey(Coordinates))
+            {
+                RenderedChunk ChunkData = RenderedChunks[Coordinates];
+                if (ChunkData != null) return ChunkData.Tile(Coordinates);
+            }
             return null;
         }
 
@@ -490,7 +494,7 @@ namespace ColonySim.Rendering
         public void RenderDirty()
         {
             if (_destroyed) return;
-            this.Debug($"Rendering Dirty {Object.name}{Tile.Coordinates}");
+            this.Debug($"Rendering Dirty {Object.name}");
             renderUpdateEvent?.Invoke(this);
             BuildMesh();
         }
@@ -520,7 +524,7 @@ namespace ColonySim.Rendering
                 EntityTextureSettings TextureSettings = GraphicsDef.GetTexture(WorldRenderer.Get.GetTileData(Tile));
                 if (TextureSettings != null && TextureSettings != CurrentTextureSettings)
                 {
-                    this.Debug($"Building Entity Mesh {Object.name}{Tile.Coordinates}::Texture::({TextureSettings.TextureID})");
+                    this.Debug($"Building Entity Mesh {Object.name}::Texture::({TextureSettings.TextureID})");
 
                     CurrentTextureSettings = TextureSettings;
 
@@ -659,23 +663,27 @@ namespace ColonySim.Rendering
             _destroyed = true;
             Rendering = false;
 
-            this.Debug($"Clearing Neighbour Render Update {Coordinates}");
-            for (int i = 0; i < readingFromNeighbours.Length; i++)
+            
+            if (readingFromNeighbours != null)
             {
-                if (readingFromNeighbours[i])
+                this.Debug($"Clearing Neighbour Render Update {Coordinates}");
+                for (int i = 0; i < readingFromNeighbours.Length; i++)
                 {
-                    Vector2Int neighbourPos = AdjacentTileData.ToCoordinate[i];
-                    RenderedTile Neighbour = WorldRenderer.Get.GetRenderedTile(
-                        new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
-                    if (Neighbour != null)
+                    if (readingFromNeighbours[i])
                     {
-                        this.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}", LoggingPriority.Low);
-                        Neighbour.CancelOnRenderUpdate(x => SetDirty());
+                        Vector2Int neighbourPos = AdjacentTileData.ToCoordinate[i];
+                        RenderedTile Neighbour = WorldRenderer.Get.GetRenderedTile(
+                            new WorldPoint(Coordinates.X + neighbourPos.x, Coordinates.Y + neighbourPos.y));
+                        if (Neighbour != null)
+                        {
+                            this.Debug($"Removing Neighbour Render Update {Coordinates}::{neighbourPos}", LoggingPriority.Low);
+                            Neighbour.CancelOnRenderUpdate(x => SetDirty());
+                        }
                     }
+
                 }
-
             }
-
+            
             renderUpdateEvent = null;
         }
 

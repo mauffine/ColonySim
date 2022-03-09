@@ -41,7 +41,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Resource Manager Init]</color>");
+            this.Notice("> Resource Manager Init..");
             instance = this;
             base.Init();
         }

@@ -39,7 +39,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Creature Controller Init]</color>");
+            this.Notice("> Creature Controller Init.. <");
             instance = this;
             base.Init();
         }
@@ -203,7 +203,7 @@ namespace ColonySim.Systems
 
                     Graphics.DrawMesh(
                         meshData.mesh,
-                        new Vector3(position.x, position.y, -(int)RenderLayer.CHARACTERS),
+                        new Vector3(position.x, position.y, -(int)EntityLayer.CHARACTERS),
                         rotation,
                         this.Material,
                         0

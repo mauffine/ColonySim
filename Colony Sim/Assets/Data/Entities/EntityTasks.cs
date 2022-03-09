@@ -34,11 +34,12 @@ namespace ColonySim.Entities
             this.Manager = Manager;
         }
 
-        protected virtual bool Running => !Completed;
+        protected virtual bool Running { get; set; } = true;
 
         protected virtual bool CompleteTask(IEntityTaskWorker Worker)
         {
-            return Completed = Manager.TaskResponse(Worker, this);
+            Completed = Running = Manager.TaskResponse(Worker, this);
+            return Completed;
         }
         
     }
@@ -64,27 +65,6 @@ namespace ColonySim.Entities
         }
     }
 
-    public interface ITaskWorker_GetEntitySprite : IEntityTaskWorker
-    {
-        string GetTextureName { get; }
-    }
-
-    public class Task_GetEntitySprite : EntityTask
-    {
-        public string TextureName;
-
-        public Task_GetEntitySprite(IEntityTaskManager Manager) : base(Manager){ }
-
-        public override void Execute(IEntityTaskWorker Worker)
-        {
-            if (Worker is ITaskWorker_GetEntitySprite EntitySpriteWorker)
-            {
-                TextureName = EntitySpriteWorker.GetTextureName;
-                CompleteTask(EntitySpriteWorker);
-            }
-        }
-    }
-
     public interface ITaskWorker_GetEntityMaterial : IEntityTaskWorker
     {
         string GetMaterialName { get; }
@@ -104,6 +84,37 @@ namespace ColonySim.Entities
                 CompleteTask(EntitySpriteWorker);
             }
         }
+    }
 
+    public interface ITaskWorker_GetEntityPlacementFlags : IEntityTaskWorker
+    {
+        EntityPlacementFlags PlacementFlags { get; }
+    }
+    
+    public class Task_GetEntityPlacementFlags : EntityTask
+    {
+        public EntityPlacementFlags[] PlacementFlags => _placementFlags.ToArray();
+        private List<EntityPlacementFlags> _placementFlags = new List<EntityPlacementFlags>();
+
+        public Task_GetEntityPlacementFlags(IEntityTaskManager Manager) : base(Manager) { }
+
+        public override void Execute(IEntityTaskWorker Worker)
+        {
+            if (Worker is ITaskWorker_GetEntityPlacementFlags EntityPlacementWorker)
+            {
+                if (Running)
+                {
+                    _placementFlags.Add(EntityPlacementWorker.PlacementFlags);
+                    CompleteTask(EntityPlacementWorker);
+                }                
+            }
+        }
+
+        protected override bool CompleteTask(IEntityTaskWorker Worker)
+        {
+            Completed = true;
+            Running = Manager.TaskResponse(Worker, this);
+            return Completed;
+        }
     }
 }

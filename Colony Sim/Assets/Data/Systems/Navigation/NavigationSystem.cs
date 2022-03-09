@@ -33,7 +33,7 @@ namespace ColonySim.Systems.Navigation
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Navigation System Init]</color>");
+            this.Notice("> Navigation System Init.. <");
             instance = this;
             GenerateWalkNavData();
             base.Init();

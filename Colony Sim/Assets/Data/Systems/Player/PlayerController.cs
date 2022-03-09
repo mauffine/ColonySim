@@ -36,7 +36,7 @@ namespace ColonySim
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Player Controller Init]</color>");
+            this.Notice("> Player Controller Init <");
             instance = this;
             base.Init();
         }

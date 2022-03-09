@@ -30,7 +30,7 @@ namespace ColonySim.World
             worldRect = new RectI(new Vector2Int(0, 0), width, height);
             Size = new Vector2Int(width*WorldSystem.CHUNK_SIZE, height*WorldSystem.CHUNK_SIZE);
             ChunkSize = new Vector2Int(width, height);
-            this.Notice($"<color=blue>[Generating world of Size {WorldChunks.Length}]</color>");       
+            this.Notice($"> Generating world of Size {WorldChunks.Length}.. <   ");       
         }
 
         public void GenerateWorldChunks()

@@ -82,13 +82,14 @@ namespace ColonySim.Entities
         }
     }
 
-    public class Trait_Ground : EntityBaseTrait, ITaskWorker_GetTileName, IWalkNavData
+    public class Trait_Ground : EntityBaseTrait, ITaskWorker_GetTileName, ITaskWorker_GetEntityPlacementFlags, IWalkNavData
     {
         public override string TRAIT_DEF_NAME => "TILE";
         public override IEntityModule[] TraitModules { get; }
         public int Cost { get; private set; }
         public bool Walkable { get; private set; }
 
+        public EntityPlacementFlags PlacementFlags { get; private set; }
         protected string Name;
 
         public Trait_Ground(string Name, bool Navigable = true, int cost = 1)
@@ -96,6 +97,10 @@ namespace ColonySim.Entities
             this.Name = Name;
             Walkable = Navigable;
             Cost = cost;
+
+            PlacementFlags = new EntityPlacementFlags((int)EntityLayer.TILE,
+                EntityHeightRule.ReplaceIf | EntityHeightRule.LesserOrEqual,
+                EntityHeightRule.Forbid | EntityHeightRule.LesserOrEqual);
         }
 
         public string GetTileName()
@@ -104,12 +109,16 @@ namespace ColonySim.Entities
         }
     }
 
-    public class Trait_Impassable : EntityBaseTrait, IWalkNavData
+    public class Trait_Impassable : EntityBaseTrait, IWalkNavData, ITaskWorker_GetEntityPlacementFlags
     {
         public override string TRAIT_DEF_NAME => "IMPASSABLE";
         public override IEntityModule[] TraitModules { get; }
         public int Cost { get; private set; } = 0;
         public bool Walkable { get; private set; } = false;
+
+        public EntityPlacementFlags PlacementFlags { get; } = new EntityPlacementFlags((int)EntityLayer.CONSTRUCTS,
+            EntityHeightRule.Forbid | EntityHeightRule.GreaterOrEqual,
+            EntityHeightRule.Forbid | EntityHeightRule.GreaterOrEqual);
 
         public override void Trigger(IEntityTrigger Event)
         {

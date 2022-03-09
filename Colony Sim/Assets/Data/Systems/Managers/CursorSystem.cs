@@ -33,7 +33,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Cursor System Init]</color>");
+            this.Notice("> Cursor System Init <");
             instance = this;
             base.Init();
         }
@@ -86,7 +86,7 @@ namespace ColonySim.Systems
                 Vector3 selectionPos = currentMousePosition;
                 Graphics.DrawMesh(
                             meshData.mesh,
-                            new Vector3(selectionPos.x, selectionPos.y, -(int)RenderLayer.ABOVE),
+                            new Vector3(selectionPos.x, selectionPos.y, -(int)EntityLayer.ABOVE),
                             Quaternion.identity,
                             selectionOverlayMat,
                             0

@@ -41,7 +41,7 @@ namespace ColonySim.Systems
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Camera System Init]</color>");
+            this.Notice("> Camera System Init <");
             instance = this;
             var distance = Vector3.Distance(FOVCamera.transform.position, Background.transform.position);
             initHeightAtDist = FrustumHeightAtDistance(distance);

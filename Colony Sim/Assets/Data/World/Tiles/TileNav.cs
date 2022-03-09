@@ -41,12 +41,10 @@ namespace ColonySim.Systems.Navigation
                 Cost += WalkData.Cost;
                 if (!WalkData.Walkable) intraversible++;
             }
-            Debug.Log($"Nav Entity Added::Traversible:{Traversible}");
         }
 
         public void NavEntityRemoved(IEntityNavData NavData)
         {
-            Debug.Log("Nav Entity Removed!");
             if (NavData is IWalkNavData WalkData)
             {
                 Cost -= WalkData.Cost;
