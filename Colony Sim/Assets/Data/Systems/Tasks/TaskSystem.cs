@@ -47,22 +47,22 @@ namespace ColonySim.Systems.Tasks
             {
                 if (worker.Available)
                 {
-                    AssignTaskTo(Order, worker);
+                    AssignTaskTo(Order, worker, TaskAssignmentMethod.DEFAULT);
                     return;
                 }
             }
             TaskQueue.Enqueue(Order);
         }
 
-        public static void Assign(IWorkOrder Task, IWorker Worker)
+        public static void Assign(IWorkOrder Task, IWorker Worker, TaskAssignmentMethod AssignmentMode = TaskAssignmentMethod.DEFAULT)
         {
-            instance.AssignTaskTo(Task, Worker);
+            instance.AssignTaskTo(Task, Worker, AssignmentMode);
         }
 
-        private void AssignTaskTo(IWorkOrder Task, IWorker Worker)
+        private void AssignTaskTo(IWorkOrder Task, IWorker Worker, TaskAssignmentMethod AssignmentMode)
         {
             instance.Verbose("Assigning Task to Worker..");
-            Worker.AssignTask(Task);
+            Worker.AssignTask(Task, AssignmentMode);
         }
 
         public static void Worker(IWorker Worker)
