@@ -4,21 +4,25 @@ using ColonySim.World.Tiles;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ColonySim.World
+namespace ColonySim
 {
     public interface IWorldChunk : IWorldTick
     {
         ChunkLocation Coordinates { get; }
         ITileData[,] TileData { get; }
         RectI ChunkRect { get; }
-        WorldRegion[] Regions { get; }
+        IWorldRegion[] Regions { get; }
+        IBiome Biome { get; }
 
         ITileData Tile(LocalPoint Coordinates);
         IEnumerable<ITileData> GetTiles();
 
-        void AddRegion(WorldRegion region);
+        void AddRegion(IWorldRegion region);
         void ClearRegions();
     }
+}
+
+namespace ColonySim.World { 
     /// <summary>
     /// Collection of Tiles
     /// </summary>
@@ -30,8 +34,9 @@ namespace ColonySim.World
         private readonly ChunkLocation coordinates;
         public RectI ChunkRect => chunkRect;
         private readonly RectI chunkRect;
-        public WorldRegion[] Regions => pathfindingRegions.ToArray();
+        public IWorldRegion[] Regions => pathfindingRegions.ToArray();
         private List<WorldRegion> pathfindingRegions;
+        public IBiome Biome { get; }
 
         public WorldChunk(ChunkLocation Coordinates, RectI ChunkRect, int CHUNK_SIZE)
         {
@@ -67,9 +72,9 @@ namespace ColonySim.World
             }
         }
 
-        public void AddRegion(WorldRegion Region)
+        public void AddRegion(IWorldRegion Region)
         {
-            pathfindingRegions.Add(Region);
+            pathfindingRegions.Add(Region as WorldRegion);
         }
 
         public void ClearRegions()

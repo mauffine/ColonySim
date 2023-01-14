@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ColonySim.World
+namespace ColonySim
 {
 
     public interface ITileNavData

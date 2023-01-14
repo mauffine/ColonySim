@@ -4,7 +4,7 @@ using UnityEngine;
 using ColonySim.Systems;
 using System;
 
-namespace ColonySim.World
+namespace ColonySim
 {
     public interface ICoordinate
     {

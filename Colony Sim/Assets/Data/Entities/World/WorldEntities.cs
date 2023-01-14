@@ -226,6 +226,54 @@ namespace ColonySim.World.Tiles
     }
 
     [EntityDef]
+    public class BasicFloor : EntityBase
+    {
+        public override string DefName => "entity.basicfloor";
+
+        public override IEntityTrait[] Traits { get; }
+        public override EntityType EntityType => EntityType.FLOOR;
+
+        public BasicFloor()
+        {
+            Traits = new IEntityTrait[]
+            {
+                new Trait_Ground(DefName)
+            };
+            EntityGraphicsDef = new EntityGraphics(
+                "entity.basicFloor",
+                "basic",
+                DefName,
+                EntityLayer.TILE);
+
+        }
+    }
+
+    [EntityDef]
+    public class Shrub : EntityBase
+    {
+        public override string DefName => "entity.shrub";
+
+        public override IEntityTrait[] Traits { get; }
+        public override EntityType EntityType => EntityType.FURNITURE;
+
+        public Shrub()
+        {
+            Traits = new IEntityTrait[]
+            {
+                
+            };
+
+            int textureNum = Random.Range(0, 2);
+
+            EntityGraphicsDef = new EntityGraphics(
+                "entity.shrub" + textureNum,
+                "basic",
+                DefName,
+                EntityLayer.TILEDETAIL);
+        }
+    }
+
+    [EntityDef]
     public class ConcreteFloor : EntityBase
     {
         public override string DefName => "entity.concretefloor";
@@ -264,6 +312,29 @@ namespace ColonySim.World.Tiles
             };
             EntityGraphicsDef = new EntityGraphics(
                 "entity.dirtfloor",
+                "simpleNoise",
+                DefName,
+                EntityLayer.TILE);
+
+        }
+    }
+
+    [EntityDef]
+    public class SandFloor : EntityBase
+    {
+        public override string DefName => "entity.sandfloor";
+
+        public override IEntityTrait[] Traits { get; }
+        public override EntityType EntityType => EntityType.FLOOR;
+
+        public SandFloor()
+        {
+            Traits = new IEntityTrait[]
+            {
+                new Trait_Ground(DefName)
+            };
+            EntityGraphicsDef = new EntityGraphics(
+                "entity.sandfloor",
                 "simpleNoise",
                 DefName,
                 EntityLayer.TILE);

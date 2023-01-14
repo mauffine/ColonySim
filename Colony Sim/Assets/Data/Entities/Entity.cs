@@ -8,8 +8,9 @@ using UnityEngine;
 using ColonySim.Entities.Material;
 using ColonySim.Systems.Navigation;
 using System;
+using ColonySim.Entities;
 
-namespace ColonySim.Entities
+namespace ColonySim
 {
     public interface IEntityTriggerSystem
     {
@@ -68,7 +69,12 @@ namespace ColonySim.Entities
         IEntityTrait[] Traits { get; }
         IEntityGraphics EntityGraphicsDef { get; }
         EntityType EntityType { get; }
+
+        IEntityTrait FindTrait<TraitType>();
     }
+}
+
+namespace ColonySim.Entities { 
 
     public abstract class EntityBase : IEntity
     {
@@ -94,13 +100,29 @@ namespace ColonySim.Entities
             }          
         }
 
+        public IEntityTrait FindTrait<TraitType>()
+        {
+            if (Traits != null)
+            {
+                foreach (var trait in Traits)
+                {
+                    if (trait is TraitType)
+                    {
+                        return trait;
+                    }
+                }
+            }
+            return default;
+        }
+
         public ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()
         {
             if (Traits != null)
             {
                 foreach (var trait in Traits)
                 {
-                    return trait.FindModule<ModuleType>();
+                    var _ret = trait.FindModule<ModuleType>();
+                    if (_ret != null) return _ret;
                 }
             }
             return default;

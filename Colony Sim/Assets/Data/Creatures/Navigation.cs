@@ -14,7 +14,7 @@ namespace ColonySim.Creatures
         ICreature Creature { get; }
         WorldPoint Coordinates { get; }
         Vector2 Position { get; }
-        Quaternion Facing { get; }
+        Vector2 Facing { get; }
 
         void SetTilePosition(WorldPoint tileCoordinates);
         void Destination(WorldPoint destination);
@@ -30,7 +30,7 @@ namespace ColonySim.Creatures
         public WorldPoint Coordinates { get; protected set; }
         public Vector2 Position { get
             {
-                if (currentDestination != null)
+                /*if (currentDestination != null)
                 {
                     float X = Mathf.Lerp(Coordinates.X, currentDestination.Value.x, movementPercentage);
                     float Y = Mathf.Lerp(Coordinates.Y, currentDestination.Value.y, movementPercentage);
@@ -39,15 +39,20 @@ namespace ColonySim.Creatures
                 else
                 {
                     return new Vector2(Coordinates.X, Coordinates.Y);
-                }
+                }*/
+                return new Vector2(Coordinates.X, Coordinates.Y);
             } }
 
-        public Quaternion Facing => currentFacing;
-        private Quaternion currentFacing = Quaternion.identity;
+        public Vector2 Facing => currentFacing;
+        private Vector2 currentFacing = Vector2.up;
 
         private Stack<INavNode> currentPath;
         private Vector2? currentDestination;
         private Action cbOnMovementEnd;
+        private ITileData currentTile;
+
+        private float movementPercentage;
+        Vector2 startFacing;
 
         public CreatureBaseNavigation(ICreature Creature)
         {
@@ -62,8 +67,9 @@ namespace ColonySim.Creatures
 
         private void UpdateTilePosition()
         {
-            ITileData TileData = WorldSystem.TileUnsf(Coordinates);
-            TileData.Creature = Creature;
+            if(currentTile != null) currentTile.Creature = null;
+            currentTile = WorldSystem.TileUnsf(Coordinates);
+            currentTile.Creature = Creature;
         }
 
         public void Destination(WorldPoint destination)
@@ -94,8 +100,7 @@ namespace ColonySim.Creatures
             Move(delta);
         }
 
-        private float movementPercentage;
-        Quaternion startFacing;
+
 
         private void Move(float delta)
         {
@@ -104,8 +109,8 @@ namespace ColonySim.Creatures
                 Vector2 destination = (Vector2)currentDestination;
                 if (movementPercentage > 0)
                 {
-                    Quaternion targetFacing = Quaternion.FromToRotation(Position, destination - Position);
-                    currentFacing = Quaternion.Lerp(startFacing, targetFacing, movementPercentage);
+                    Vector2 dir = (destination - Position).normalized;
+                    currentFacing = dir;
                 }
                 
                 float distance = Mathf.Sqrt(

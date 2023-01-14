@@ -12,7 +12,7 @@ using System;
 using System.Linq;
 using ColonySim.World.Tiles;
 
-namespace ColonySim.Entities
+namespace ColonySim
 {
 /* [0]BASE
  * [1-2]TILE - Water, Dirt, Floors, Grass
@@ -69,6 +69,7 @@ namespace ColonySim.Rendering
         }
 
         private readonly Dictionary<ChunkLocation, RenderedChunk> RenderedChunks = new Dictionary<ChunkLocation, RenderedChunk>();
+        private readonly Dictionary<EntityID, RenderedEntity> RenderedEntities = new Dictionary<EntityID, RenderedEntity>();
         private readonly List<IRenderObject> renderObjects_dirty = new List<IRenderObject>();
         private readonly List<IRenderObject> renderMeshQueue = new List<IRenderObject>();
 
@@ -134,6 +135,11 @@ namespace ColonySim.Rendering
         public bool TaskResponse(IEntityTaskWorker Worker, EntityTask Task)
         { return true; }
 
+        public static void InvalidateEntity(IEntity Entity)
+        {
+            SetEntityDirty(Entity);
+        }
+
         #region Helper Functions
 
         public static void SetChunkDirty(RenderedChunk Chunk) 
@@ -153,14 +159,17 @@ namespace ColonySim.Rendering
         {  RenderObject_SetDirty(RenderedChunks[Coordinates].Tile(Coordinates)); }
 
         // Set Entity Dirty
-        public static void SetEntityDirty(IEntity EntityData, ITileData TileData)
-        { instance.instance_SetEntityDirty(EntityData, TileData); }
+        public static void SetEntityDirty(IEntity EntityData)
+        { instance.instance_SetEntityDirty(EntityData.ID); }
 
         public static void SetEntityDirty(RenderedEntity RenderedObject)
         { instance.RenderObject_SetDirty(RenderedObject); }
 
-        private void instance_SetEntityDirty(IEntity EntityData, ITileData TileData)
-        { RenderObject_SetDirty(GetRenderedEntity(EntityData, TileData)); }
+        public static void SetEntityDirty(EntityID ID)
+        { instance.instance_SetEntityDirty(ID); }
+
+        private void instance_SetEntityDirty(EntityID ID)
+        { RenderObject_SetDirty(GetRenderedEntity(ID)); }
 
         // Get Chunk Data
 
@@ -196,15 +205,38 @@ namespace ColonySim.Rendering
 
         // Get Entity Data
 
+        public void NewRenderedEntity(EntityID ID, RenderedEntity newEntity)
+        {
+            if (RenderedEntities.ContainsKey(ID))
+            {
+                this.Warning("Entity Key Already Exists::"+ID);
+            }
+            else
+            {
+                RenderedEntities.Add(ID, newEntity);
+            }
+            
+        }
+
         private IEntity GetEntityData(WorldPoint Coordinates, EntityID ID)
         { return GetTileData(Coordinates).Container.GetEntity(ID); }
 
         private IEntity GetEntityData(RenderedEntity RenderObject)
         { return GetTileData(RenderObject.Coordinates).Container.GetEntity(RenderObject.ID); }
 
-        private RenderedEntity GetRenderedEntity(IEntity EntityData, ITileData TileData) 
-        { return GetRenderedTile(TileData).GetRenderedEntity(EntityData); }
+        public RenderedEntity GetRenderedEntity(EntityID ID) 
+        { if (RenderedEntities.ContainsKey(ID)) return RenderedEntities[ID];
+            else this.Verbose("Entity Not Found::" + ID); return null;
+        }
 
+
+        public IEnumerable<RenderedEntity> GetRenderedEntities()
+        {
+            foreach (var kv in RenderedEntities)
+            {
+                yield return kv.Value;
+            }
+        }
         #endregion
     }
 
@@ -323,14 +355,8 @@ namespace ColonySim.Rendering
         public string LoggingPrefix => $"<color=green>[RTILE:{Object.name}]</color>";
 
         public GameObject Object;
-        public Dictionary<EntityID, RenderedEntity> RenderedEntities = new Dictionary<EntityID, RenderedEntity>();
-        public IEnumerable<RenderedEntity> GetRenderedEntities()
-        {
-            foreach (var kv in RenderedEntities)
-            {
-                yield return kv.Value;
-            }
-        }
+        public List<EntityID> RenderedEntities = new List<EntityID>();
+        
         public WorldPoint Coordinates { get => coordinates; }
         private readonly WorldPoint coordinates;
         public bool Rendering { get; } = true;
@@ -351,9 +377,9 @@ namespace ColonySim.Rendering
 
         public void SetDirty()
         {
-            foreach (var RenderedEntityPair in RenderedEntities)
+            foreach (var ID in RenderedEntities)
             {
-                WorldRenderer.SetEntityDirty(RenderedEntityPair.Value);
+                WorldRenderer.SetEntityDirty(ID);
             }
             WorldRenderer.SetTileDirty(this);
         }
@@ -385,23 +411,30 @@ namespace ColonySim.Rendering
                 // If the list of entities has changed
                 if (tileContentsHash != p_tileContentsHash)
                 {
+                    this.Debug($"Rendering Tile Entities [{RenderedEntities.Count}]");
                     var _renderedEntities = RenderedEntities.ToArray();
-                    foreach (var RenderedEntity in _renderedEntities)
+                    foreach (var EntityID in _renderedEntities)
                     {
                         // If a rendered entity has been removed
-                        if (!Data.Container.HasEntity(RenderedEntity.Key))
+                        if (!Data.Container.HasEntity(EntityID))
                         {
-                            RenderedEntity.Value.Destroyed();
-                            RenderedEntities.Remove(RenderedEntity.Key);
+                            var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
+                            if (_entity != null)
+                            {
+                                _entity.Destroyed();
+                            }
+                            RenderedEntities.Remove(EntityID);
                         }
                     }
 
                     foreach (IEntity entity in Data.Container.TileEntities())
                     {
                         // If there's a new entity to render
-                        if (!RenderedEntities.ContainsKey(entity.ID)){
+                        if (!RenderedEntities.Contains(entity.ID)){
                             RenderedEntity renderedEntity = new RenderedEntity(Object.transform, this, entity);
-                            RenderedEntities.Add(entity.ID, renderedEntity);
+                            RenderedEntities.Add(entity.ID);
+                            WorldRenderer.Get.NewRenderedEntity(entity.ID, renderedEntity);
+
                         }
                     }
                     SetDirty();
@@ -410,10 +443,10 @@ namespace ColonySim.Rendering
         }
 
         public RenderedEntity GetRenderedEntity(IEntity EntityData)
-        { return RenderedEntities[EntityData.ID]; }
+        { return GetRenderedEntity(EntityData.ID); }
 
         public RenderedEntity GetRenderedEntity(EntityID ID)
-        { return RenderedEntities[ID]; }
+        { return WorldRenderer.Get.GetRenderedEntity(ID); }
 
         public bool TaskResponse(IEntityTaskWorker Worker, EntityTask Task)
         { return true; }
@@ -422,9 +455,13 @@ namespace ColonySim.Rendering
         {
             if (Rendering)
             {
-                foreach (var RenderedEntity in RenderedEntities)
+                foreach (var EntityID in RenderedEntities)
                 {
-                    RenderedEntity.Value.RenderMeshes();
+                    var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
+                    if (_entity != null)
+                    {
+                        _entity.RenderMeshes();
+                    }
                 }
             }           
         }

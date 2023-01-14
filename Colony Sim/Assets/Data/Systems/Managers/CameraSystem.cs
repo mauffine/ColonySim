@@ -34,6 +34,13 @@ namespace ColonySim.Systems
         private bool _runningCameraMove = false;
         private bool cameraMoveActuated = false;
 
+        [SerializeField]
+        private float cameraDamp = 10.0f;
+        [SerializeField]
+        private float cameraZoom = 1.0f;
+        [SerializeField]
+        private float cameraMovement = 1.0f;
+
         private void Awake()
         {
             instance = this;
@@ -100,10 +107,10 @@ namespace ColonySim.Systems
                 Vector2 cameraPos = Camera.main.transform.position;
                 if (cameraMoveActuated)
                 {
-                    targetPosition += InputSystem.CameraActions.Movement.ReadValue<Vector2>() * Time.deltaTime * Instance_CameraMoveMultiplier() * 5;
+                    targetPosition += InputSystem.CameraActions.Movement.ReadValue<Vector2>() * Time.deltaTime * Instance_CameraMoveMultiplier();
                 }
 
-                Vector2 movement = Vector2.SmoothDamp(cameraPos, targetPosition, ref velocity, Time.deltaTime * 65f);
+                Vector2 movement = Vector2.SmoothDamp(cameraPos, targetPosition, ref velocity, Time.deltaTime * cameraDamp);
                 Camera.main.transform.position = new Vector3(movement.x, movement.y, Camera.main.transform.position.z);
 
                 if (!cameraMoveActuated && (Vector2)Camera.main.transform.position == targetPosition)
@@ -127,12 +134,12 @@ namespace ColonySim.Systems
 
         private float Instance_CameraZoomMultipler()
         {
-            return Camera.main.orthographicSize * 0.5f;
+            return Camera.main.orthographicSize * cameraZoom;
         }
 
         private float Instance_CameraMoveMultiplier()
         {
-            return Camera.main.orthographicSize;
+            return Camera.main.orthographicSize * cameraMovement;
         }
         #endregion
 

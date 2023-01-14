@@ -39,6 +39,7 @@ namespace ColonySim.Creatures.AI
         public ICreatureAI AI { get; set; }
         public IWorkOrder CurrentOrder { get; protected set; }
         public ICreatureNavigation Navigation => AI.Navigation;
+        public ICreatureInventory Inventory => AI.Inventory;
         public LinkedList<IWorkOrder> TaskQueue { get; protected set; } = new LinkedList<IWorkOrder>();
         public bool Available => TaskQueue.Count < 3;
 
@@ -135,6 +136,7 @@ namespace ColonySim.Creatures.AI
         public IWorkOrder CurrentOrder => ((IWorker)CurrentState).CurrentOrder;
 
         public ICreatureNavigation Navigation => Creature.Navigation;
+        public ICreatureInventory Inventory => Creature.Inventory;
 
         public LinkedList<IWorkOrder> TaskQueue => ((IWorker)CurrentState).TaskQueue;
 

@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ColonySim.Entities
+namespace ColonySim
 {
     public interface IEntityTrigger
     {
@@ -15,6 +15,13 @@ namespace ColonySim.Entities
     {
         ITileData Data { get; }
     }
+
+    public interface ITriggerCondition
+    {
+    }
+}
+
+namespace ColonySim.Entites { 
 
     public class EntityTrigger_OnTileEnter : ITileTrigger
     {
@@ -40,9 +47,5 @@ namespace ColonySim.Entities
 
         public EntityTrigger_OnTileExit(ITileData Data, ITileContainer Container)
         { data = Data; container = Container; }
-    }
-
-    public interface ITriggerCondition
-    {
     }
 }

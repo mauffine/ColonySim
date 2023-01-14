@@ -6,7 +6,7 @@ using ColonySim.Entities.Material;
 using ColonySim.Systems.Navigation;
 using ColonySim.World.Tiles;
 
-namespace ColonySim.World
+namespace ColonySim
 {
     public interface INavNode : ICoordinate
     {

@@ -8,7 +8,7 @@ using System.Linq;
 using ColonySim.LoggingUtility;
 using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 
-namespace ColonySim.Entities
+namespace ColonySim
 {
     public interface IEntityGraphics
     {
@@ -18,6 +18,11 @@ namespace ColonySim.Entities
 
         EntityTextureSettings GetTexture(ITileData TileData);
         void AddTextureRules(ITextureRule[] textureAdjacentSelectionRules);
+    }
+
+    public interface ITextureRule
+    {
+        bool Match(ITileData Data, AdjacentTileData adjacencyData, TextureAdjacencyData neighbourData, out EntityTextureSettings TextureSettings);
     }
 
     public class EntityTextureSettings
@@ -38,6 +43,9 @@ namespace ColonySim.Entities
         public int ExactNeighbours;
         public int LayerNeighbours;
     }
+}
+
+namespace ColonySim.Entities { 
 
     public class EntityGraphics : IEntityGraphics, ILoggerSlave
     {
@@ -124,10 +132,7 @@ namespace ColonySim.Entities
         }
     }
 
-    public interface ITextureRule
-    {
-        bool Match(ITileData Data, AdjacentTileData adjacencyData, TextureAdjacencyData neighbourData, out EntityTextureSettings TextureSettings);
-    }
+
 
     public enum NeighbourRule { DontCare = 0, Exists = 1, Not = -1 }
 
@@ -415,6 +420,29 @@ namespace ColonySim.Entities
         {
             return RotatedOrMirroredIndexes[3, GetRotatedIndex(original, rotation)];
 
+        }
+    }
+
+    public class TextureRandomSelectionRule : ITextureRule
+    {
+        private readonly string TextureID;
+        private readonly int Selection;
+
+        public TextureRandomSelectionRule(string TextureID, int Selection)
+        {
+            this.TextureID = TextureID;
+            this.Selection = Selection;
+        }
+
+        public bool Match(ITileData Data, AdjacentTileData adjacencyData, TextureAdjacencyData neighbourData, out EntityTextureSettings TextureSettings)
+        {
+            TextureSettings = new EntityTextureSettings()
+            {
+                TextureID = this.TextureID + Selection.ToString(),
+                Angle = 0,
+                ReadFromNeighbours = null
+            };
+            return true;
         }
     }
 }

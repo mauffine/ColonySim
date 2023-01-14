@@ -6,11 +6,13 @@ using ILogger = ColonySim.LoggingUtility.ILogger;
 using ColonySim.Rendering;
 using ISystem = ColonySim.Systems.System;
 using UnityEditor;
+using ColonySim.World;
 using ColonySim.Systems;
 using ColonySim.World.Tiles;
 using ColonySim.Systems.Navigation;
+using ColonySim.Entities;
 
-namespace ColonySim.World
+namespace ColonySim
 {
     public class WorldSystem : ISystem, ILogger
     {
@@ -59,9 +61,9 @@ namespace ColonySim.World
         {
             this.Notice("> World System Init.. <");
             instance = this;
-            _world = new GameWorld(1, 1);
+            _world = new GameWorld(3, 3);
             _world.GenerateWorldChunks();
-            _world.WorldGeneration(Time.realtimeSinceStartup);
+            _world.WorldGeneration(Mathf.CeilToInt(Time.realtimeSinceStartup));
             Renderer = new WorldRenderer();
             Renderer.TileMapTransform = this.TileMapTransform;
             Simulation = new WorldSimulation();
@@ -85,6 +87,9 @@ namespace ColonySim.World
                         Chunk.Coordinates.Origin, Chunk.Coordinates.Boundary, null);
                 }
             }
+
+            var hammer = EntitySystem.Get.CreateEntity("entity.tool.hammer");
+            EntitySystem.Get.PlaceEntity(hammer, Tile(5, 5));
         }
 
         public override void Tick()
@@ -119,7 +124,7 @@ namespace ColonySim.World
             }
         }
 
-        private void FloodFillRegion(WorldRegion Region, WorldPoint Origin, WorldPoint MinBoundary, WorldPoint MaxBoundary,List<ITileData> closedSet)
+        private void FloodFillRegion(IWorldRegion Region, WorldPoint Origin, WorldPoint MinBoundary, WorldPoint MaxBoundary,List<ITileData> closedSet)
         {
             if(closedSet == null) closedSet = new List<ITileData>();
             this.Verbose($"Flood Filling Region @{Region.Location}::{Region.Origin}::{Region.Location.Boundary}");
@@ -270,7 +275,7 @@ namespace ColonySim.World
                     int index = 0;
                     foreach (var chunk in World.Chunks())
                     {
-                        WorldRegion[] regions = chunk.Regions;
+                        IWorldRegion[] regions = chunk.Regions;
                         if (regions != null)
                         {
                             foreach (var region in regions)

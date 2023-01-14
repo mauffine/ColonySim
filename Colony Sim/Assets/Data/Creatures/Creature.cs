@@ -14,6 +14,7 @@ namespace ColonySim.Creatures
     {
         ICreatureNavigation Navigation { get; }
         ICreatureAI AI { get; }
+        ICreatureInventory Inventory { get; }
     }
 
     public abstract class CreatureBase : ICreature, ILoggerSlave
@@ -23,8 +24,10 @@ namespace ColonySim.Creatures
 
         public abstract ICreatureNavigation Navigation {get;}
         public ICreatureAI AI { get; protected set; }
+        public virtual ICreatureInventory Inventory { get; protected set; }
+
         public Vector2 RenderPoint => Navigation.Position;
-        public Quaternion RenderFacing => Navigation.Facing;
+        public Vector2 RenderFacing => Navigation.Facing;
         public abstract string RenderTexture { get; }
 
         public virtual void WorldTick(float delta)
@@ -46,12 +49,13 @@ namespace ColonySim.Creatures
 
         public override ICreatureNavigation Navigation => _navigation;
         private readonly CreatureBaseNavigation _navigation;
-        public override string RenderTexture => "survivor-temp";
+        public override string RenderTexture => "character";
 
         public TestCreature()
         {
             _navigation = new CreatureBaseNavigation(this);
             AI = new TestAI(this);
+            Inventory = new TestInventory();
         }
 
         public override void WorldTick(float delta)

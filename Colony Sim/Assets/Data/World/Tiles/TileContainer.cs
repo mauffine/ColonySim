@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ColonySim.Entites;
 using ColonySim.Entities;
 
-namespace ColonySim.World
+namespace ColonySim
 {
     public interface ITileContainer : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
@@ -21,13 +22,15 @@ namespace ColonySim.World
         IEntity[] EntitiesInLayer(EntityLayer Layer);
         IEnumerator<IEntity> GetEnumerator();
     }
+}
+
+namespace ColonySim.World { 
     /// <summary>
     /// Game Tile
     /// </summary>
     public class TileContainer : ITileContainer
     {
         private SortedSet<IEntity> SortedEntities;
-        private int _entityIDCounter;
         private readonly ITileData TileData;
 
         public TileContainer(ITileData TileData)
@@ -39,7 +42,6 @@ namespace ColonySim.World
         {
             if (SortedEntities == null) { SortedEntities = new SortedSet<IEntity>(new SortByRenderOrder()); }
             SortedEntities.Add(Entity);
-            Entity.ID = new EntityID(_entityIDCounter++);
 
             Entity.Trigger(new EntityTrigger_OnTileEnter(TileData, this));
         }
@@ -168,6 +170,11 @@ namespace ColonySim.World
     {
         public int Compare(IEntity x, IEntity y)
         {
+            if (x == null || y == null)
+            {
+                return x == null ? -1 : 1;
+            }
+            
             if (x.EntityGraphicsDef != null && y.EntityGraphicsDef != null)
             {
                 int xV = (x.EntityGraphicsDef.DrawPriority+1) * (int)x.EntityGraphicsDef.Layer;

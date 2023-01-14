@@ -31,12 +31,16 @@ namespace ColonySim.Entities
         private bool _stamp = false;
         #endregion
 
+        private int entityCount = 0;
+
         public override void Init()
         {
             this.Notice("> Entity System Init.. <");
             instance = this;
             base.Init();
         }
+
+        #region Entity Manipulation
 
         public static IEntity GetDef(string DefName)
         {
@@ -71,9 +75,19 @@ namespace ColonySim.Entities
             IEntity entityDef = GetDef(defName);
             if (entityDef != null)
             {
-                return (IEntity)Activator.CreateInstance(entityDef.GetType(), new object[] { });
+                var _newEntity = (IEntity)Activator.CreateInstance(entityDef.GetType(), new object[] { });
+                _newEntity.ID = new EntityID(entityCount);
+                entityCount++;
+                return _newEntity;
             }
             return null;
+        }
+
+        #endregion
+
+        public static void InvalidateEntity(IEntity Entity)
+        {
+            WorldRenderer.InvalidateEntity(Entity);
         }
     }
 }

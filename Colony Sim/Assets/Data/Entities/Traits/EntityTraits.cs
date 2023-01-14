@@ -1,3 +1,5 @@
+using ColonySim.Creatures;
+using ColonySim.Entites;
 using ColonySim.Entities.Material;
 using ColonySim.Systems.Navigation;
 using ColonySim.World;
@@ -5,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ColonySim.Entities
+namespace ColonySim
 {
     public interface IEntityTrait : IEntityTriggerSystem, IEntityModuleSearch, IEntityTaskSystem
     {
@@ -13,12 +15,32 @@ namespace ColonySim.Entities
         IEntityModule[] TraitModules { get; }
     }
 
+    public interface ITraitContainable
+    {
+        ICreatureInventory Inventory { get; }
+        int Encumberance { get; }
+
+        void Contained(ICreatureInventory Inventory);
+    }
+
+    public interface IEntityNavData
+    {
+        int Cost { get; }
+    }
+
+    public interface IWalkNavData : IEntityNavData
+    {
+        bool Walkable { get; }
+    }
+}
+
+namespace ColonySim.Entities
+{
     public abstract class EntityBaseTrait : IEntityTrait
     {
         public abstract string TRAIT_DEF_NAME { get; }
         public abstract IEntityModule[] TraitModules { get; }
 
-        #region Delegations
         public virtual void Trigger(IEntityTrigger Event)
         {
             if (TraitModules != null)
@@ -30,7 +52,7 @@ namespace ColonySim.Entities
                         _trigger.Trigger(Event);
                     }
                 }
-            }           
+            }
         }
 
         public virtual ModuleType FindModule<ModuleType>() where ModuleType : IEntityModule, new()
@@ -44,7 +66,7 @@ namespace ColonySim.Entities
                         return _match;
                     }
                 }
-            }            
+            }
             return default;
         }
 
@@ -63,10 +85,8 @@ namespace ColonySim.Entities
                         Task.Execute(ModuleWorker);
                     }
                 }
-            }           
+            }
         }
-
-        #endregion
     }
 
     public class Trait_HasMaterial : EntityBaseTrait
@@ -78,7 +98,7 @@ namespace ColonySim.Entities
 
         public Trait_HasMaterial(IEntityMaterialDef MaterialDef)
         {
-            this.MaterialDef = MaterialDef; 
+            this.MaterialDef = MaterialDef;
         }
     }
 
@@ -122,7 +142,7 @@ namespace ColonySim.Entities
 
         public override void Trigger(IEntityTrigger Event)
         {
-            if(Event is EntityTrigger_OnTileEnter EntryEvent)
+            if (Event is EntityTrigger_OnTileEnter EntryEvent)
             {
                 ITileNavData navData = EntryEvent.Data.NavData[NavigationMode.Walking];
                 navData.NavEntityAdded(this);
@@ -136,12 +156,25 @@ namespace ColonySim.Entities
         }
     }
 
-    public interface IEntityNavData
+
+
+    public class Trait_Item : EntityBaseTrait, ITraitContainable
     {
-        int Cost { get; }
-    }
-    public interface IWalkNavData : IEntityNavData
-    {
-        bool Walkable { get; }
+        public override string TRAIT_DEF_NAME => "ITEM";
+        public override IEntityModule[] TraitModules { get; }
+
+        public ICreatureInventory Inventory { get; private set; }
+        public int Encumberance { get; }
+
+        public Trait_Item(int Encumberance)
+        {
+            this.Encumberance = Encumberance;
+        }
+
+        public void Contained(ICreatureInventory Inventory)
+        {
+            this.Inventory = Inventory;
+        }
     }
 }
+    

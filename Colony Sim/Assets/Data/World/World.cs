@@ -6,6 +6,7 @@ using ColonySim.Helpers;
 using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 using ColonySim.LoggingUtility;
 using ColonySim.World.Tiles;
+using ColonySim.Entities;
 
 namespace ColonySim.World
 {
@@ -45,19 +46,13 @@ namespace ColonySim.World
             }
         }
 
-        public void WorldGeneration(float seed)
+        public void WorldGeneration(int seed)
         {
+            TemperateBiome biome = new TemperateBiome();
             groundNoiseMap = NoiseMap.GenerateNoiseMap(Size, 4, NoiseMap.GroundWave(seed));
-            foreach (var tile in GetTiles())
+            foreach (var chunk in WorldChunks)
             {
-                //WorldPoint Point = tile.Coordinates;
-                //float noise = groundNoiseMap[Point.X + Point.Y * Size.x];
-                //Debug.Log($"{tile.Coordinates}::{noise}");
-                //if (noise < 0.22f)
-                //{
-                    
-                //}
-                tile.Container.AddEntity(new DirtFloor());
+                biome.BiomeGeneration(chunk, seed + chunk.GetHashCode());
             }
         }
 

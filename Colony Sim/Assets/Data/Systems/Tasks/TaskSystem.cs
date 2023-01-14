@@ -30,7 +30,7 @@ namespace ColonySim.Systems.Tasks
 
         public override void Init()
         {
-            this.Notice("<color=blue>[Task System Init]</color>");
+            this.Notice("> Task System Init.. <");
             instance = this;
             base.Init();
         }

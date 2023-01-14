@@ -44,6 +44,7 @@ namespace ColonySim.Systems.Tasks
     {
         IWorkOrder CurrentOrder { get; }
         ICreatureNavigation Navigation { get; }
+        ICreatureInventory Inventory { get; }
         LinkedList<IWorkOrder> TaskQueue { get; }
         bool Available { get; }
 
