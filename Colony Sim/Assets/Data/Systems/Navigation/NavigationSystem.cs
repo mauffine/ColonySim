@@ -48,16 +48,6 @@ namespace ColonySim.Systems.Navigation
             this.Verbose("Generating Nav Data..");
             foreach (var tile in WorldSystem.World)
             {
-                tile.NavData = new Dictionary<NavigationMode, ITileNavData>
-                {
-                    {
-                        NavigationMode.Walking,
-                        new TileNav_Walkable()
-                    }
-                };
-            }
-            foreach (var tile in WorldSystem.World)
-            {
                 ITileNavData data;
                 if (tile.NavData.TryGetValue(NavigationMode.Walking, out data))
                 {
@@ -66,8 +56,16 @@ namespace ColonySim.Systems.Navigation
                     {
                         if (neighbour != null)
                         {
-                            INavEdge edge = new TileEdge_Walkable(data.Cost, neighbour);
-                            edges.Add(edge);
+                            ITileNavData neighbourNavData = neighbour.NavData[NavigationMode.Walking];
+                            if (neighbourNavData != null)
+                            {
+                                if (data.Traversible && neighbourNavData.Traversible)
+                                {
+                                    INavEdge edge = new TileEdge_Walkable(data.Cost, neighbour);
+                                    edges.Add(edge);
+                                }
+                                UpdateEdges(neighbourNavData, neighbour.Coordinates);
+                            }
                         }
                     }
                     data.Edges = edges.ToArray();

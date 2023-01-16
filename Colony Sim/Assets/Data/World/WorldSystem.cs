@@ -66,6 +66,7 @@ namespace ColonySim
             _world.WorldGeneration(Mathf.CeilToInt(Time.realtimeSinceStartup));
             Renderer = new WorldRenderer();
             Renderer.TileMapTransform = this.TileMapTransform;
+            Renderer.Init();
             Simulation = new WorldSimulation();
 
             foreach (var Chunk in _world.Chunks())

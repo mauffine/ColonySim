@@ -8,7 +8,7 @@ using ColonySim.LoggingUtility;
 using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 using ColonySim.Creatures.AI;
 
-namespace ColonySim.Creatures
+namespace ColonySim
 {
     public interface ICreature : IWorldTick, ICreatureRenderData
     {
@@ -16,7 +16,10 @@ namespace ColonySim.Creatures
         ICreatureAI AI { get; }
         ICreatureInventory Inventory { get; }
     }
+}
 
+namespace ColonySim.Creatures
+{
     public abstract class CreatureBase : ICreature, ILoggerSlave
     {
         public LoggingUtility.ILogger Master => CreatureController.Get;
@@ -26,6 +29,7 @@ namespace ColonySim.Creatures
         public ICreatureAI AI { get; protected set; }
         public virtual ICreatureInventory Inventory { get; protected set; }
 
+        public WorldPoint Coordinates => Navigation.Coordinates;
         public Vector2 RenderPoint => Navigation.Position;
         public Vector2 RenderFacing => Navigation.Facing;
         public abstract string RenderTexture { get; }
@@ -47,6 +51,8 @@ namespace ColonySim.Creatures
         public LinkedList<IWorkOrder> TaskQueue { get; } = new LinkedList<IWorkOrder>();
         public bool Available { get; } = true;
 
+        public IVision Vision => _sight;
+        private readonly CreatureSight _sight;
         public override ICreatureNavigation Navigation => _navigation;
         private readonly CreatureBaseNavigation _navigation;
         public override string RenderTexture => "character";
@@ -56,6 +62,8 @@ namespace ColonySim.Creatures
             _navigation = new CreatureBaseNavigation(this);
             AI = new TestAI(this);
             Inventory = new TestInventory();
+            _sight = new CreatureSight(this, 16);
+            //VisionSystem.Get.AddPlayerSight(this);
         }
 
         public override void WorldTick(float delta)

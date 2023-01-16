@@ -32,7 +32,7 @@ namespace ColonySim
         private bool _stamp = false;
         #endregion
 
-        private ICreature selectedCreature;
+        public ICreature selectedCreature;
 
         public override void Init()
         {

@@ -28,10 +28,7 @@ namespace ColonySim
         int Cost { get; }
     }
 
-    public interface IWalkNavData : IEntityNavData
-    {
-        bool Walkable { get; }
-    }
+
 }
 
 namespace ColonySim.Entities
@@ -87,6 +84,16 @@ namespace ColonySim.Entities
                 }
             }
         }
+    }
+
+    public interface IWalkNavData : IEntityNavData
+    {
+        bool Walkable { get; }
+    }
+
+    public interface IVisibility
+    {
+        float Opacity { get; set; }
     }
 
     public class Trait_HasMaterial : EntityBaseTrait
@@ -147,12 +154,34 @@ namespace ColonySim.Entities
                 ITileNavData navData = EntryEvent.Data.NavData[NavigationMode.Walking];
                 navData.NavEntityAdded(this);
 
+
             }
             else if (Event is EntityTrigger_OnTileExit ExitEvent)
             {
                 ITileNavData navData = ExitEvent.Data.NavData[NavigationMode.Walking];
                 navData.NavEntityRemoved(this);
             }
+        }
+    }
+
+    public class Trait_Visibility : EntityBaseTrait, IVisibility
+    {
+        public override string TRAIT_DEF_NAME => "OPAQUE";
+        public override IEntityModule[] TraitModules { get; }
+        public float Opacity { get; set; } = 0;
+
+        public Trait_Visibility(float Opacity)
+        {
+            this.Opacity = Opacity;
+        }
+
+        public override void Trigger(IEntityTrigger Event)
+        {
+            if (Event is EntityTrigger_OnTileEnter EntryEvent)
+            {
+                EntryEvent.Data.VisibilityData.Opacity = this.Opacity;           
+            }
+            //TODO: On removed
         }
     }
 

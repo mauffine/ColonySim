@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ColonySim.Creatures
+namespace ColonySim
 {
     public interface ICreatureInventory
     {
@@ -13,6 +13,11 @@ namespace ColonySim.Creatures
         bool AddItem(IEntity Item);
         bool RemoveItem(IEntity Item);
     }
+}
+
+namespace ColonySim.Creatures
+{
+    
 
     public abstract class CreatureInventory : ICreatureInventory
     {
