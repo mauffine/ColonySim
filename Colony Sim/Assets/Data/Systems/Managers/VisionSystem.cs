@@ -195,10 +195,15 @@ namespace ColonySim.Systems
         {
             this.Verbose($"Calculating Vision...");
             WorldPoint[] visibleTiles = VisibleTilesInCone(Sight.Coordinates, Sight.Facing, Sight.ViewDistance, Sight.FOV);
+            if (Sight.RadiusViewDistance > 0)
+            {
+                WorldPoint[] radiusTiles = VisibleTilesInRadius(Sight.Coordinates, Sight.RadiusViewDistance);
+                visibleTiles = visibleTiles.Union(radiusTiles).ToArray();
+            }
             Sight.UpdateVision(visibleTiles);
         }
 
-        public WorldPoint[] VisibleTilesInCone(WorldPoint Origin, Vector2 Direction, int Distance, float FOV)
+        public WorldPoint[] VisibleTilesInCone(WorldPoint Origin, Vector2 Direction, float Distance, float FOV)
         {
             int[] octants = FOVOctants(Direction, 90);
             this.Verbose($"[FOV] Visibility from {Origin}... Dir::{Direction}, Quadrants {octants[0]} to {octants[octants.Length-1]}");
@@ -209,6 +214,17 @@ namespace ColonySim.Systems
                 visibleTiles = visibleTiles.Union(_tiles).ToList();
             }
             this.Verbose($"[FOV] [TILES::{visibleTiles.Count}]");
+            return visibleTiles.ToArray();
+        }
+
+        public WorldPoint[] VisibleTilesInRadius(WorldPoint Origin, float Distance)
+        {
+            List<WorldPoint> visibleTiles = new List<WorldPoint>();
+            for (int octant = 1; octant <= 8; octant++)
+            {
+                var _tiles = LOSOctant(Origin, octant, Distance);
+                visibleTiles = visibleTiles.Union(_tiles).ToList();
+            }
             return visibleTiles.ToArray();
         }
 
@@ -253,7 +269,7 @@ namespace ColonySim.Systems
 
         }
 
-        public WorldPoint[] LOSOctant(WorldPoint Origin, int octant, int Distance)
+        public WorldPoint[] LOSOctant(WorldPoint Origin, int octant, float Distance)
         {
             List<WorldPoint> visibleTiles = new List<WorldPoint>();
             var line = new ShadowLine();
@@ -420,7 +436,7 @@ namespace ColonySim.Systems
             }
         }
 
-        private bool OutOfRange(Vector2 Origin, Vector2 Pos, int Distance)
+        private bool OutOfRange(Vector2 Origin, Vector2 Pos, float Distance)
         {
             float difX = Mathf.Abs(Origin.x - Pos.x);
             float difY = Mathf.Abs(Origin.y - Pos.y);
