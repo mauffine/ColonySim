@@ -187,6 +187,9 @@ namespace ColonySim.Systems
             _go.transform.SetPositionAndRotation(new Vector3(Coordinates.X, Coordinates.Y), Quaternion.identity);
             _go.name = "Creature";
             Object = _go;
+
+            Texture2D Texture = ResourceManager.LoadCharacterTexture(Data.RenderTexture);
+            this.Material.mainTexture = Texture;
         }
 
         public void SetDirty()
@@ -206,30 +209,23 @@ namespace ColonySim.Systems
         {
             if (Rendering)
             {
-                if (meshData != null)
-                {
-                    BuildMesh();
-                    Quaternion rotation = Quaternion.identity;
-                    Vector3 position = new Vector3(Data.RenderPoint.x, Data.RenderPoint.y, -(int)EntityLayer.CHARACTERS);
+                BuildMesh();
+                Quaternion rotation = Quaternion.identity;
+                Vector3 position = new Vector3(Data.RenderPoint.x, Data.RenderPoint.y, -(int)EntityLayer.CHARACTERS);
 
-                    Graphics.DrawMesh(
-                        meshData.mesh,
-                        position,
-                        rotation,
-                        this.Material,
-                        0
-                     );
-                }
-
+                Graphics.DrawMesh(
+                    meshData.mesh,
+                    position,
+                    rotation,
+                    this.Material,
+                    0
+                 );
             }
         }
 
         private void BuildMesh()
         {
-            Texture2D Texture = ResourceManager.LoadCharacterTexture(Data.RenderTexture);
-            this.Material.mainTexture = Texture;
-
-            if (meshData == null) meshData = new MeshData(1, MeshFlags.UV);
+            if(meshData == null) meshData = new MeshData(1, MeshFlags.UV);
             else meshData.Clear();
 
             int vIndex = meshData.vertices.Count;

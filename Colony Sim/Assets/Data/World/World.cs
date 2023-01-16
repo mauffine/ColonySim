@@ -7,6 +7,7 @@ using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 using ColonySim.LoggingUtility;
 using ColonySim.World.Tiles;
 using ColonySim.Entities;
+using ColonySim.Systems.Navigation;
 
 namespace ColonySim.World
 {
@@ -50,6 +51,18 @@ namespace ColonySim.World
         {
             TemperateBiome biome = new TemperateBiome();
             groundNoiseMap = NoiseMap.GenerateNoiseMap(Size, 4, NoiseMap.GroundWave(seed));
+            foreach (var tile in this)
+            {
+                tile.NavData = new Dictionary<NavigationMode, ITileNavData>
+                {
+                    {
+                        NavigationMode.Walking,
+                        new TileNav_Walkable()
+                    }
+                };
+                ITileVisibilityData visibilityData = new TileVisibilityData(tile.Coordinates);
+                tile.VisibilityData = visibilityData;
+            }
             foreach (var chunk in WorldChunks)
             {
                 biome.BiomeGeneration(chunk, seed + chunk.GetHashCode());

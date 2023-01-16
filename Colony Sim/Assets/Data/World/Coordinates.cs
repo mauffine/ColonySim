@@ -36,6 +36,12 @@ namespace ColonySim
             new LocalPoint(Coordinate.X % WorldSystem.CHUNK_SIZE,
             Coordinate.Y % WorldSystem.CHUNK_SIZE);
 
+        public static implicit operator Vector2(WorldPoint Coordinate) =>
+            new Vector2(Coordinate.X, Coordinate.Y);
+
+        public static implicit operator WorldPoint(Vector2 Coordinate) =>
+            new WorldPoint(Mathf.FloorToInt(Coordinate.x), Mathf.FloorToInt(Coordinate.y));
+
         public override string ToString()
         {
             return $"({X},{Y})";

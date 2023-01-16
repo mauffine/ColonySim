@@ -7,7 +7,7 @@ using ColonySim.LoggingUtility;
 using ILoggerSlave = ColonySim.LoggingUtility.ILoggerSlave;
 using System;
 
-namespace ColonySim.Creatures
+namespace ColonySim
 {
     public interface ICreatureNavigation : IWorldTick
     {
@@ -19,8 +19,12 @@ namespace ColonySim.Creatures
         void SetTilePosition(WorldPoint tileCoordinates);
         void Destination(WorldPoint destination);
         void Stop(Action cbStopEvent);
+        void OnTileMovement(Action<ITileData,ITileData> cbTileMovement);
     }
+}
 
+namespace ColonySim.Creatures
+{
     public class CreatureBaseNavigation : ICreatureNavigation, ILoggerSlave
     {
         public LoggingUtility.ILogger Master => NavigationSystem.Get;
@@ -49,6 +53,7 @@ namespace ColonySim.Creatures
         private Stack<INavNode> currentPath;
         private Vector2? currentDestination;
         private Action cbOnMovementEnd;
+        private Action<ITileData, ITileData> onTileMovement;
         private ITileData currentTile;
 
         private float movementPercentage;
@@ -68,8 +73,10 @@ namespace ColonySim.Creatures
         private void UpdateTilePosition()
         {
             if(currentTile != null) currentTile.Creature = null;
+            ITileData prv = currentTile;
             currentTile = WorldSystem.TileUnsf(Coordinates);
             currentTile.Creature = Creature;
+            onTileMovement?.Invoke(prv, currentTile);
         }
 
         public void Destination(WorldPoint destination)
@@ -164,6 +171,12 @@ namespace ColonySim.Creatures
                 return new WorldPoint(nextNode.X, nextNode.Y);
             }
             return null;
+        }
+
+        public void OnTileMovement(Action<ITileData, ITileData> cbTileMovement)
+        {
+            onTileMovement += cbTileMovement;
+            //TODO: Remove Function
         }
     }
 }

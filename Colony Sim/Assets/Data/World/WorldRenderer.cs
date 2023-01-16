@@ -68,10 +68,27 @@ namespace ColonySim.Rendering
             instance = this;
         }
 
+        public Texture2D unexploredTexture;
+        public Material unexploredMat;
+        private readonly string UNEXPLORED_TEXTURE_ID = "unexplored";
+        public Texture2D unseenTexture;
+        public Material unseenMat;
+        private readonly string UNSEEN_TEXTURE_ID = "unseen";
         private readonly Dictionary<ChunkLocation, RenderedChunk> RenderedChunks = new Dictionary<ChunkLocation, RenderedChunk>();
         private readonly Dictionary<EntityID, RenderedEntity> RenderedEntities = new Dictionary<EntityID, RenderedEntity>();
         private readonly List<IRenderObject> renderObjects_dirty = new List<IRenderObject>();
         private readonly List<IRenderObject> renderMeshQueue = new List<IRenderObject>();
+
+        public void Init()
+        {
+            unexploredTexture = ResourceManager.LoadUtilityTexture(UNEXPLORED_TEXTURE_ID);
+            unexploredMat = new Material(ResourceManager.LoadEntityMaterial("basic"));
+            unexploredMat.mainTexture = unexploredTexture;
+
+            unseenTexture = ResourceManager.LoadUtilityTexture(UNSEEN_TEXTURE_ID);
+            unseenMat = new Material(ResourceManager.LoadEntityMaterial("basic"));
+            unseenMat.mainTexture = unseenTexture;
+        }
 
         public void Tick()
         {
@@ -360,9 +377,13 @@ namespace ColonySim.Rendering
         public WorldPoint Coordinates { get => coordinates; }
         private readonly WorldPoint coordinates;
         public bool Rendering { get; } = true;
+        private Visibility tileVisibility;
+        private bool hidden => tileVisibility == Visibility.Hidden;
 
         private Action<IRenderObject> renderUpdateEvent;
         private int tileContentsHash;
+
+        private MeshData hiddenMesh;
 
         public RenderedTile(Transform Parent, WorldPoint Coordinates)
         {
@@ -400,46 +421,100 @@ namespace ColonySim.Rendering
                 _name = NameDetermination.Name;
             }
             Object.name = $"{_name} [{Coordinates.X}-{Coordinates.Y}]";
-
-            // Update the tile's entities
-            if (RenderedEntities != null)
+            tileVisibility = Data.VisibilityData.PlayerVisibility;
+            if (tileVisibility == Visibility.Hidden)
             {
-                int p_tileContentsHash = tileContentsHash;
-                tileContentsHash = Data.Container.GetHashCode();
-                //Debug.Log($"Tile Hash Code: {p_tileContentsHash} / {tileContentsHash}");
-
-                // If the list of entities has changed
-                if (tileContentsHash != p_tileContentsHash)
+                if (hiddenMesh == null)
                 {
-                    this.Debug($"Rendering Tile Entities [{RenderedEntities.Count}]");
-                    var _renderedEntities = RenderedEntities.ToArray();
-                    foreach (var EntityID in _renderedEntities)
-                    {
-                        // If a rendered entity has been removed
-                        if (!Data.Container.HasEntity(EntityID))
-                        {
-                            var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
-                            if (_entity != null)
-                            {
-                                _entity.Destroyed();
-                            }
-                            RenderedEntities.Remove(EntityID);
-                        }
-                    }
+                    if (hiddenMesh == null) hiddenMesh = new MeshData(1, MeshFlags.UV);
+                    else hiddenMesh.Clear();
 
-                    foreach (IEntity entity in Data.Container.TileEntities())
-                    {
-                        // If there's a new entity to render
-                        if (!RenderedEntities.Contains(entity.ID)){
-                            RenderedEntity renderedEntity = new RenderedEntity(Object.transform, this, entity);
-                            RenderedEntities.Add(entity.ID);
-                            WorldRenderer.Get.NewRenderedEntity(entity.ID, renderedEntity);
+                    int vIndex = hiddenMesh.vertices.Count;
 
-                        }
-                    }
-                    SetDirty();
+                    hiddenMesh.vertices.Add(new Vector3(0, 0));
+                    hiddenMesh.vertices.Add(new Vector3(0, 1));
+                    hiddenMesh.vertices.Add(new Vector3(1, 1));
+                    hiddenMesh.vertices.Add(new Vector3(1, 0));
+
+                    hiddenMesh.UVs.Add(new Vector3(0, 0));
+                    hiddenMesh.UVs.Add(new Vector2(0, 1));
+                    hiddenMesh.UVs.Add(new Vector2(1, 1));
+                    hiddenMesh.UVs.Add(new Vector2(1, 0));
+
+                    hiddenMesh.AddTriangle(vIndex, 0, 1, 2);
+                    hiddenMesh.AddTriangle(vIndex, 0, 2, 3);
+
+                    hiddenMesh.Build();
                 }
             }
+            else
+            {
+                if (tileVisibility == Visibility.Seen)
+                {
+                    if (hiddenMesh == null)
+                    {
+                        if (hiddenMesh == null) hiddenMesh = new MeshData(1, MeshFlags.UV);
+                        else hiddenMesh.Clear();
+
+                        int vIndex = hiddenMesh.vertices.Count;
+
+                        hiddenMesh.vertices.Add(new Vector3(0, 0));
+                        hiddenMesh.vertices.Add(new Vector3(0, 1));
+                        hiddenMesh.vertices.Add(new Vector3(1, 1));
+                        hiddenMesh.vertices.Add(new Vector3(1, 0));
+
+                        hiddenMesh.UVs.Add(new Vector3(0, 0));
+                        hiddenMesh.UVs.Add(new Vector2(0, 1));
+                        hiddenMesh.UVs.Add(new Vector2(1, 1));
+                        hiddenMesh.UVs.Add(new Vector2(1, 0));
+
+                        hiddenMesh.AddTriangle(vIndex, 0, 1, 2);
+                        hiddenMesh.AddTriangle(vIndex, 0, 2, 3);
+
+                        hiddenMesh.Build();
+                    }
+                }
+                // Update the tile's entities
+                if (RenderedEntities != null)
+                {
+                    int p_tileContentsHash = tileContentsHash;
+                    tileContentsHash = Data.Container.GetHashCode();
+                    //Debug.Log($"Tile Hash Code: {p_tileContentsHash} / {tileContentsHash}");
+
+                    // If the list of entities has changed
+                    if (tileContentsHash != p_tileContentsHash)
+                    {
+                        this.Debug($"Rendering Tile Entities [{RenderedEntities.Count}]");
+                        var _renderedEntities = RenderedEntities.ToArray();
+                        foreach (var EntityID in _renderedEntities)
+                        {
+                            // If a rendered entity has been removed
+                            if (!Data.Container.HasEntity(EntityID))
+                            {
+                                var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
+                                if (_entity != null)
+                                {
+                                    _entity.Destroyed();
+                                }
+                                RenderedEntities.Remove(EntityID);
+                            }
+                        }
+
+                        foreach (IEntity entity in Data.Container.TileEntities())
+                        {
+                            // If there's a new entity to render
+                            if (!RenderedEntities.Contains(entity.ID))
+                            {
+                                RenderedEntity renderedEntity = new RenderedEntity(Object.transform, this, entity);
+                                RenderedEntities.Add(entity.ID);
+                                WorldRenderer.Get.NewRenderedEntity(entity.ID, renderedEntity);
+
+                            }
+                        }
+                        SetDirty();
+                    }
+                }
+            }      
         }
 
         public RenderedEntity GetRenderedEntity(IEntity EntityData)
@@ -455,13 +530,43 @@ namespace ColonySim.Rendering
         {
             if (Rendering)
             {
-                foreach (var EntityID in RenderedEntities)
+                if (hidden)
                 {
-                    var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
-                    if (_entity != null)
+                    MaterialPropertyBlock block = new MaterialPropertyBlock();
+                    block.SetColor("Tint",Color.black);
+                    Graphics.DrawMesh(
+                        hiddenMesh.mesh,
+                        Object.transform.position,
+                        Quaternion.identity,
+                        WorldRenderer.Get.unexploredMat,
+                        0
+                     );
+                }
+                else
+                {
+                    if (tileVisibility == Visibility.Seen)
                     {
-                        _entity.RenderMeshes();
+                        MaterialPropertyBlock block = new MaterialPropertyBlock();
+                        block.SetColor("Tint", new Color(0.2f,0.2f,0.2f,1.0f));
+                        Graphics.DrawMesh(
+                            hiddenMesh.mesh,
+                            Object.transform.position,
+                            Quaternion.identity,
+                            WorldRenderer.Get.unseenMat,
+                            0
+                         );
                     }
+                    else
+                    {
+                        foreach (var EntityID in RenderedEntities)
+                        {
+                            var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
+                            if (_entity != null)
+                            {
+                                _entity.RenderMeshes();
+                            }
+                        }
+                    }  
                 }
             }           
         }

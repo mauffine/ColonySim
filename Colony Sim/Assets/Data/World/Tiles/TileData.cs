@@ -29,6 +29,7 @@ namespace ColonySim
         ICreature Creature { get; set; }
 
         Dictionary<NavigationMode, ITileNavData> NavData { get; set; }
+        ITileVisibilityData VisibilityData { get; set; }
     }
 }
 
@@ -46,6 +47,7 @@ namespace ColonySim.World.Tiles {
         public INavEdge[] Edges => NavData[NavigationMode.Walking].Edges;
 
         public Dictionary<NavigationMode, ITileNavData> NavData { get; set; }
+        public ITileVisibilityData VisibilityData { get; set; }
 
         public TileData((int X, int Y) Chunk, int X, int Y)
         { coordinates = new LocalPoint(Chunk, X, Y); Container = new TileContainer(this); }

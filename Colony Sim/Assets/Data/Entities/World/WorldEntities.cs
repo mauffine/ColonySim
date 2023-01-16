@@ -262,14 +262,36 @@ namespace ColonySim.World.Tiles
             {
                 
             };
-
-            int textureNum = Random.Range(0, 2);
-
+            int num = Random.Range(0, 2);
             EntityGraphicsDef = new EntityGraphics(
-                "entity.shrub" + textureNum,
+                "entity.shrub" + num,
                 "basic",
                 DefName,
                 EntityLayer.TILEDETAIL);
+        }
+    }
+
+    [EntityDef]
+    public class Tree : EntityBase
+    {
+        public override string DefName => "entity.tree";
+
+        public override IEntityTrait[] Traits { get; }
+        public override EntityType EntityType => EntityType.CONSTRUCT;
+
+        public Tree()
+        {
+            Traits = new IEntityTrait[]
+            {
+                new Trait_Visibility(1),
+                new Trait_Impassable()
+            };
+
+            EntityGraphicsDef = new EntityGraphics(
+                "entity.tree",
+                "basic",
+                DefName,
+                EntityLayer.CONSTRUCTS);
         }
     }
 

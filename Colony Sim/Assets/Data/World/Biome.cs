@@ -28,7 +28,13 @@ namespace ColonySim.World
                 WorldPoint Point = tile.Coordinates;
                 IEntity _entity;
                 _entity = EntitySystem.Get.CreateEntity("entity.basicfloor");
-                if (rand.Next(1,100) < 10)
+                float r = rand.Next(1, 1000);
+                if (r < 10)
+                {
+                    IEntity _shrub = EntitySystem.Get.CreateEntity("entity.tree");
+                    tile.Container.AddEntity(_shrub);
+                }
+                else if (r < 100)
                 {
                     IEntity _shrub = EntitySystem.Get.CreateEntity("entity.shrub");
                     tile.Container.AddEntity(_shrub);
