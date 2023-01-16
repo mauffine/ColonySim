@@ -52,7 +52,7 @@ namespace ColonySim.Creatures
         public bool Available { get; } = true;
 
         public IVision Vision => _sight;
-        private readonly CreatureSight _sight;
+        private readonly BaseCreatureSight _sight;
         public override ICreatureNavigation Navigation => _navigation;
         private readonly CreatureBaseNavigation _navigation;
         public override string RenderTexture => "character";
@@ -62,7 +62,7 @@ namespace ColonySim.Creatures
             _navigation = new CreatureBaseNavigation(this);
             AI = new TestAI(this);
             Inventory = new TestInventory();
-            _sight = new CreatureSight(this, 16);
+            //_sight = new BaseCreatureSight(this, 16);
             //VisionSystem.Get.AddPlayerSight(this);
         }
 

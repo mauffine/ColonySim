@@ -71,9 +71,8 @@ namespace ColonySim.Rendering
         public Texture2D unexploredTexture;
         public Material unexploredMat;
         private readonly string UNEXPLORED_TEXTURE_ID = "unexplored";
-        public Texture2D unseenTexture;
-        public Material unseenMat;
-        private readonly string UNSEEN_TEXTURE_ID = "unseen";
+        //public Texture2D unseenTexture;
+        public readonly string UNSEEN_MATERIAL_ID = "unseen";
         private readonly Dictionary<ChunkLocation, RenderedChunk> RenderedChunks = new Dictionary<ChunkLocation, RenderedChunk>();
         private readonly Dictionary<EntityID, RenderedEntity> RenderedEntities = new Dictionary<EntityID, RenderedEntity>();
         private readonly List<IRenderObject> renderObjects_dirty = new List<IRenderObject>();
@@ -84,10 +83,6 @@ namespace ColonySim.Rendering
             unexploredTexture = ResourceManager.LoadUtilityTexture(UNEXPLORED_TEXTURE_ID);
             unexploredMat = new Material(ResourceManager.LoadEntityMaterial("basic"));
             unexploredMat.mainTexture = unexploredTexture;
-
-            unseenTexture = ResourceManager.LoadUtilityTexture(UNSEEN_TEXTURE_ID);
-            unseenMat = new Material(ResourceManager.LoadEntityMaterial("basic"));
-            unseenMat.mainTexture = unseenTexture;
         }
 
         public void Tick()
@@ -544,29 +539,27 @@ namespace ColonySim.Rendering
                 }
                 else
                 {
-                    if (tileVisibility == Visibility.Seen)
+                    /*if (tileVisibility == Visibility.Seen)
                     {
                         MaterialPropertyBlock block = new MaterialPropertyBlock();
-                        block.SetColor("Tint", new Color(0.2f,0.2f,0.2f,1.0f));
+                        block.SetColor("Tint", new Color(0.2f,0.2f,0.2f,0.5f));
                         Graphics.DrawMesh(
                             hiddenMesh.mesh,
                             Object.transform.position,
                             Quaternion.identity,
-                            WorldRenderer.Get.unseenMat,
+                            WorldRenderer.Get.unexploredMat,
                             0
                          );
-                    }
-                    else
+                    }*/
+                    foreach (var EntityID in RenderedEntities)
                     {
-                        foreach (var EntityID in RenderedEntities)
+                        var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
+                        if (_entity != null)
                         {
-                            var _entity = WorldRenderer.Get.GetRenderedEntity(EntityID);
-                            if (_entity != null)
-                            {
-                                _entity.RenderMeshes();
-                            }
+                            _entity.Visibility = tileVisibility;
+                            _entity.RenderMeshes();
                         }
-                    }  
+                    }
                 }
             }           
         }
@@ -592,11 +585,14 @@ namespace ColonySim.Rendering
         public WorldPoint Coordinates { get => coordinates; }
         private readonly WorldPoint coordinates;
         public bool Rendering { get; private set; } = true;
+        public Visibility Visibility;
 
         public Material Material;
         public Texture2D Texture;
         public Color Color;
         public IEntityGraphics GraphicsDef;
+
+        private Material unseenMat;
 
 
         private Action<IRenderObject> renderUpdateEvent;
@@ -628,6 +624,8 @@ namespace ColonySim.Rendering
                 this.Material = new Material(ResourceManager.LoadEntityMaterial(GraphicsDef.MaterialID));
                 _go.transform.localPosition = new Vector3(_go.transform.localPosition.x, _go.transform.localPosition.y, -(int)GraphicsDef.Layer);
             }
+
+            unseenMat = new Material(ResourceManager.LoadEntityMaterial(WorldRenderer.Get.UNSEEN_MATERIAL_ID));
         }
 
         public void SetDirty()
@@ -647,13 +645,27 @@ namespace ColonySim.Rendering
             {
                 if (meshData != null)
                 {
-                    Graphics.DrawMesh(
+                    if (Visibility == Visibility.Visible)
+                    {
+                        Graphics.DrawMesh(
                         meshData.mesh,
                         Object.transform.position,
                         Quaternion.identity,
                         this.Material,
                         0
-                     );
+                        );
+                    }
+                    else
+                    {
+                        Graphics.DrawMesh(
+                        meshData.mesh,
+                        Object.transform.position,
+                        Quaternion.identity,
+                        unseenMat,
+                        0
+                        );
+                    }
+                    
                 }
                 
             }           
@@ -746,6 +758,8 @@ namespace ColonySim.Rendering
 
                     this.Texture = ResourceManager.LoadEntityTexture(TextureSettings.TextureID);
                     this.Material.mainTexture = Texture;
+                    this.Material.SetTexture("_MainTex", Texture);
+                    unseenMat.SetTexture("_MainTex", Texture);
        
                     if (meshData == null) meshData = new MeshData(1, MeshFlags.UV);
                     else meshData.Clear();

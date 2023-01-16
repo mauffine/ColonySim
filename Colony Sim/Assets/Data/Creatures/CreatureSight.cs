@@ -14,7 +14,8 @@ namespace ColonySim
         WorldPoint Coordinates { get; }
 
         Vector2 Facing { get; }
-        int ViewDistance { get; }
+        float ViewDistance { get; }
+        float RadiusViewDistance { get; }
         float FOV { get; }
         bool Invalidated { get; }
 
@@ -31,32 +32,22 @@ namespace ColonySim
 
 namespace ColonySim.Creatures
 {
-    public class CreatureSight : IPlayerVisionEntity, ILoggerSlave
+    public abstract class BaseCreatureSight : IVision, ILoggerSlave
     {
         public LoggingUtility.ILogger Master => VisionSystem.Get;
         public string LoggingPrefix => $"<color=yellow>[CREATURESIGHT]</color>";
 
-        public WorldPoint[] VisibleTiles { get; private set; }
+        public WorldPoint[] VisibleTiles { get; protected set; }
         public WorldPoint Coordinates => Creature.Navigation.Coordinates;
         public ICreature Creature;
 
-        public int ViewDistance { get; private set; }
+        public float ViewDistance { get; protected set; }
+        public float RadiusViewDistance { get; protected set; }
         public Vector2 Facing => Creature.Navigation.Facing;
         public float FOV => 135.0f;
         public bool Invalidated { get; set; }
 
         private Action<IVision> cbOnVisibilityUpdate;
-
-        public CreatureSight(ICreature Creature, int ViewDistance)
-        {
-            this.Creature = Creature; this.ViewDistance = ViewDistance;
-            if (Creature.Navigation != null)
-            {
-                Creature.Navigation.OnTileMovement(TileMovement);
-            }
-            Invalidated = true;
-            VisionSystem.RequestVisionUpdate(this);
-        }
 
         public void TileMovement(ITileData From, ITileData To)
         {
@@ -84,6 +75,21 @@ namespace ColonySim.Creatures
         public void RemoveVisibilityUpdate(Action<IVision> callback)
         {
             cbOnVisibilityUpdate -= callback;
+        }
+    }
+
+    public class PlayerSight : BaseCreatureSight, IPlayerVisionEntity
+    {
+        public PlayerSight(ICreature Creature, int ViewDistance)
+        {
+            this.Creature = Creature; this.ViewDistance = ViewDistance;
+            this.RadiusViewDistance = 1.7f;
+            if (Creature.Navigation != null)
+            {
+                Creature.Navigation.OnTileMovement(TileMovement);
+            }
+            Invalidated = true;
+            VisionSystem.RequestVisionUpdate(this);
         }
     }
 }

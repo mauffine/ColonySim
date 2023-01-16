@@ -54,15 +54,15 @@ namespace ColonySim.Systems
 
         public void CreateCreature(WorldPoint Coordinate)
         {
-            TestCreature testCreature = new TestCreature();
-            testCreature.SetTilePosition(Coordinate);
+            PlayerCharacter playerCharacter = new PlayerCharacter();
+            playerCharacter.SetTilePosition(Coordinate);
 
-            if (simulatedCreatures == null) simulatedCreatures = new List<ICreature>() { testCreature };
-            else simulatedCreatures.Add(testCreature);
+            if (simulatedCreatures == null) simulatedCreatures = new List<ICreature>() { playerCharacter };
+            else simulatedCreatures.Add(playerCharacter);
 
-            TaskSystem.Worker(testCreature.AI);
+            TaskSystem.Worker(playerCharacter.AI);
 
-            RenderedCreature renderObject = new RenderedCreature(testCreature);
+            RenderedCreature renderObject = new RenderedCreature(playerCharacter);
             renderObjects_dirty.Add(renderObject);
         }
 
