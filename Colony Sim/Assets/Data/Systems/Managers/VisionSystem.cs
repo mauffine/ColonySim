@@ -424,7 +424,7 @@ namespace ColonySim.Systems
         {
             float difX = Mathf.Abs(Origin.x - Pos.x);
             float difY = Mathf.Abs(Origin.y - Pos.y);
-            return difX > Distance || difY > Distance;
+            return Mathf.Sqrt(Mathf.Pow(difX,2) + Mathf.Pow(difY,2)) > Distance;
         }
 
         private Vector2 transformOctant(int row, int col, int octant)
