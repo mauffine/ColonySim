@@ -18,7 +18,9 @@ namespace ColonySim.Systems.Actions
 
         public bool Execute()
         {
-            if (EntitySystem.Get.PlaceEntity(EntityToPlace, WorldSystem.Tile(Coordinates)))
+            var _tile = WorldSystem.Tile(Coordinates, out cbTileState cbTileState);
+            if (cbTileState == cbTileState.OutOfBounds) return false;
+            if (EntitySystem.Get.PlaceEntity(EntityToPlace, _tile))
             {
                 return true;
             }
@@ -29,7 +31,7 @@ namespace ColonySim.Systems.Actions
         {
             if (EntityToPlace != null)
             {
-                return EntitySystem.Get.RemoveEntity(EntityToPlace, WorldSystem.Tile(Coordinates));
+                return EntitySystem.Get.RemoveEntity(EntityToPlace, WorldSystem.TileUnsf(Coordinates));
             }
             return false;
         }
@@ -49,12 +51,14 @@ namespace ColonySim.Systems.Actions
 
         public bool Execute()
         {
-            if (EntitySystem.Get.PlaceEntity(EntityToPlace, WorldSystem.Tile(Coordinates)))
+            var _tile = WorldSystem.Tile(Coordinates, out cbTileState cbTileState);
+            if (cbTileState == cbTileState.OutOfBounds) return false;
+            if (EntitySystem.Get.PlaceEntity(EntityToPlace, _tile))
             {
                 bool success = true;
                 foreach (var entity in EntitiesToReplace)
                 {
-                    success = success && EntitySystem.Get.RemoveEntity(entity, WorldSystem.Tile(Coordinates));
+                    success = success && EntitySystem.Get.RemoveEntity(entity, _tile);
                 }
                 return success;
             }
@@ -65,12 +69,13 @@ namespace ColonySim.Systems.Actions
         {
             if (EntityToPlace != null)
             {
-                if(EntitySystem.Get.RemoveEntity(EntityToPlace, WorldSystem.Tile(Coordinates)))
+                var _tile = WorldSystem.TileUnsf(Coordinates);
+                if(EntitySystem.Get.RemoveEntity(EntityToPlace, _tile))
                 {
                     bool success = true;
                     foreach (var entity in EntitiesToReplace)
                     {
-                        success = success && EntitySystem.Get.PlaceEntity(entity, WorldSystem.Tile(Coordinates));
+                        success = success && EntitySystem.Get.PlaceEntity(entity, _tile);
                     }
                 }
             }

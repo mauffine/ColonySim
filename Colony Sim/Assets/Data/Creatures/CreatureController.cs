@@ -49,10 +49,10 @@ namespace ColonySim.Systems
             base.OnInitialized();
             WorldSimulation.Get.Simulate(this);
 
-            CreateCreature(new WorldPoint(3, 3));
+            
         }
 
-        public void CreateCreature(WorldPoint Coordinate)
+        public IPlayerCharacter CreatePlayerCharacter(WorldPoint Coordinate)
         {
             PlayerCharacter playerCharacter = new PlayerCharacter();
             playerCharacter.SetTilePosition(Coordinate);
@@ -64,6 +64,7 @@ namespace ColonySim.Systems
 
             RenderedCreature renderObject = new RenderedCreature(playerCharacter);
             renderObjects_dirty.Add(renderObject);
+            return playerCharacter;
         }
 
         public void WorldTick(float delta)

@@ -28,6 +28,7 @@ namespace ColonySim.Systems
 
         #region Main Camera Control
         public Camera controlled;
+        public RectInt cameraRect;
         public static float MinimumCameraBound = 3;
         public static float MaximumCameraBound = 20;
 
@@ -85,6 +86,7 @@ namespace ColonySim.Systems
                     backgroundZoom = true;
                     StartCoroutine(BackgroundZoom());
                 }
+                UpdateViewRect();
             }
         }
 
@@ -118,8 +120,21 @@ namespace ColonySim.Systems
                     this.Verbose("CameraMovementEnd");
                     _runningCameraMove = false;
                 }
+                UpdateViewRect();
                 yield return null;
             }
+        }
+
+        private void UpdateViewRect()
+        {
+            cameraRect = new RectInt
+                (
+                    new Vector2Int(Mathf.FloorToInt(controlled.transform.position.x - controlled.orthographicSize),
+                    Mathf.FloorToInt(controlled.transform.position.y - controlled.orthographicSize)),
+                    new Vector2Int(Mathf.FloorToInt(controlled.transform.position.x + controlled.orthographicSize),
+                    Mathf.FloorToInt(controlled.transform.position.x + controlled.orthographicSize))
+                );
+            this.Verbose($"Camera Rect is {cameraRect}");
         }
 
         public void OnMovementCancel(InputAction.CallbackContext context)

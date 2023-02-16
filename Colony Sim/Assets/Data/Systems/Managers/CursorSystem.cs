@@ -69,7 +69,9 @@ namespace ColonySim.Systems
             if (worldPoint != currentMousePosition)
             {
                 currentMousePosition = worldPoint;
-                highlightedTile = WorldSystem.Tile(worldPoint);
+                highlightedTile = WorldSystem.Tile(worldPoint, out cbTileState cbTileState);
+                if (cbTileState == cbTileState.OutOfBounds) return;
+                this.Debug($"MouseVector {mouseVector} translates to {worldPoint}");
             }
             
         }

@@ -24,7 +24,7 @@ namespace ColonySim
     /// </summary>
     public interface ITileData : INavNode
     {
-        LocalPoint Coordinates { get; }
+        WorldPoint Coordinates { get; }
         ITileContainer Container { get; }
         ICreature Creature { get; set; }
 
@@ -38,10 +38,10 @@ namespace ColonySim.World.Tiles {
     public class TileData : ITileData
     {
         public ITileContainer Container { get; }
-        public LocalPoint Coordinates { get { return coordinates; } }
-        private readonly LocalPoint coordinates;
-        public int X => coordinates.WorldX;
-        public int Y => coordinates.WorldY;
+        public WorldPoint Coordinates { get { return coordinates; } }
+        private readonly WorldPoint coordinates;
+        public int X => coordinates.X;
+        public int Y => coordinates.Y;
         public ICreature Creature { get; set; }
         //TODO: Edges by mode
         public INavEdge[] Edges => NavData[NavigationMode.Walking].Edges;
@@ -49,7 +49,7 @@ namespace ColonySim.World.Tiles {
         public Dictionary<NavigationMode, ITileNavData> NavData { get; set; }
         public ITileVisibilityData VisibilityData { get; set; }
 
-        public TileData((int X, int Y) Chunk, int X, int Y)
-        { coordinates = new LocalPoint(Chunk, X, Y); Container = new TileContainer(this); }
+        public TileData(WorldPoint Coordinate)
+        { coordinates = Coordinate; Container = new TileContainer(this); }
     }
 }

@@ -179,6 +179,10 @@ namespace ColonySim.Entities
         {
             if (Event is EntityTrigger_OnTileEnter EntryEvent)
             {
+                //Debug.Log($"EntityTrigger::{EntryEvent == null}");
+                //Debug.Log($"EntityTrigger::{EntryEvent.Data == null}");
+                //Debug.Log($"EntityTrigger::{EntryEvent.Data.VisibilityData == null}");
+                //Debug.Log($"EntityTrigger::{EntryEvent.Data.VisibilityData.Opacity}::{this.Opacity}");
                 EntryEvent.Data.VisibilityData.Opacity = this.Opacity;           
             }
             //TODO: On removed

@@ -33,13 +33,11 @@ namespace ColonySim.Systems.Navigation
         public Stack<INavNode> Path()
         {
             this.Verbose("Generating Heuristic Path...");
-            INavNode startNode = WorldSystem.Tile(Start);
-            INavNode endNode = WorldSystem.Tile(End);
-
-            if (startNode == null || endNode == null)
+            INavNode startNode = WorldSystem.Tile(Start, out cbTileState cbTileStateStart);
+            INavNode endNode = WorldSystem.Tile(End, out cbTileState cbTileStateEnd);
+            if (cbTileStateStart == cbTileState.OutOfBounds || cbTileStateEnd == cbTileState.OutOfBounds)
             {
-                this.Warning($"Invalid Nodes:: {Start} - {End}");
-                return null;
+                this.Warning($"Attempted to path between {Start}({cbTileStateStart} and {End}({cbTileStateEnd})");
             }
 
             OpenList.Enqueue(startNode, 0);

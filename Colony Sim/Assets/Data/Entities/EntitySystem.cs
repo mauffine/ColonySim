@@ -72,6 +72,7 @@ namespace ColonySim.Entities
 
         public IEntity CreateEntity(string defName)
         {
+            this.Verbose($"Creating {defName}...");
             IEntity entityDef = GetDef(defName);
             if (entityDef != null)
             {

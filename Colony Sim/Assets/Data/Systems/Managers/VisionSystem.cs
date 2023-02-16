@@ -274,25 +274,26 @@ namespace ColonySim.Systems
             List<WorldPoint> visibleTiles = new List<WorldPoint>();
             var line = new ShadowLine();
             bool fullShadow = false;
-            for (int row = 0; row < Origin.X + Distance; row++)
+            for (int row = 0; row < Distance; row++)
             {
-                Vector2 pos = Origin + transformOctant(row, 0, octant);
+                Vector2 pos = (Vector2)Origin + transformOctant(row, 0, octant);
                 if (OutOfRange(Origin, pos, Distance))
                 {
-                    //this.Debug($"Row OUTOFRANGE::{Origin},{pos},{Distance}");
+                    this.Debug($"Row OUTOFRANGE::{Origin},{pos},{Distance}");
                     break;
                 }
 
                 for (int col = 0; col <= row; col++)
                 {
-                    pos = Origin + transformOctant(row, col, octant);
+                    pos = (Vector2)Origin + transformOctant(row, col, octant);
                     if (OutOfRange(Origin, pos, Distance))
                     {
-                        //this.Debug($"Col OUTOFRANGE::{Origin},{pos},{Distance}");
+                        this.Debug($"Col OUTOFRANGE::{Origin},{pos},{Distance}");
                         break;
                     }
 
-                    var tile = WorldSystem.Tile(pos);
+                    var tile = WorldSystem.Tile(pos, out ColonySim.World.cbTileState cbTileState);
+                    if (cbTileState == World.cbTileState.OutOfBounds) continue;
                     if (tile != null)
                     {
                         if (fullShadow)
@@ -438,8 +439,8 @@ namespace ColonySim.Systems
 
         private bool OutOfRange(Vector2 Origin, Vector2 Pos, float Distance)
         {
-            float difX = Mathf.Abs(Origin.x - Pos.x);
-            float difY = Mathf.Abs(Origin.y - Pos.y);
+            float difX = Origin.x - Pos.x;
+            float difY = Origin.y - Pos.y;
             return Mathf.Sqrt(Mathf.Pow(difX,2) + Mathf.Pow(difY,2)) > Distance;
         }
 
@@ -473,7 +474,7 @@ namespace ColonySim.Systems
                         {
                             foreach (var visibleTile in playerSight.VisibleTiles)
                             {
-                                var data = WorldSystem.Tile(visibleTile).VisibilityData;
+                                var data = WorldSystem.TileUnsf(visibleTile).VisibilityData;
                                 if (data.isVisible)
                                 {
                                     if (data.Opacity == 0) Gizmos.color = new Color(1, 0, 1, 0.5f);

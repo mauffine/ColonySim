@@ -26,7 +26,14 @@ namespace ColonySim.Systems.Navigation
         public string LoggingPrefix => "<color=yellow>[NAVSYS]</color>";
         [SerializeField]
         private bool _stamp = false;
+
+        public void Awake()
+        {
+            instance = this;
+        }
         #endregion
+
+        public Queue<ChunkLocation> navMeshQueue = new Queue<ChunkLocation>();
 
         [SerializeField]
         private bool drawNavMeshGizmo = false;
@@ -35,7 +42,6 @@ namespace ColonySim.Systems.Navigation
         {
             this.Notice("> Navigation System Init.. <");
             instance = this;
-            GenerateWalkNavData();
             base.Init();
         }
 
@@ -43,8 +49,19 @@ namespace ColonySim.Systems.Navigation
         {
             base.OnInitialized();
         }
+
+        public override void Tick()
+        {
+            base.Tick();
+            if (navMeshQueue.Count > 0)
+            {
+                var _mesh = navMeshQueue.Dequeue();
+                GenerateChunkNavData(_mesh);
+            }
+        }
         private void GenerateWalkNavData()
         {
+            /*
             this.Verbose("Generating Nav Data..");
             foreach (var tile in WorldSystem.World)
             {
@@ -74,6 +91,49 @@ namespace ColonySim.Systems.Navigation
                 {
                     this.Warning($"Nav Data at {tile.Coordinates} not found");
 
+                }
+            }
+            */
+        }
+
+        public static void QueueChunkNavData(ChunkLocation chunkLoc)
+        {
+            instance.Verbose($"Queuing NavMesh for {chunkLoc}..");
+            instance.navMeshQueue.Enqueue(chunkLoc);
+        }
+
+        private void GenerateChunkNavData(ChunkLocation chunkLoc)
+        {
+            instance.Verbose($"Generating NavMesh for {chunkLoc}..");
+            IWorldChunk chunk = WorldSystem.Chunk(chunkLoc, out cbTileState cbTileState);
+            if (cbTileState == cbTileState.OutOfBounds) return;
+            foreach (var tile in chunk.GetTiles())
+            {
+                ITileNavData data;
+                if (tile.NavData.TryGetValue(NavigationMode.Walking, out data))
+                {
+                    List<INavEdge> edges = new List<INavEdge>();
+                    foreach (var neighbour in TileManager.AdjacentTiles(tile.Coordinates))
+                    {
+                        if (neighbour != null)
+                        {
+                            ITileNavData neighbourNavData = neighbour.NavData[NavigationMode.Walking];
+                            if (neighbourNavData != null)
+                            {
+                                if (data.Traversible && neighbourNavData.Traversible)
+                                {
+                                    INavEdge edge = new TileEdge_Walkable(data.Cost, neighbour);
+                                    edges.Add(edge);
+                                }
+                                UpdateEdges(neighbourNavData, neighbour.Coordinates);
+                            }
+                        }
+                    }
+                    data.Edges = edges.ToArray();
+                }
+                else
+                {
+                    instance.Warning($"Nav Data at {tile.Coordinates} not found");
                 }
             }
         }

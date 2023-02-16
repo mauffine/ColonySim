@@ -23,13 +23,13 @@ namespace ColonySim.World
     public class WorldRegion : IWorldRegion
     {
         public WorldPoint Origin { get; private set; }
-        public ChunkLocation Location { get; private set; }
+        public ChunkLocation Location => Origin;
         public ITileData[] Tiles { get; private set; }
         public WorldPoint[] Boundaries { get; private set; }
 
-        public WorldRegion(WorldPoint Origin, ChunkLocation Location)
+        public WorldRegion(WorldPoint Origin)
         {
-            this.Origin = Origin; this.Location = Location;
+            this.Origin = Origin;
         }
 
         public void SetRegionTiles(ITileData[] Tiles, WorldPoint[] Boundaries)

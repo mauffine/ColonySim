@@ -11,6 +11,7 @@ using ColonySim.Systems.Tasks;
 using InputSystem = ColonySim.Systems.InputSystem;
 using ColonySim.Entities;
 using ColonySim.Creatures;
+using ColonySim.Helpers;
 
 namespace ColonySim
 {
@@ -32,7 +33,10 @@ namespace ColonySim
         private bool _stamp = false;
         #endregion
 
+        private const int PLAYER_WORLDGEN_RADIUS = 3;
+
         public ICreature selectedCreature;
+        private List<IPlayerCharacter> PlayerCharacters = new List<IPlayerCharacter>();
 
         public override void Init()
         {
@@ -46,6 +50,8 @@ namespace ColonySim
             base.OnInitialized();
             InputSystem.PlayerActions.SetCallbacks(this);
             BuildSelectionOverlayMesh();
+
+            PlayerCharacter(CreatureController.Get.CreatePlayerCharacter(new WorldPoint(3, 3)));
         }
 
         public override void Tick()
@@ -54,6 +60,72 @@ namespace ColonySim
             RenderCharacterSelector();
         }
 
+        public void PlayerCharacter(IPlayerCharacter newCharacter)
+        {
+            PlayerCharacters.Add(newCharacter);
+            newCharacter.Navigation.TraversedChunk((a,b) => PlayerCharacterTraversedChunk(newCharacter.Navigation,a,b));
+        }
+
+        public void PlayerCharacterTraversedChunk(ICreatureNavigation navigation, ChunkLocation from, ChunkLocation to)
+        {
+            this.Debug("OnPlayerCharacterMovement");
+
+            List<ChunkLocation> ungeneratedChunks = new List<ChunkLocation>();
+            foreach (var chunkLoc in PlayerBoundaryChunks(to, PLAYER_WORLDGEN_RADIUS))
+            {
+                var _chunk = WorldSystem.Chunk(chunkLoc, out cbTileState cbTileState);
+                if (cbTileState == cbTileState.OutOfBounds) ungeneratedChunks.Add(chunkLoc);
+            }
+            if (ungeneratedChunks.Count > 0)
+            {
+                foreach (var chunkLoc in ungeneratedChunks)
+                {
+                    WorldSystem.Get.GenerateChunk(chunkLoc);
+                }
+            }
+        }
+
+        private IEnumerable<ChunkLocation> PlayerBoundaryChunks(WorldPoint Origin, int Distance)
+        {
+            ChunkLocation chunkLoc = Origin;
+            int xMin = chunkLoc.X - Distance;
+            int xMax = chunkLoc.X + Distance;
+            int yMin = chunkLoc.Y - Distance;
+            int yMax = chunkLoc.Y + Distance;
+
+            for (int x = xMin; x <= xMax; x++)
+            {
+                for (int y = yMin; y <= yMax; y++)
+                {
+                    if (x == xMin || x == xMax) { yield return new ChunkLocation(x, y); } // Left
+                    //if(x == xMax) { yield return new WorldPoint(x, y); } // Right
+                    else if (y == yMin || y == yMax) { yield return new ChunkLocation(x, y); } // Bottom
+                    //if(y == yMax) { yield return new WorldPoint(x, y); } // Top
+                }
+            }
+
+        }
+
+        private IEnumerable<WorldPoint> PlayerBoundary(WorldPoint Origin, int Distance)
+        {
+            int xMin = Origin.X - Distance;
+            int xMax = Origin.X + Distance;
+            int yMin = Origin.Y - Distance;
+            int yMax = Origin.Y + Distance;
+
+            for (int x = xMin; x <= xMax; x++)
+            {
+                for (int y = yMin; y <= yMax; y++)
+                {
+                    if(x == xMin || x == xMax) { yield return new WorldPoint(x, y); } // Left
+                    //if(x == xMax) { yield return new WorldPoint(x, y); } // Right
+                    else if(y == yMin || y == yMax) { yield return new WorldPoint(x, y); } // Bottom
+                    //if(y == yMax) { yield return new WorldPoint(x, y); } // Top
+                }
+            }
+        }
+
+
         public void OnMove(InputAction.CallbackContext context)
         {
             if (context.performed)
@@ -61,6 +133,7 @@ namespace ColonySim
                 ITileData Data = CursorSystem.CursorTile;
                 if (Data != null)
                 {
+                    this.Verbose($"Creating Move Action To {Data.Coordinates}");
                     MoveToWaypointTask newTask = new MoveToWaypointTask(Data.Coordinates);
                     if (selectedCreature != null)
                     {
@@ -160,5 +233,38 @@ namespace ColonySim
         }
 
         #endregion
+
+        #region Gizmos
+
+        [SerializeField]
+        private bool drawPlayerWorldGenRadius;
+
+        public void OnDrawGizmos()
+        {
+            if (Initialized)
+            {
+                if (drawPlayerWorldGenRadius)
+                {
+                    if (PlayerCharacters != null && PlayerCharacters.Count > 0)
+                    {
+                        foreach (var player in PlayerCharacters)
+                        {
+                            foreach (var chunkLoc in PlayerBoundaryChunks(player.Navigation.Coordinates, PLAYER_WORLDGEN_RADIUS))
+                            {
+                                RectI rect = new RectI(new Vector2Int(chunkLoc.X, chunkLoc.Y) * new Vector2Int(WorldSystem.CHUNK_SIZE, WorldSystem.CHUNK_SIZE), WorldSystem.CHUNK_SIZE, WorldSystem.CHUNK_SIZE);
+                                Gizmos.color = new Color(1, 0, 1, 0.5f);
+                                Gizmos.DrawCube(
+                            new Vector3(rect.max.x - (rect.width) / 2f,
+                                        rect.max.y - (rect.height) / 2f,
+                                        1f),
+                            new Vector3(rect.width - .5f, rect.height - .5f, 1f)
+                            );
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+    #endregion
 }

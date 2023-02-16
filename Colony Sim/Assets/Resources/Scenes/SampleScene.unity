@@ -170,6 +170,11 @@ MonoBehaviour:
   _loggingPriority: 6
   _stamp: 0
   controlled: {fileID: 519420031}
+  cameraRect:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
   cameraDamp: 10
   cameraZoom: 1
   cameraMovement: 4
@@ -5734,7 +5739,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4d67aadf6928574eadc7b193bd43a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 5
+  _loggingLevel: 4
   _loggingPriority: 6
   _stamp: 0
 --- !u!4 &402714542
@@ -6381,7 +6386,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.23487005, g: 0.23891953, b: 0.24528301, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -7022,16 +7027,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e923ca2f511ce4cb10219a13522232, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 4
+  _loggingLevel: 5
   _loggingPriority: 6
   _stamp: 0
   _rendererLogging: 4
   _rendererPriority: 6
-  _worldLogging: 4
+  _worldLogging: 5
   _worldPriority: 6
   TileMapTransform: {fileID: 1470466182}
-  DrawGizmoTiles: 1
-  DrawGizmoTileCoordinates: 1
+  DrawGizmoTiles: 0
+  DrawGizmoTileCoordinates: 0
   DrawGizmoChunks: 0
   DrawGizmoNoiseMap: 0
   drawNavRegionsGizmo: 0
@@ -7375,7 +7380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6dab1d19bc76219439c52d6a09a3b899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 4
+  _loggingLevel: 5
   _loggingPriority: 6
   _stamp: 0
   drawNavMeshGizmo: 0
@@ -10667,7 +10672,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 132a339778c54754ebe5d4b54e950932, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 5
+  _loggingLevel: 4
   _loggingPriority: 6
   _stamp: 0
   drawCharactersGizmo: 0
@@ -10926,7 +10931,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07ddea8787aaf9d4286e6d5fc6014d5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 4
+  _loggingLevel: 5
   _loggingPriority: 6
   _stamp: 0
   InputAsset: {fileID: -944628639613478452, guid: b8b7cbf5a8312c948b48233506359a7c, type: 3}
@@ -11980,7 +11985,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4ad49cf76d7edf469b477554927eb0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 4
+  _loggingLevel: 5
   _loggingPriority: 6
   _stamp: 0
 --- !u!4 &1823273799
@@ -12040,9 +12045,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d00250be3455104d89e1d356a6b2075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 4
+  _loggingLevel: 7
   _loggingPriority: 6
   _stamp: 0
+  drawPlayerWorldGenRadius: 0
 --- !u!1 &1854043881
 GameObject:
   m_ObjectHideFlags: 0
@@ -12072,7 +12078,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24833f87e960c5b4fb192773fb87ff04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 3
+  _loggingLevel: 5
   _loggingPriority: 6
   _stamp: 0
 --- !u!4 &1854043883
@@ -12254,7 +12260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20e8454c2db318747a1f159991c739e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loggingLevel: 5
+  _loggingLevel: 4
   _loggingPriority: 6
   _stamp: 0
   drawSightGizmo: 1

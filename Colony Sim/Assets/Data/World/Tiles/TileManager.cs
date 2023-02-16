@@ -108,7 +108,7 @@ namespace ColonySim.World.Tiles
                     {
                         continue;
                     }
-                    adjacentTiles[i] = GetTileData((x, y));
+                    adjacentTiles[i] = GetTileData((x, y), out cbTileState cbTileState);
                     i++;
                 }
             }
@@ -152,16 +152,16 @@ namespace ColonySim.World.Tiles
             return AdjacenctTiles;
         }
 
-        public ITileData GetTileRelative(WorldPoint Coordinate, int X, int Y)
+        public ITileData GetTileRelative(WorldPoint Coordinate, int X, int Y, out cbTileState cbTileState)
         {
             WorldPoint AdjustedCoordinate = new WorldPoint(Coordinate.X + X, Coordinate.Y + Y);
-            return GetTileData(AdjustedCoordinate);
+            return GetTileData(AdjustedCoordinate, out cbTileState);
         }
 
-        public static ITileData GetTileData((int X, int Y) Coordinates) => 
-            WorldSystem.Tile(new WorldPoint(Coordinates));
+        public static ITileData GetTileData((int X, int Y) Coordinates, out cbTileState cbTileState) => 
+            WorldSystem.Tile(new WorldPoint(Coordinates), out cbTileState);
 
-        public ITileData GetTileData(WorldPoint Coordinates) =>
-            WorldSystem.Tile(Coordinates);
+        public ITileData GetTileData(WorldPoint Coordinates, out cbTileState cbTileState) =>
+            WorldSystem.Tile(Coordinates, out cbTileState);
     }
 }

@@ -14,6 +14,7 @@ using ColonySim.Entities;
 
 namespace ColonySim
 {
+
     public class WorldSystem : ISystem, ILogger
     {
         #region Static
@@ -37,6 +38,10 @@ namespace ColonySim
         public LoggingPriority _worldPriority = LoggingPriority.AlwaysShow;
 
         #endregion
+
+        private const int WORLD_SIZE_X = 8;
+        private const int WORLD_SIZE_Y = 8;
+
         public static WorldRenderer Renderer;
         public static WorldSimulation Simulation;
         public static GameWorld World => _world;
@@ -61,9 +66,9 @@ namespace ColonySim
         {
             this.Notice("> World System Init.. <");
             instance = this;
-            _world = new GameWorld(3, 3);
-            _world.GenerateWorldChunks();
-            _world.WorldGeneration(Mathf.CeilToInt(Time.realtimeSinceStartup));
+            _world = new GameWorld(Mathf.CeilToInt(Time.realtimeSinceStartup), WORLD_SIZE_X, WORLD_SIZE_Y);
+            _world.WorldCreation_CreateWorldChunks();
+            _world.WorldCreation_GenerateWorldChunks();
             Renderer = new WorldRenderer();
             Renderer.TileMapTransform = this.TileMapTransform;
             Renderer.Init();
@@ -82,15 +87,11 @@ namespace ColonySim
             base.OnInitialized();
             foreach (var Chunk in _world.Chunks())
             {
-                foreach (var region in Chunk.Regions)
-                {
-                    FloodFillRegion(region, Chunk.Coordinates.Origin, 
-                        Chunk.Coordinates.Origin, Chunk.Coordinates.Boundary, null);
-                }
+                InvalidateChunk(Chunk);
             }
 
             var hammer = EntitySystem.Get.CreateEntity("entity.tool.hammer");
-            EntitySystem.Get.PlaceEntity(hammer, Tile(5, 5));
+            EntitySystem.Get.PlaceEntity(hammer, TileUnsf(new WorldPoint(5,5)));
         }
 
         public override void Tick()
@@ -100,23 +101,21 @@ namespace ColonySim
             Renderer.Tick();
         }
 
-        public static WorldPoint ToWorldPoint(Vector3 worldPos)
+        public void Generated()
         {
-            int X = Mathf.FloorToInt(worldPos.x);
-            int Y = Mathf.FloorToInt(worldPos.y);
-            return new WorldPoint(X, Y);
+
         }
 
-        public static WorldPoint ToWorldPoint(Vector2 worldPos)
+        public static void InvalidateChunk(ChunkLocation chunkLoc)
         {
-            int X = Mathf.FloorToInt(worldPos.x);
-            int Y = Mathf.FloorToInt(worldPos.y);
-            return new WorldPoint(X, Y);
+            IWorldChunk chunk = Chunk(chunkLoc, out cbTileState cbTileState);
+            if(cbTileState != cbTileState.OK) { instance.Warning($"Tried to invalidate nonexistant Chunk {chunkLoc}::{cbTileState}"); }
+            InvalidateChunk(chunk);
         }
 
-        public static void InvalidateChunk(ChunkLocation ChunkLoc)
+        public static void InvalidateChunk(IWorldChunk chunkData)
         {
-            IWorldChunk chunkData = Chunk(ChunkLoc);
+            instance.Verbose($"Chunk {chunkData.Coordinates} invalidated.");
             chunkData.ClearRegions();
             foreach (var region in chunkData.Regions)
             {
@@ -125,12 +124,24 @@ namespace ColonySim
             }
         }
 
+        public void GenerateChunk(ChunkLocation chunkLoc)
+        {
+            var _chunk = Chunk(chunkLoc, out cbTileState cbTileState);
+            if (_chunk == null)
+            {
+                IWorldChunk newChunk = _world.GenerateChunk(chunkLoc);
+                if (newChunk != null)
+                {
+                    Renderer.RenderNewChunk(newChunk);
+                }
+            }
+        }
+
         private void FloodFillRegion(IWorldRegion Region, WorldPoint Origin, WorldPoint MinBoundary, WorldPoint MaxBoundary,List<ITileData> closedSet)
         {
             if(closedSet == null) closedSet = new List<ITileData>();
-            this.Verbose($"Flood Filling Region @{Region.Location}::{Region.Origin}::{Region.Location.Boundary}");
-            ITileData OriginTile = Tile(Origin);
-            if (OriginTile == null) return;
+            this.Verbose($"Flood Filling Region from {Origin} @{Region.Location}::{Region.Origin}::{Region.Location.Boundary}");
+            ITileData OriginTile = TileUnsf(Origin);
 
             List<ITileData> traversibleTiles = new List<ITileData>();
             List<WorldPoint> boundaries = new List<WorldPoint>();
@@ -177,8 +188,9 @@ namespace ColonySim
                         || neighbour.X < MinBoundary.X || neighbour.Y < MinBoundary.Y) continue;
                     // If the boundary is adjacent to a tile that is NOT outside of the chunk
                     // then it's probably a new region.
-                    IWorldChunk chunkData = Chunk(Region.Location);
-                    WorldRegion newRegion = new WorldRegion(neighbour.Coordinates, Region.Location);
+                    IWorldChunk chunkData = Chunk(Region.Location, out cbTileState cbTileState);
+                    if (cbTileState != cbTileState.OK) continue;
+                    WorldRegion newRegion = new WorldRegion(neighbour.Coordinates);
                     chunkData.AddRegion(newRegion);
                     FloodFillRegion(newRegion, neighbour.Coordinates, chunkData.Coordinates.Origin, chunkData.Coordinates.Boundary, closedSet);
                     return;
@@ -189,35 +201,37 @@ namespace ColonySim
         #region Static Helpers
 
         public IWorldChunk this[ChunkLocation Coordinate] =>
-            Chunk(Coordinate);
+            ChunkUnsf(Coordinate);
 
         public ITileData this[WorldPoint Coordinate] =>
-            Tile(Coordinate);
+            TileUnsf(Coordinate);
 
-        public static ITileData Tile(int X, int Y) => Tile(new WorldPoint(X, Y));
+        public static ITileData Tile(int X, int Y, out cbTileState cbTileState) => Tile(new WorldPoint(X, Y), out cbTileState);
 
-        public static ITileData Tile(WorldPoint Coordinates)
+        public static ITileData Tile(WorldPoint Coordinates, out cbTileState cbTileState)
         {
             instance.Debug($"Getting Tile At::{Coordinates}", LoggingPriority.Low);
-            if (Coordinates.X >= 0 && Coordinates.Y >= 0 &&
-                Coordinates.X < _world.Size.x && Coordinates.Y < _world.Size.y)
-                return TileUnsf(Coordinates);
-            return null;
+           return _world.Tile(Coordinates, out cbTileState);
         }
 
-        public static IWorldChunk Chunk(ChunkLocation Coordinates)
+        public static IWorldChunk Chunk(ChunkLocation Coordinates, out cbTileState cbTileState)
         {
-            if (Coordinates.X >= 0 && Coordinates.Y >= 0 &&
-                Coordinates.X < _world.ChunkSize.x && Coordinates.Y < _world.ChunkSize.y)
-                return ChunkUnsf(Coordinates);
-            return null;
+            instance.Debug($"Getting Chunk At::{Coordinates}", LoggingPriority.Low);
+            return _world.Chunk(Coordinates, out cbTileState);
         }
 
         public static ITileData TileUnsf(WorldPoint Coordinate) =>
-            _world.Tile(Coordinate);
+            _world.TileUnsf(Coordinate);
 
         public static IWorldChunk ChunkUnsf(WorldPoint worldPos) =>
-            _world.Chunk(worldPos);
+            _world.ChunkUnsf(worldPos);
+
+        public static WorldPoint ToWorldPoint(Vector3 worldPos)
+        {
+            int X = Mathf.FloorToInt(worldPos.x);
+            int Y = Mathf.FloorToInt(worldPos.y);
+            return new WorldPoint(X, Y);
+        }
 
         #endregion
 
@@ -263,7 +277,7 @@ namespace ColonySim
                 {
                     foreach (WorldPoint Coordinates in _world.WorldCoordinates())
                     {
-                        float h = _world.groundNoiseMap[Coordinates.X + Coordinates.Y * World.Size.x];
+                        float h = _world.groundNoiseMap[Coordinates.X + Coordinates.Y * World.SizeMax.x];
                         Gizmos.color = new Color(h, h, h, .9f);
                         Gizmos.DrawCube(
                             new Vector3(Coordinates.X + .5f, Coordinates.Y + .5f),

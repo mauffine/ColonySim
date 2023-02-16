@@ -2,6 +2,7 @@ using ColonySim.Entities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ColonySim
 {
@@ -22,13 +23,14 @@ namespace ColonySim.World
     {
         public override void BiomeGeneration(IWorldChunk Chunk, int seed)
         {
-            Random rand = new Random(seed);
+            System.Random rand = new System.Random(seed);
             foreach (var tile in Chunk.GetTiles())
             {
                 WorldPoint Point = tile.Coordinates;
                 IEntity _entity;
                 _entity = EntitySystem.Get.CreateEntity("entity.basicfloor");
                 float r = rand.Next(1, 1000);
+                //Debug.Log($"Generating tile {tile.Coordinates}::{tile.Container == null}");
                 if (r < 10)
                 {
                     IEntity _shrub = EntitySystem.Get.CreateEntity("entity.tree");

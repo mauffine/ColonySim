@@ -67,7 +67,7 @@ namespace ColonySim.Rendering
         {
             instance = this;
         }
-
+        public static bool VISION_ENABLED = true;
         public Texture2D unexploredTexture;
         public Material unexploredMat;
         private readonly string UNEXPLORED_TEXTURE_ID = "unexplored";
@@ -185,22 +185,22 @@ namespace ColonySim.Rendering
 
         // Get Chunk Data
 
-        private IWorldChunk GetChunkData(WorldPoint Coordinates)
-        { return WorldSystem.Chunk(Coordinates); }
+        private IWorldChunk GetChunkData(WorldPoint Coordinates, out cbTileState cbTileState)
+        { return WorldSystem.Chunk(Coordinates, out cbTileState); }
 
-        public IWorldChunk GetChunkData(RenderedChunk RenderObject)
-        { return WorldSystem.Chunk(RenderObject.Coordinates); }
+        public IWorldChunk GetChunkData(RenderedChunk RenderObject, out cbTileState cbTileState)
+        { return WorldSystem.Chunk(RenderObject.Coordinates, out cbTileState); }
 
         private RenderedChunk GetRenderedChunk(IWorldChunk ChunkData)
         { return RenderedChunks[ChunkData.Coordinates]; }
 
         // Get Tile Data
 
-        private ITileData GetTileData(WorldPoint Coordinates)
-        { return WorldSystem.Tile(Coordinates); }
+        private ITileData GetTileData(WorldPoint Coordinates, out cbTileState cbTileState)
+        { return WorldSystem.Tile(Coordinates, out cbTileState); }
 
-        public ITileData GetTileData(RenderedTile RenderObject)
-        { return WorldSystem.Tile(RenderObject.Coordinates); }
+        public ITileData GetTileData(RenderedTile RenderObject, out cbTileState cbTileState)
+        { return WorldSystem.Tile(RenderObject.Coordinates, out cbTileState); }
 
         private RenderedTile GetRenderedTile(ITileData TileData)
         { return RenderedChunks[TileData.Coordinates].Tile(TileData.Coordinates); }
@@ -230,11 +230,19 @@ namespace ColonySim.Rendering
             
         }
 
-        private IEntity GetEntityData(WorldPoint Coordinates, EntityID ID)
-        { return GetTileData(Coordinates).Container.GetEntity(ID); }
+        private IEntity GetEntityData(WorldPoint Coordinates, EntityID ID, out cbTileState cbTileState)
+        {
+            var _tile = GetTileData(Coordinates, out cbTileState);
+            if (cbTileState != cbTileState.OK) return null;
+            return _tile.Container.GetEntity(ID);
+        }
 
-        private IEntity GetEntityData(RenderedEntity RenderObject)
-        { return GetTileData(RenderObject.Coordinates).Container.GetEntity(RenderObject.ID); }
+        private IEntity GetEntityData(RenderedEntity RenderObject, out cbTileState cbTileState)
+        {
+            var _tile = GetTileData(RenderObject.Coordinates, out cbTileState);
+            if (cbTileState != cbTileState.OK) return null;
+            return _tile.Container.GetEntity(RenderObject.ID); 
+        }
 
         public RenderedEntity GetRenderedEntity(EntityID ID) 
         { if (RenderedEntities.ContainsKey(ID)) return RenderedEntities[ID];
@@ -299,7 +307,7 @@ namespace ColonySim.Rendering
 
             GameObject _go = new GameObject();
             _go.transform.SetParent(Parent);
-            _go.name = $"Chunk ({ChunkData.Coordinates.X}-{ChunkData.Coordinates.Y})";
+            _go.name = $"Chunk ({ChunkData.Coordinates.X},{ChunkData.Coordinates.Y})";
             Object = _go;
 
             this.coordinates = ChunkData.Coordinates;
@@ -311,6 +319,7 @@ namespace ColonySim.Rendering
 
         private void InitialiseRenderedTiles()
         {
+            this.Verbose($"Creating Rendered Chunk from {Coordinates} of size {WorldSystem.CHUNK_SIZE}");
             RenderedTiles = new RenderedTile[WorldSystem.CHUNK_SIZE, WorldSystem.CHUNK_SIZE];
             for (int x = 0; x < RenderedTiles.GetLength(0); x++) {
                 for (int y = 0; y < RenderedTiles.GetLength(1); y++) {
@@ -319,13 +328,11 @@ namespace ColonySim.Rendering
             }
         }
 
-        public RenderedTile Tile(LocalPoint Coordinates)
-        { 
-            if(Coordinates.X >= 0 && Coordinates.Y >= 0 
-                && Coordinates.X <= RenderedTiles.GetLength(0)
-                && Coordinates.Y <= RenderedTiles.GetLength(1))
-                return RenderedTiles[Coordinates.X, Coordinates.Y];
-            return null;
+        public RenderedTile Tile(WorldPoint Point)
+        {
+            int _x = Mathf.Abs(Coordinates.X - Point.X);
+            int _y = Mathf.Abs(Coordinates.Y - Point.Y);
+            return RenderedTiles[_x,_y];
         }
 
         public void RenderMeshes()
@@ -402,9 +409,14 @@ namespace ColonySim.Rendering
 
         public void RenderDirty()
         {
-            this.Debug($"Rendering Tile {Coordinates}", LoggingPriority.High);
+            //this.Debug($"Rendering Tile {Coordinates}", LoggingPriority.High);
             renderUpdateEvent?.Invoke(this);
-            ITileData Data = WorldRenderer.Get.GetTileData(this);
+            ITileData Data = WorldRenderer.Get.GetTileData(this, out cbTileState cbTileState);
+            if(cbTileState != cbTileState.OK)
+            {
+                this.Warning($"Tile Data {Coordinates} missing? ({cbTileState})");
+                return;
+            }
 
             // Update the tile name
             string _name = "Unknown Tile";
@@ -417,7 +429,7 @@ namespace ColonySim.Rendering
             }
             Object.name = $"{_name} [{Coordinates.X}-{Coordinates.Y}]";
             tileVisibility = Data.VisibilityData.PlayerVisibility;
-            if (tileVisibility == Visibility.Hidden)
+            if (tileVisibility == Visibility.Hidden && WorldRenderer.VISION_ENABLED)
             {
                 if (hiddenMesh == null)
                 {
@@ -444,7 +456,7 @@ namespace ColonySim.Rendering
             }
             else
             {
-                if (tileVisibility == Visibility.Seen)
+                if (tileVisibility == Visibility.Seen && WorldRenderer.VISION_ENABLED)
                 {
                     if (hiddenMesh == null)
                     {
@@ -525,7 +537,7 @@ namespace ColonySim.Rendering
         {
             if (Rendering)
             {
-                if (hidden)
+                if (hidden && WorldRenderer.VISION_ENABLED)
                 {
                     MaterialPropertyBlock block = new MaterialPropertyBlock();
                     block.SetColor("Tint",Color.black);
@@ -645,15 +657,16 @@ namespace ColonySim.Rendering
             {
                 if (meshData != null)
                 {
-                    if (Visibility == Visibility.Visible)
+                    if (Visibility != Visibility.Visible && WorldRenderer.VISION_ENABLED)
                     {
                         Graphics.DrawMesh(
                         meshData.mesh,
                         Object.transform.position,
                         Quaternion.identity,
-                        this.Material,
+                        unseenMat,
                         0
                         );
+                        
                     }
                     else
                     {
@@ -661,7 +674,7 @@ namespace ColonySim.Rendering
                         meshData.mesh,
                         Object.transform.position,
                         Quaternion.identity,
-                        unseenMat,
+                        this.Material,
                         0
                         );
                     }
@@ -675,7 +688,8 @@ namespace ColonySim.Rendering
         {
             if (GraphicsDef != null)
             {
-                EntityTextureSettings TextureSettings = GraphicsDef.GetTexture(WorldRenderer.Get.GetTileData(Tile));
+                EntityTextureSettings TextureSettings = GraphicsDef.GetTexture(WorldRenderer.Get.GetTileData(Tile, out cbTileState cbTileState));
+                if(cbTileState != cbTileState.OK) { this.Warning($"Failed building mesh!! ({cbTileState})"); return; }
                 if (TextureSettings != null && TextureSettings != CurrentTextureSettings)
                 {
                     this.Debug($"Building Entity Mesh {Object.name}::Texture::({TextureSettings.TextureID})");

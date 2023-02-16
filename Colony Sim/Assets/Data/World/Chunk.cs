@@ -3,6 +3,7 @@ using ColonySim.Systems;
 using ColonySim.World.Tiles;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ColonySim
 {
@@ -14,7 +15,8 @@ namespace ColonySim
         IWorldRegion[] Regions { get; }
         IBiome Biome { get; }
 
-        ITileData Tile(LocalPoint Coordinates);
+        ITileData Tile(WorldPoint Coordinates, out ColonySim.World.cbTileState cbTileState);
+        ITileData TileUnsf(int _x, int _y);
         IEnumerable<ITileData> GetTiles();
 
         void AddRegion(IWorldRegion region);
@@ -30,8 +32,9 @@ namespace ColonySim.World {
     {
         public ITileData[,] TileData { get; private set; }
 
-        public ChunkLocation Coordinates { get { return coordinates; } }
+        public ChunkLocation Coordinates => coordinates;
         private readonly ChunkLocation coordinates;
+        private WorldPoint _worldPos => coordinates;
         public RectI ChunkRect => chunkRect;
         private readonly RectI chunkRect;
         public IWorldRegion[] Regions => pathfindingRegions.ToArray();
@@ -52,13 +55,13 @@ namespace ColonySim.World {
             {
                 for (int y = 0; y < CHUNK_SIZE; y++)
                 {
-                    TileData[x, y] = new TileData(Coordinates, x, y);
+                    WorldPoint coordinates = new WorldPoint(_worldPos.X + x, _worldPos.Y + y);
+                    var _tile = new TileData(coordinates);
+                    TileData[x, y] = new TileData(coordinates);
+                    //Debug.Log($"Generated Tile At {coordinates}");
                 }
+                pathfindingRegions = new List<WorldRegion>() { new WorldRegion(_worldPos) };
             }
-            pathfindingRegions = new List<WorldRegion>()
-            {
-                new WorldRegion(coordinates.Origin, coordinates)
-            };
         }
 
         public IEnumerable<ITileData> GetTiles()
@@ -81,7 +84,7 @@ namespace ColonySim.World {
         {
             pathfindingRegions = new List<WorldRegion>()
             {
-                new WorldRegion(coordinates.Origin, coordinates)
+                new WorldRegion(_worldPos)
             };
         }
 
@@ -90,9 +93,19 @@ namespace ColonySim.World {
             
         }
 
-        public ITileData Tile(LocalPoint Point)
+        public ITileData Tile(WorldPoint Point, out cbTileState cbTileState)
         {
-            return TileData[Point.X, Point.Y];
+            int _x = Mathf.Abs(_worldPos.X - Point.X);
+            int _y = Mathf.Abs(_worldPos.Y - Point.Y);
+            if (_x < 0 || _x >= TileData.GetLength(0) || _y < 0 || _y >= TileData.GetLength(1))
+            {
+                cbTileState = cbTileState.OutOfBounds;
+                return null;
+            }
+            cbTileState = cbTileState.OK;
+            return TileUnsf(_x, _y);
         }
+
+        public ITileData TileUnsf(int _x, int _y) => TileData[_x, _y];
     }
 }

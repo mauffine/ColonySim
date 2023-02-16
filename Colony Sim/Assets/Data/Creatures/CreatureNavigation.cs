@@ -20,6 +20,7 @@ namespace ColonySim
         void Destination(WorldPoint destination);
         void Stop(Action cbStopEvent);
         void OnTileMovement(Action<ITileData,ITileData> cbTileMovement);
+        void TraversedChunk(Action<ChunkLocation, ChunkLocation> cbChunkMovement);
     }
 }
 
@@ -54,10 +55,12 @@ namespace ColonySim.Creatures
         private Vector2? currentDestination;
         private Action cbOnMovementEnd;
         private Action<ITileData, ITileData> onTileMovement;
+        private Action<ChunkLocation, ChunkLocation> onChunkMovement;
         private ITileData currentTile;
 
         private float movementPercentage;
         Vector2 startFacing;
+        private ChunkLocation _currentChunk;
 
         public CreatureBaseNavigation(ICreature Creature)
         {
@@ -77,6 +80,11 @@ namespace ColonySim.Creatures
             currentTile = WorldSystem.TileUnsf(Coordinates);
             currentTile.Creature = Creature;
             onTileMovement?.Invoke(prv, currentTile);
+            if (_currentChunk != (ChunkLocation)Coordinates)
+            {
+                onChunkMovement?.Invoke(_currentChunk, (ChunkLocation)Coordinates);
+                _currentChunk = Coordinates;
+            }
         }
 
         public void Destination(WorldPoint destination)
@@ -131,7 +139,7 @@ namespace ColonySim.Creatures
                 movementPercentage += travel;
                 if (movementPercentage >= 1)
                 {
-                    Coordinates = WorldSystem.ToWorldPoint(destination);
+                    Coordinates = destination;
 
                     var nextPoint = NextDestination();
                     if (nextPoint != null)
@@ -177,6 +185,11 @@ namespace ColonySim.Creatures
         {
             onTileMovement += cbTileMovement;
             //TODO: Remove Function
+        }
+
+        public void TraversedChunk(Action<ChunkLocation, ChunkLocation> cbChunkMovement)
+        {
+            onChunkMovement += cbChunkMovement;
         }
     }
 }

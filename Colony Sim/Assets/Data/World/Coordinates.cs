@@ -24,20 +24,15 @@ namespace ColonySim
             : this(Coordinates.X, Coordinates.Y) { }
         public WorldPoint(Vector2Int Coordinates)
             : this(Coordinates.x, Coordinates.y) { }
-        public WorldPoint(LocalPoint Coordinates)
-            : this(Coordinates.X * Coordinates.ChunkCoordinate.X * WorldSystem.CHUNK_SIZE,
-                  Coordinates.X * Coordinates.ChunkCoordinate.Y * WorldSystem.CHUNK_SIZE)
-        { }
 
         public WorldPoint(int X, int Y)
         { this.X = X; this.Y = Y; }
 
-        public static implicit operator LocalPoint(WorldPoint Coordinate) =>
-            new LocalPoint(Coordinate.X % WorldSystem.CHUNK_SIZE,
-            Coordinate.Y % WorldSystem.CHUNK_SIZE);
-
         public static implicit operator Vector2(WorldPoint Coordinate) =>
             new Vector2(Coordinate.X, Coordinate.Y);
+
+        public static implicit operator Vector2Int(WorldPoint Coordinate) =>
+            new Vector2Int(Coordinate.X, Coordinate.Y);
 
         public static implicit operator WorldPoint(Vector2 Coordinate) =>
             new WorldPoint(Mathf.FloorToInt(Coordinate.x), Mathf.FloorToInt(Coordinate.y));
@@ -59,6 +54,9 @@ namespace ColonySim
             return false;          
         }
 
+        public static WorldPoint operator +(WorldPoint a, WorldPoint b) =>
+            new WorldPoint(a.X + b.X, a.Y + b.Y);
+
         public static bool operator == (WorldPoint a, WorldPoint b) =>
             a.Equals(b);
 
@@ -73,68 +71,9 @@ namespace ColonySim
 
         public static implicit operator Vector3(WorldPoint v) =>
             new Vector3(v.X, v.Y);
-    }
 
-    /// <summary>
-    /// A point relative to a Chunk.
-    /// </summary>
-    public struct LocalPoint : ICoordinate
-    {
-        public int X { get; }
-        public int Y { get; }
-        public int WorldX => X + ChunkCoordinate.X * WorldSystem.CHUNK_SIZE;
-        public int WorldY => Y + ChunkCoordinate.Y * WorldSystem.CHUNK_SIZE;
-        public ChunkLocation ChunkCoordinate { get; }
-
-        public LocalPoint((int X, int Y) Chunk, (int X, int Y) Coordinates)
-            : this(Chunk, Coordinates.X, Coordinates.Y) { }
-        public LocalPoint(Vector2Int Coordinates, (int X, int Y) Chunk)
-            : this(Chunk, Coordinates.x, Coordinates.y) { }
-        public LocalPoint(WorldPoint Coordinates, (int X, int Y) Chunk)
-            : this(Chunk, Coordinates.X % WorldSystem.CHUNK_SIZE, Coordinates.Y % WorldSystem.CHUNK_SIZE) { }
-
-        public LocalPoint((int X, int Y) Chunk, int X, int Y)
-        { this.ChunkCoordinate = Chunk; this.X = X; this.Y = Y; }
-        public LocalPoint((int X, int Y) Chunk, LocalPoint Coordinate)
-        { this.ChunkCoordinate = Chunk; this.X = Coordinate.X; this.Y = Coordinate.Y; }
-        public LocalPoint(int X, int Y)
-        { this.ChunkCoordinate = default; this.X = X; this.Y = Y; }
-
-        public static implicit operator WorldPoint(LocalPoint Coordinate) =>
-            new WorldPoint(Coordinate.X + Coordinate.ChunkCoordinate.X * WorldSystem.CHUNK_SIZE,
-            Coordinate.Y + Coordinate.ChunkCoordinate.Y * WorldSystem.CHUNK_SIZE);
-
-        public static explicit operator LocalPoint(WorldPoint Coordinate) =>
-            new LocalPoint(Coordinate.X % WorldSystem.CHUNK_SIZE,
-            Coordinate.Y % WorldSystem.CHUNK_SIZE);
-
-        public static implicit operator ChunkLocation(LocalPoint Coordinate) =>
-            Coordinate.ChunkCoordinate;
-
-        /// <summary>
-        /// Return a Local Point copied relative to Chunk.
-        /// </summary>
-        /// <param name="Chunk"></param>
-        /// <returns></returns>
-        public LocalPoint RelativeTo((int X, int Y) Chunk)
-        {
-            return new LocalPoint(Chunk, X, Y);
-        }
-
-        /// <summary>
-        /// Return a Local Point copied relative to Chunk.
-        /// </summary>
-        /// <param name="Chunk"></param>
-        /// <returns></returns>
-        public LocalPoint RelativeTo(int _X, int _Y)
-        {
-            return new LocalPoint((_X, _Y), X, Y);
-        }
-
-        public override string ToString()
-        {
-            return string.Format("({0},{1})", X, Y);
-        }
+        public static implicit operator WorldPoint(Vector2Int v) =>
+            new WorldPoint(v.x, v.y);
     }
 
     /// <summary>
@@ -155,23 +94,38 @@ namespace ColonySim
             new WorldPoint(X * WorldSystem.CHUNK_SIZE, Y * WorldSystem.CHUNK_SIZE);
 
         public WorldPoint Boundary =>
-             new WorldPoint((X+1) * WorldSystem.CHUNK_SIZE - 1, (Y+1) * WorldSystem.CHUNK_SIZE - 1);
-
-        public static implicit operator (int, int)(ChunkLocation Chunk) =>
-            (Chunk.X, Chunk.Y);
-
-        public static implicit operator ChunkLocation((int X, int Y) Coordinates) =>
-            new ChunkLocation(Coordinates);
+             new WorldPoint(X * WorldSystem.CHUNK_SIZE + WorldSystem.CHUNK_SIZE, Y * WorldSystem.CHUNK_SIZE + WorldSystem.CHUNK_SIZE);
 
         public static implicit operator WorldPoint(ChunkLocation Chunk) =>
             new WorldPoint(Chunk.X * WorldSystem.CHUNK_SIZE, Chunk.Y * WorldSystem.CHUNK_SIZE);
 
-        public static implicit operator ChunkLocation(WorldPoint v) =>
-            new ChunkLocation(v.X / WorldSystem.CHUNK_SIZE, v.Y / WorldSystem.CHUNK_SIZE);
+        public static implicit operator ChunkLocation(WorldPoint v)
+        {
+            int vX = Mathf.FloorToInt((float)v.X / WorldSystem.CHUNK_SIZE);
+            int vY = Mathf.FloorToInt((float)v.Y / WorldSystem.CHUNK_SIZE);
+            return new ChunkLocation(vX, vY);
+        }
 
         public override string ToString()
         {
             return $"({X},{Y})";
         }
+
+        public override int GetHashCode() =>
+         this.X*WorldSystem.CHUNK_SIZE * 666 + this.Y * WorldSystem.CHUNK_SIZE * 1339;
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ChunkLocation chunk)
+            {
+                if (this.X == chunk.X && this.Y == chunk.Y) ;
+            }
+            return base.Equals(obj);
+        }
+
+        public static bool operator ==(ChunkLocation a, ChunkLocation b) =>
+            a.X == b.X && a.Y == b.Y;
+        public static bool operator !=(ChunkLocation a, ChunkLocation b) =>
+            a.X != b.X || a.Y != b.Y;
     }
 }
